@@ -1,37 +1,37 @@
 import clsx from "clsx";
 
 export interface WidgetProps {
-	id: string;
-	x?: number;
-	y?: number;
-	w?: number;
-	h?: number;
-	title?: string;
-	children: React.ReactNode;
+  id: string;
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  title?: string;
+  children: React.ReactNode;
 }
 
 function Widget({
-	id,
-	x,
-	y,
-	w,
-	h,
-	title,
-	children,
+  id,
+  x,
+  y,
+  w,
+  h,
+  title,
+  children,
 }: WidgetProps) {
-	return (
-		<div
-			className="grid-stack-item"
-			gs-id={id}
-			gs-x={x}
-			gs-y={y}
-			gs-w={w}
-			gs-h={h}
-		>
-			<div
-				className={clsx(
+  return (
+    <div
+      className="grid-stack-item"
+      gs-id={id}
+      gs-x={x}
+      gs-y={y}
+      gs-w={w}
+      gs-h={h}
+    >
+      <div
+        className={clsx(
           "grid-stack-item-content",
-					"overflow-hidden",
+          "overflow-hidden",
           "rounded-2xl",
           "bg-neutral-800/80",
           "backdrop-blur-md",
@@ -39,31 +39,31 @@ function Widget({
           "shadow-xl",
           "p-6",
           "text-neutral-100",
-					"flex",
-					"justify-center"
-				)}
-			>
-				{title && (
-					<div className="mb-4 text-sm font-medium text-neutral-400">
-						{title}
-					</div>
-				)}
-				<div className="flex-grow-1">
-					{children}
-				</div>
-			</div>
-		</div>
-	);
+          "flex",
+          "justify-center"
+        )}
+      >
+        {title && (
+          <div className="mb-4 text-sm font-medium text-neutral-400">
+            {title}
+          </div>
+        )}
+        <div className="flex-grow-1">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export const Widgets: Record<string, React.FC<Omit<WidgetProps, 'children'>>> = {};
 export function widget(Component: React.FC, type: string) {
-	const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
-		return <Widget {...props}><Component /></Widget>
-	}
-	if (Widgets[type]) {
-		throw new Error(`Widget type "${type}" already exists.`);
-	}
-	Widgets[type] = WidgetComponent;
-	return WidgetComponent
+  const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
+    return <Widget {...props}><Component /></Widget>
+  }
+  if (Widgets[type]) {
+    throw new Error(`Widget type "${type}" already exists.`);
+  }
+  Widgets[type] = WidgetComponent;
+  return WidgetComponent
 }
