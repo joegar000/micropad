@@ -1,0 +1,11 @@
+body {
+    --columns: 12;
+    --cell-height: 120px;
+    --grid-color: rgb(255, 255, 255);
+}
+
+.dashboard.dashboard-editing {
+    background-size: calc(100% / var(--columns)) var(--cell-height);
+    background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+}
