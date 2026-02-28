@@ -3,13 +3,15 @@ import { useLayoutStore } from '../../store/layout';
 import { useGridstackContext } from './Provider';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
+import { useExternalDrop } from './useExternalDrop';
 
 
 interface GridstackProps {
 	children: React.ReactNode;
+	onExternalDrop?: (payload: { type: string; id: string }) => void;
 }
 
-export function Gridstack({ children }: GridstackProps) {
+export function Gridstack({ children, onExternalDrop }: GridstackProps) {
 	const gridRef = useRef<HTMLDivElement>(null);
 	const dashRef = useRef<HTMLDivElement>(null);
 	const [cellHeight, setCellHeight] = useState(0);
@@ -19,6 +21,10 @@ export function Gridstack({ children }: GridstackProps) {
 	const currentLayout = useLayoutStore((s) => s.widgets);
 
 	const { init, getGrid, onReady } = useGridstackContext();
+
+
+	// allow external drops: compute and add widget to layout store (reusable hook)
+	useExternalDrop(gridRef, { columns, cellHeight, onExternalDrop });
 
 	useLayoutEffect(() => {
 		if (!gridRef.current || !dashRef.current) return;

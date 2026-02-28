@@ -72,6 +72,7 @@ function Widget({
 }
 
 export const Widgets: Record<string, React.FC<Omit<WidgetProps, 'children'>>> = {};
+export const WidgetSpecs: Record<string, WidgetSpec> = {};
 export function widget(Component: React.FC, spec: WidgetSpec) {
   const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
     return <Widget {...props} {...spec}><Component /></Widget>
@@ -80,5 +81,6 @@ export function widget(Component: React.FC, spec: WidgetSpec) {
     throw new Error(`Widget type "${spec.type}" already exists.`);
   }
   Widgets[spec.type] = WidgetComponent;
+  WidgetSpecs[spec.type] = spec;
   return WidgetComponent
 }
