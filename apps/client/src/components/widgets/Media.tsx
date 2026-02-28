@@ -1,4 +1,4 @@
-import { widget } from "../layout/Widget";
+import { widget } from "../gridstack/Widget";
 import { Button, ButtonGroup } from "flowbite-react";
 import { CiPlay1, CiPause1 } from "react-icons/ci";
 

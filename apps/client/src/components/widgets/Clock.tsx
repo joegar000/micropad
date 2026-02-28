@@ -1,4 +1,4 @@
-import { widget } from "../layout/Widget";
+import { widget } from "../gridstack/Widget";
 
 export const ClockWidget = widget(() => {
   const time = new Date().toLocaleTimeString([], {
