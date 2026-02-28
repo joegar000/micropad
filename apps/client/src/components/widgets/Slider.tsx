@@ -1,4 +1,4 @@
-import { useWidgetId, widget, type WidgetProps } from "../gridstack/Widget";
+import { useWidgetId, widget } from "../gridstack/Widget";
 import { useEffect, useRef, useState } from "react";
 import { useGridstackContext } from "../gridstack";
 import clsx from "clsx";
