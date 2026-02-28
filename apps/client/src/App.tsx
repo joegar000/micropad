@@ -1,5 +1,5 @@
 import { useLayoutStore } from "./store/layout";
-import { Widgets } from "./components/gridstack/Widget";
+import { Widgets } from "./components/widgets/Registration";
 import "./components/widgets";
 import { Gridstack, GridstackProvider } from "./components/gridstack";
 
