@@ -1,7 +1,8 @@
 import { useWidgetId, widget, type WidgetProps } from "../gridstack/Widget";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGridstackContext } from "../gridstack";
 import clsx from "clsx";
+import useResizeObserver from "../../hooks/resizeobserver";
 
 interface SliderSpec {
   onChange: (value: number) => void;
@@ -17,7 +18,22 @@ export function slider(spec: SliderSpec) {
     const [value, setValue] = useState<number>(50);
     const { onReady } = useGridstackContext();
     const widgetId = useWidgetId();
-    const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
+    const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('horizontal');
+    const divRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useResizeObserver(divRef, (entry) => {
+      if (!divRef.current || !inputRef.current || rotation !== 'vertical') {
+        inputRef.current?.style.removeProperty('width');
+        inputRef.current?.style.removeProperty('min-width');
+        inputRef.current?.style.removeProperty('max-width');
+        return;
+      };
+      const { height } = entry.contentRect;
+      inputRef.current.style.minWidth = `${height}px`;
+      inputRef.current.style.maxWidth = `${height}px`;
+      inputRef.current.style.width = `${height}px`;
+    });
 
     useEffect(() => {
       const unsub = onReady(grid => {
@@ -25,7 +41,7 @@ export function slider(spec: SliderSpec) {
           if (item.getAttribute('gs-id') !== widgetId) return;
           const w = Number(item.getAttribute('gs-w') ?? '1');
           const h = Number(item.getAttribute('gs-h') ?? '1');
-          setRotation(w > h ? 'horizontal' : 'vertical');
+          setRotation(w >= h ? 'horizontal' : 'vertical');
         });
       });
       return () => unsub();
@@ -33,9 +49,10 @@ export function slider(spec: SliderSpec) {
 
     return (
       <div className="h-full flex flex-col items-center justify-center gap-4">
-        <div className="h-full w-full flex justify-center">
+        <div ref={divRef} className="h-full w-full flex justify-center">
           <input
-            style={{ writingMode: rotation === 'vertical' ? 'sideways-lr' : undefined, }}
+            ref={inputRef}
+            style={{ transform: rotation === 'vertical' ? 'rotate(270deg)' : undefined }}
             aria-label="Volume"
             type="range"
             min={spec.min ?? 0}
@@ -49,10 +66,7 @@ export function slider(spec: SliderSpec) {
         <div className="text-sm text-neutral-400">{value}%</div>
       </div>
     );
-  }, spec.type);
+  }, spec.type, spec.title);
 
-  const Final = (props: Omit<WidgetProps, 'children' | 'title'>) => (
-    <Slider {...props} title={spec.title} />
-  );
-  return Final;
+  return Slider;
 }

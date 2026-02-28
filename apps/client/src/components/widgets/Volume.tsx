@@ -1,6 +1,6 @@
 import { slider } from "./Slider";
 
-const Volume = slider({
+slider({
   title: 'Volume',
   type: 'volume',
   onChange: (value) => {

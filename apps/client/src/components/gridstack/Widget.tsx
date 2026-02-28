@@ -48,11 +48,12 @@ function Widget({
             "p-6",
             "text-neutral-100",
             "flex",
+            "flex-col",
             "justify-center"
           )}
         >
           {title && (
-            <div className="mb-4 text-sm font-medium text-neutral-400">
+            <div className="mb-4 text-sm font-medium text-neutral-400 flex-grow-0">
               {title}
             </div>
           )}
@@ -66,9 +67,9 @@ function Widget({
 }
 
 export const Widgets: Record<string, React.FC<Omit<WidgetProps, 'children'>>> = {};
-export function widget(Component: React.FC, type: string) {
+export function widget(Component: React.FC, type: string, title?: string) {
   const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
-    return <Widget {...props}><Component /></Widget>
+    return <Widget {...props} title={title ?? props.title}><Component /></Widget>
   }
   if (Widgets[type]) {
     throw new Error(`Widget type "${type}" already exists.`);
