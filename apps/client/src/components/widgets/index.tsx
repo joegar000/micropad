@@ -1,6 +1,3 @@
-export * from "./Clock";
-export * from "./Media";
-export * from "./Hardware";
-export * from "./Volume";
 export * from "./Button";
+export * from "./Slider";
 export * from "./Dial";

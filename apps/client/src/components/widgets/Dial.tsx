@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CircularSlider from "react-circular-slider-svg";
-import { useGridstackContext, useWidgetId, widget } from "../gridstack";
+import { widget, type WidgetSpec } from "../gridstack";
 import useResizeObserver from "../../hooks/resizeobserver";
 
-interface DialSpec {
+export interface DialSpec extends WidgetSpec {
   onChange: (value: number) => void;
-  title: string;
-  type: string;
   step?: number;
   min?: number;
   max?: number;
@@ -17,14 +15,12 @@ export function dial(spec: DialSpec) {
     const [value, setValue] = useState(50);
     const [size, setSize] = useState<number>(200);
     const ref = useRef<HTMLDivElement>(null);
-    const percentRef = useRef<HTMLDivElement>(null);
-    const { onReady } = useGridstackContext();
-    const widgetId = useWidgetId();
     useResizeObserver(ref, (entry) => {
       const { width, height } = entry.contentRect;
       const newSize = Math.min(width, height);
       setSize(newSize);
     });
+
 
     return (
       <div className="h-full relative pt-[5%]">
@@ -60,7 +56,7 @@ export function dial(spec: DialSpec) {
       </div>
       
     );
-  }, spec.type, spec.title);
+  }, spec);
 }
 
 dial({

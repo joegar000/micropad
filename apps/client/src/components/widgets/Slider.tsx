@@ -1,13 +1,11 @@
-import { useWidgetId, widget } from "../gridstack/Widget";
+import { useWidgetId, widget, type WidgetSpec } from "../gridstack/Widget";
 import { useEffect, useRef, useState } from "react";
 import { useGridstackContext } from "../gridstack";
 import clsx from "clsx";
 import useResizeObserver from "../../hooks/resizeobserver";
 
-interface SliderSpec {
+export interface SliderSpec extends WidgetSpec {
   onChange: (value: number) => void;
-  title: string;
-  type: string;
   step?: number;
   min?: number;
   max?: number;
@@ -66,5 +64,13 @@ export function slider(spec: SliderSpec) {
         <div className="text-sm text-neutral-400">{value}%</div>
       </div>
     );
-  }, spec.type, spec.title);
+  }, spec);
 }
+
+slider({
+  title: 'Volume',
+  type: 'volume',
+  onChange: (value) => {
+    console.log("Volume changed to", value);
+  }
+});

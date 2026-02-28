@@ -1,13 +1,11 @@
 import clsx from "clsx";
-import { widget } from "../gridstack";
-import { use, useEffect, useState } from "react";
+import { widget, type WidgetSpec } from "../gridstack";
+import { useEffect, useState } from "react";
 
-interface ButtonSpec {
+export interface ButtonSpec extends WidgetSpec {
   onClick: () => void;
   isToggled?: boolean | (() => Promise<boolean>);
-  title?: string;
   text?: string;
-  type: string;
 }
 
 export function button(spec: ButtonSpec) {
@@ -49,7 +47,7 @@ export function button(spec: ButtonSpec) {
         {spec.text ?? spec.title}
       </button>
     );
-  }, spec.type, spec.title);
+  }, spec);
 }
 
 let _toggleState = false;

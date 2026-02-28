@@ -1,13 +1,17 @@
 import clsx from "clsx";
 import { createContext, use } from "react";
 
+export interface WidgetSpec {
+  type: string;
+  title?: string;
+}
+
 export interface WidgetProps {
   id: string;
   x?: number;
   y?: number;
   w?: number;
   h?: number;
-  title?: string;
   children: React.ReactNode;
 }
 
@@ -23,9 +27,9 @@ function Widget({
   y,
   w,
   h,
-  title,
   children,
-}: WidgetProps) {
+  ...spec
+}: WidgetProps & WidgetSpec) {
   return (
     <WidgetId.Provider value={id}>
       <div
@@ -52,10 +56,10 @@ function Widget({
             "p-2"
           )}
         >
-          {title && (
+          {spec.title && (
             <div className="position-relative h-0">
               <div className="text-sm font-medium text-neutral-400 position-absolute">
-                {title}
+                {spec.title}
               </div>
             </div>
           )}
@@ -69,13 +73,13 @@ function Widget({
 }
 
 export const Widgets: Record<string, React.FC<Omit<WidgetProps, 'children'>>> = {};
-export function widget(Component: React.FC, type: string, title?: string) {
+export function widget(Component: React.FC, spec: WidgetSpec) {
   const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
-    return <Widget {...props} title={title ?? props.title}><Component /></Widget>
+    return <Widget {...props} {...spec}><Component /></Widget>
   }
-  if (Widgets[type]) {
-    throw new Error(`Widget type "${type}" already exists.`);
+  if (Widgets[spec.type]) {
+    throw new Error(`Widget type "${spec.type}" already exists.`);
   }
-  Widgets[type] = WidgetComponent;
+  Widgets[spec.type] = WidgetComponent;
   return WidgetComponent
 }
