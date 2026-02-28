@@ -20,10 +20,10 @@ export const widgetIdStore = createIdStore();
 
 export const useLayoutStore = create<LayoutState>((set) => ({
   widgets: [
-    { type: "hardware", x: 6, y: 0, w: 3, h: 3, id: widgetIdStore.generate() },
-    { type: "media", x: 0, y: 0, w: 3, h: 2, id: widgetIdStore.generate() },
-    { type: "clock", x: 0, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
-    { type: "volume", x: 1, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
+    // { type: "button", x: 6, y: 0, w: 3, h: 3, id: widgetIdStore.generate() },
+    { type: "dial", x: 0, y: 0, w: 3, h: 2, id: widgetIdStore.generate() },
+    // { type: "clock", x: 0, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
+    // { type: "volume", x: 1, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
   ],
 
   setLayout: (widgets) => set({ widgets }),

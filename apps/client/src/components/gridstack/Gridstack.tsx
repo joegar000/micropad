@@ -13,8 +13,8 @@ export function Gridstack({ children }: GridstackProps) {
 	const gridRef = useRef<HTMLDivElement>(null);
 	const dashRef = useRef<HTMLDivElement>(null);
 	const [cellHeight, setCellHeight] = useState(0);
-	const [columns] = useState(5);
-	const [rows] = useState(5);
+	const [columns] = useState(2);
+	const [rows] = useState(3);
 	const setLayout = useLayoutStore((s) => s.setLayout);
 	const currentLayout = useLayoutStore((s) => s.widgets);
 
@@ -34,6 +34,9 @@ export function Gridstack({ children }: GridstackProps) {
 			cellHeight: rowHeight,
 			margin: '0.5em',
 			float: true,
+      draggable: {
+        cancel: '.not-draggable'
+      }
 		});
 
 		let cleanupFromGrid: (() => void) | undefined;
@@ -68,7 +71,7 @@ export function Gridstack({ children }: GridstackProps) {
 
 	return (
 		<div className="h-full w-full p-6 flex flex-col">
-			<div className="dashboard dashboard-editing bg-black flex-grow-1" ref={dashRef}
+			<div className="gridstack-container gridstack-editing bg-black flex-grow-1" ref={dashRef}
 				style={{
 					'--columns': columns,
 					'--cell-height': `${cellHeight}px`,

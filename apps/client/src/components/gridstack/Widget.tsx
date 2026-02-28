@@ -45,19 +45,21 @@ function Widget({
             "backdrop-blur-md",
             "border border-neutral-700",
             "shadow-xl",
-            "p-6",
             "text-neutral-100",
             "flex",
             "flex-col",
-            "justify-center"
+            "justify-center",
+            "p-2"
           )}
         >
           {title && (
-            <div className="mb-4 text-sm font-medium text-neutral-400 flex-grow-0">
-              {title}
+            <div className="position-relative h-0">
+              <div className="text-sm font-medium text-neutral-400 position-absolute">
+                {title}
+              </div>
             </div>
           )}
-          <div className="flex-grow-1">
+          <div className="flex-grow-1 overflow-hidden">
             {children}
           </div>
         </div>

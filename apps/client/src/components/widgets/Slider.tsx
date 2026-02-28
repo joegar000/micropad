@@ -14,7 +14,7 @@ interface SliderSpec {
 }
 
 export function slider(spec: SliderSpec) {
-  const Slider = widget(() => {
+  return widget(() => {
     const [value, setValue] = useState<number>(50);
     const { onReady } = useGridstackContext();
     const widgetId = useWidgetId();
@@ -67,6 +67,4 @@ export function slider(spec: SliderSpec) {
       </div>
     );
   }, spec.type, spec.title);
-
-  return Slider;
 }
