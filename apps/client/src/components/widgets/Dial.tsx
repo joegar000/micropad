@@ -23,13 +23,16 @@ export function dial(spec: DialSpec) {
 
 
     return (
-      <div className="h-full relative pt-[5%]">
-        <div className="absolute h-full w-full h-full flex items-center justify-center pointer-events-none"
-          style={{ height: size }}
+      <div className="h-full relative mt-[5%]">
+        <div className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >
-          <div className="text-sm text-neutral-400 position-absolute">{value}%</div>
+          <div className="w-full flex items-center justify-center"
+            style={{ height: size }}
+          >
+            <div className="text-sm text-neutral-400 position-absolute">{value}%</div>
+          </div>
         </div>
-        <div ref={ref} className="not-draggable flex justify-center w-full h-full overflow-hidden">
+        <div ref={ref} className="not-draggable flex justify-center items-center w-full h-full overflow-hidden">
           <CircularSlider
             size={size}
             trackWidth={4}

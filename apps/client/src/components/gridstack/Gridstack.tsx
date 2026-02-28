@@ -13,8 +13,8 @@ export function Gridstack({ children }: GridstackProps) {
 	const gridRef = useRef<HTMLDivElement>(null);
 	const dashRef = useRef<HTMLDivElement>(null);
 	const [cellHeight, setCellHeight] = useState(0);
-	const [columns] = useState(2);
-	const [rows] = useState(3);
+	const [columns] = useState(3);
+	const [rows] = useState(2);
 	const setLayout = useLayoutStore((s) => s.setLayout);
 	const currentLayout = useLayoutStore((s) => s.widgets);
 

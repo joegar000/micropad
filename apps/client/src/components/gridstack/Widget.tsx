@@ -52,13 +52,12 @@ function Widget({
             "text-neutral-100",
             "flex",
             "flex-col",
-            "justify-center",
-            "p-2"
+            "justify-center"
           )}
         >
           {spec.title && (
             <div className="position-relative h-0">
-              <div className="text-sm font-medium text-neutral-400 position-absolute">
+              <div className="p-2 text-sm font-medium text-neutral-400 position-absolute">
                 {spec.title}
               </div>
             </div>
