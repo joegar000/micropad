@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { createIdStore } from "../util/id";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { zustandStorage } from "../util/indexeddb";
 
 export type WidgetLayout = {
   id: string;
@@ -18,20 +20,23 @@ interface LayoutState {
 
 export const widgetIdStore = createIdStore();
 
-export const useLayoutStore = create<LayoutState>((set) => ({
-  widgets: [
-    // { type: "button", x: 6, y: 0, w: 3, h: 3, id: widgetIdStore.generate() },
-    { type: "volume", x: 0, y: 0, w: 3, h: 2, id: widgetIdStore.generate() },
-    // { type: "clock", x: 0, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
-    // { type: "volume", x: 1, y: 0, w: 1, h: 1, id: widgetIdStore.generate() },
-  ],
+export const useLayoutStore = create<LayoutState>()(
+  persist(
+    ((set) => ({
+      widgets: [],
 
-  setLayout: (widgets) => set({ widgets }),
+      setLayout: (widgets) => set({ widgets }),
 
-  updateWidget: (updated) =>
-    set((state) => ({
-      widgets: state.widgets.map((w) =>
-        w.id === updated.id ? updated : w
-      ),
+      updateWidget: (updated) =>
+        set((state) => ({
+          widgets: state.widgets.map((w) =>
+            w.id === updated.id ? updated : w
+          ),
+        })),
     })),
-}));
+    {
+      name: "layout-storage",
+      storage: createJSONStorage(() => zustandStorage)
+    }
+  )
+);
