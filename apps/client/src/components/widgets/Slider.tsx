@@ -46,8 +46,8 @@ export function slider(spec: SliderSpec) {
     }, [value]);
 
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-4">
-        <div ref={divRef} className="h-full w-full flex justify-center">
+      <div className="h-full flex flex-col items-center justify-center">
+        <div ref={divRef} className="w-[90%] flex-grow-1 pt-10 flex justify-center">
           <input
             ref={inputRef}
             style={{ transform: rotation === 'vertical' ? 'rotate(270deg)' : undefined }}
@@ -61,7 +61,7 @@ export function slider(spec: SliderSpec) {
             className={clsx("accent-neutral-400", { 'w-full': rotation === 'horizontal' })}
           />
         </div>
-        <div className="text-sm text-neutral-400">{value}%</div>
+        <div className="text-sm text-neutral-400 py-2">{value}%</div>
       </div>
     );
   }, spec);
