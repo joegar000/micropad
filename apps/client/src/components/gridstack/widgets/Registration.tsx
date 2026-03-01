@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { createContext, use, useLayoutEffect, useRef } from "react";
-import { useGridstackContext } from "..";
+import useGridStore from "../../../store/gridstack";
 
 export interface WidgetSpec {
   type: string;
@@ -32,16 +32,15 @@ function Widget({
   ...spec
 }: WidgetProps & WidgetSpec) {
   const ref = useRef<HTMLDivElement>(null);
-  const { getGrid } = useGridstackContext();
+  const gridstack = useGridStore(s => s.gridstack);
 
   useLayoutEffect(() => {
-    const grid = getGrid();
     const el = ref.current;
-    if (!grid || !el) return;
+    if (!gridstack || !el) return;
     if (!el.closest('.grid-stack')) return;
-    grid.setAnimation(false);
-    grid.makeWidget(el);
-    setTimeout(() => grid.setAnimation(true));
+    gridstack.setAnimation(false);
+    gridstack.makeWidget(el);
+    setTimeout(() => gridstack.setAnimation(true));
   }, [ref]);
 
   return (

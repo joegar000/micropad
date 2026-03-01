@@ -1,8 +1,8 @@
 import { useWidgetId, widget, type WidgetSpec } from "./Registration";
 import { useEffect, useRef, useState } from "react";
-import { useGridstackContext } from "..";
 import clsx from "clsx";
 import useResizeObserver from "../../../hooks/resizeobserver";
+import useGridStore from "../../../store/gridstack";
 
 export interface SliderSpec extends WidgetSpec {
   onChange: (value: number) => void;
@@ -14,7 +14,8 @@ export interface SliderSpec extends WidgetSpec {
 export function slider(spec: SliderSpec) {
   return widget(({ w = 1, h = 1 }) => {
     const [value, setValue] = useState<number>(50);
-    const { onReady } = useGridstackContext();
+    const onReady = useGridStore(s => s.onReady);
+    const on = useGridStore(s => s.on);
     const widgetId = useWidgetId();
     const [rotation, setRotation] = useState<'horizontal' | 'vertical'>(w >= h ? 'horizontal' : 'vertical');
     const divRef = useRef<HTMLDivElement>(null);
@@ -34,15 +35,14 @@ export function slider(spec: SliderSpec) {
     });
 
     useEffect(() => {
-      const unsub = onReady(grid => {
-        grid.on('resizestop', (_event, item) => {
+      return onReady(() => {
+        on('resizestop', (_event, item) => {
           if (item.getAttribute('gs-id') !== widgetId) return;
           const w = Number(item.getAttribute('gs-w') ?? '1');
           const h = Number(item.getAttribute('gs-h') ?? '1');
           setRotation(w >= h ? 'horizontal' : 'vertical');
         });
       });
-      return () => unsub();
     }, [value]);
 
     return (

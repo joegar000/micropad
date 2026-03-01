@@ -1,6 +1,5 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
-import { useLayoutStore, widgetIdStore } from '../../store/layout';
-import { useGridstackContext } from './Provider';
+import { useGridStore, widgetIdStore } from '../../store/gridstack';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
 import { Widgets } from './widgets/Registration';
@@ -14,21 +13,23 @@ export function Gridstack() {
   const [cellHeight, setCellHeight] = useState(0);
   const [columns] = useState(3);
   const [rows] = useState(2);
-  const setLayout = useLayoutStore((s) => s.setLayout);
-  const widgets = useLayoutStore((state) => state.widgets);
+  const setLayout = useGridStore(s => s.setLayout);
+  const widgets = useGridStore(s => s.widgets);
+  const gridstack = useGridStore(s => s.gridstack);
+  const init = useGridStore(s => s.init);
+  const on = useGridStore(s => s.on);
+  const onReady = useGridStore(s => s.onReady);
+  const destroy = useGridStore(s => s.destroy);
   const [gridWidth, setGridWidth] = useState<number | undefined>();
   const [gridHeight, setGridHeight] = useState<number | undefined>();
   const isEditing = useEditingStore(s => s.isEditing);
 
-  const { init, getGrid, onReady } = useGridstackContext();
-
   useEffect(() => {
-    isEditing ? getGrid()?.enable() : getGrid()?.disable();
+    isEditing ? gridstack?.enable() : gridstack?.disable();
   }, [isEditing]);
 
   useResizeObserver({ current: document.documentElement }, () => {
-    const grid = getGrid();
-    if (!dashRef.current || !grid) return;
+    if (!dashRef.current || !gridstack) return;
     dashRef.current.style.setProperty('width', '100%');
     dashRef.current.style.setProperty('height', '100%');
     const { height, width } = dashRef.current.getBoundingClientRect();
@@ -38,7 +39,7 @@ export function Gridstack() {
     setGridHeight(cellSide * rows);
     dashRef.current.style.setProperty('width', `${cellSide * columns}px`);
     dashRef.current.style.setProperty('height', `${cellSide * rows}px`);
-    grid.cellHeight(cellSide);
+    gridstack.cellHeight(cellSide);
   });
 
   useLayoutEffect(() => {
@@ -48,7 +49,7 @@ export function Gridstack() {
     setCellHeight(cellSide);
     setGridWidth(cellSide * columns);
     setGridHeight(cellSide * rows);
-    const grid = init(gridRef.current, {
+    init(gridRef.current, {
       column: columns,
       maxRow: rows,
       disableResize: !isEditing,
@@ -64,14 +65,14 @@ export function Gridstack() {
       removable: true
     });
     return () => {
-      grid?.destroy(false);
+      destroy()
     };
   }, [init]);
 
 
   useLayoutEffect(() => {
-    const unsub = onReady((grid) => {
-      grid.on("change", () => {
+    return onReady(grid => {
+      on('change', () => {
         const updated = grid.save(false, true) as any;
         setLayout(layout => {
           return layout.map(w => {
@@ -90,7 +91,7 @@ export function Gridstack() {
         });
       });
 
-      grid.on('removed', (_event, items) => {
+      on('removed', (_event, items) => {
         // TODO: add a custom way to remove elements so that gridstack doesn't remove them before react does
         const removedIds = items.map((i: any) => {
           return i.id || (i.getAttribute && (i.getAttribute('gs-id') || i.getAttribute('data-gs-id')));
@@ -98,7 +99,7 @@ export function Gridstack() {
         setLayout(layout => layout.filter(w => !removedIds.includes(w.id)));
       });
 
-      grid.on('dropped', (_event, _prevItem, item) => {
+      on('dropped', (_event, _prevItem, item) => {
         if (item.el) {
           grid.removeWidget(item.el, true, false);
         }
@@ -115,16 +116,8 @@ export function Gridstack() {
             h: item.h ?? 1
           }]);
       });
-      return () => {
-        grid.off("change");
-        grid.off("dropped");
-        grid.off("removed");
-      }
     });
-    return () => {
-      unsub();
-    };
-  }, [getGrid, columns, rows, setLayout]);
+  }, [columns, rows, setLayout, onReady, on]);
 
   return (
     <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">

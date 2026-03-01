@@ -1,14 +1,15 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { GridStack } from "gridstack";
 import { Widgets, WidgetSpecs } from "./widgets/Registration";
-import { useGridstackContext } from "./Provider";
 import { useEditingStore } from "../../store/editing";
+import useGridStore from "../../store/gridstack";
 
 export function GridstackPanel() {
   const [query, setQuery] = useState("");
   const shouldReopenRef = useRef(false);
-  const { getGrid, onReady } = useGridstackContext();
-  const [cellHeight, setCellHeight] = useState<number | undefined>();
+  const onReady = useGridStore(s => s.onReady);
+  const on = useGridStore(s => s.on);
+  const gridstack = useGridStore(s => s.gridstack);
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
 
   const items = useMemo(() => {
@@ -30,9 +31,8 @@ export function GridstackPanel() {
   }, []);
 
   useEffect(() => {
-    onReady(grid => {
-      grid.on('drag', (_event, el) => {
-        // if (el.closest('.sidebar-items')) {
+    return onReady(() => {
+      on('drag', (_event, el) => {
         if (el.gridstackNode?.id?.includes('preview')) {
           console.log('drag')
           shouldReopenRef.current = true;
@@ -40,7 +40,7 @@ export function GridstackPanel() {
         }
       });
 
-      grid.on('dragstop', (_event, el) => {
+      on('dragstop', (_event, el) => {
         if (el.closest('.sidebar-items')) {
           if (shouldReopenRef.current) {
             setSidebarOpen(true);
@@ -76,8 +76,8 @@ export function GridstackPanel() {
               {Widget && (
                 <div className="flex"
                   ref={div => {
-                    div?.style.setProperty('width', `${getGrid()?.cellWidth()}`);
-                    div?.style.setProperty('height', `${getGrid()?.cellWidth()}`);
+                    div?.style.setProperty('width', `${gridstack?.cellWidth()}`);
+                    div?.style.setProperty('height', `${gridstack?.cellWidth()}`);
                   }}
                 >
                   <Widget id={`preview-${it.type}`} w={1} h={1} x={1} y={1} />
