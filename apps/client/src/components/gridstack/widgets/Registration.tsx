@@ -39,7 +39,9 @@ function Widget({
     const el = ref.current;
     if (!grid || !el) return;
     if (!el.closest('.grid-stack')) return;
+    grid.setAnimation(false);
     grid.makeWidget(el);
+    setTimeout(() => grid.setAnimation(true));
   }, [ref]);
 
   return (
