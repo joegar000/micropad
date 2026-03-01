@@ -12,11 +12,11 @@ export interface SliderSpec extends WidgetSpec {
 }
 
 export function slider(spec: SliderSpec) {
-  return widget(() => {
+  return widget(({ w, h }) => {
     const [value, setValue] = useState<number>(50);
     const { onReady } = useGridstackContext();
     const widgetId = useWidgetId();
-    const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('horizontal');
+    const [rotation, setRotation] = useState<'horizontal' | 'vertical'>(w !== undefined && h !== undefined && w > h ? 'horizontal' : 'vertical');
     const divRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
