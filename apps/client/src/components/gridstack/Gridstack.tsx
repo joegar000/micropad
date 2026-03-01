@@ -13,7 +13,6 @@ export function Gridstack() {
   const [rows] = useState(2);
   const setLayout = useLayoutStore((s) => s.setLayout);
   const widgets = useLayoutStore((state) => state.widgets);
-  const currentLayout = useLayoutStore((s) => s.widgets);
 
   const { init, getGrid, onReady } = useGridstackContext();
 
@@ -25,12 +24,10 @@ export function Gridstack() {
 
   useLayoutEffect(() => {
     if (!gridRef.current || !dashRef.current) return;
-
     const heightPx = dashRef.current.getBoundingClientRect().height;
     const rowHeight = heightPx / rows;
     setCellHeight(rowHeight);
-
-    init(gridRef.current, {
+    const grid = init(gridRef.current, {
       column: columns,
       maxRow: rows,
       minRow: rows,
@@ -43,24 +40,39 @@ export function Gridstack() {
       acceptWidgets: true,
       removable: true
     });
+    return () => {
+      grid?.destroy(false);
+    };
+  }, [init]);
 
+
+  useLayoutEffect(() => {
     const unsub = onReady((grid) => {
       grid.on("change", () => {
         const updated = grid.save(false, true) as any;
-        const newLayout = currentLayout.map(w => {
-          const updatedWidget = updated.children?.find((uw: any) => uw.id === w.id);
-          if (updatedWidget) {
-            return {
-              ...w,
-              x: updatedWidget.x!,
-              y: updatedWidget.y!,
-              w: updatedWidget.w!,
-              h: updatedWidget.h!
-            };
-          }
-          return w;
+        setLayout(layout => {
+          return layout.map(w => {
+            const updatedWidget = updated.children?.find((uw: any) => uw.id === w.id);
+            if (updatedWidget) {
+              return {
+                ...w,
+                x: updatedWidget.x!,
+                y: updatedWidget.y!,
+                w: updatedWidget.w!,
+                h: updatedWidget.h!
+              };
+            }
+            return w;
+          });
         });
-        setLayout(newLayout);
+      });
+
+      grid.on('removed', (_event, items) => {
+        // TODO: add a custom way to remove elements so that gridstack doesn't remove them before react does
+        const removedIds = items.map((i: any) => {
+          return i.id || (i.getAttribute && (i.getAttribute('gs-id') || i.getAttribute('data-gs-id')));
+        }).filter(Boolean);
+        setLayout(layout => layout.filter(w => !removedIds.includes(w.id)));
       });
 
       grid.on('dropped', (_event, _prevItem, item) => {
@@ -69,8 +81,8 @@ export function Gridstack() {
         }
         const type: string | undefined = item.id?.replace("preview-", "");
         if (!type) return;
-        setLayout([
-          ...currentLayout,
+        setLayout(layout => [
+          ...layout,
           {
             id: widgetIdStore.generate(),
             type,
@@ -83,12 +95,13 @@ export function Gridstack() {
       return () => {
         grid.off("change");
         grid.off("dropped");
+        grid.off("removed");
       }
     });
     return () => {
       unsub();
     };
-  }, [init, getGrid, columns, rows, currentLayout, setLayout]);
+  }, [getGrid, columns, rows, setLayout]);
 
   return (
     <div className="h-full w-full p-6 flex flex-col">

@@ -14,8 +14,7 @@ export type WidgetLayout = {
 
 interface LayoutState {
   widgets: WidgetLayout[];
-  setLayout: (widgets: WidgetLayout[]) => void;
-  updateWidget: (widget: WidgetLayout) => void;
+  setLayout: (widgets: WidgetLayout[] | ((prev: WidgetLayout[]) => WidgetLayout[])) => void;
 }
 
 export const widgetIdStore = createIdStore();
@@ -24,15 +23,12 @@ export const useLayoutStore = create<LayoutState>()(
   persist(
     ((set) => ({
       widgets: [],
-
-      setLayout: (widgets) => set({ widgets }),
-
-      updateWidget: (updated) =>
-        set((state) => ({
-          widgets: state.widgets.map((w) =>
-            w.id === updated.id ? updated : w
-          ),
-        })),
+      setLayout: (widgets) => set((state) => {
+        if (widgets instanceof Function) {
+          return { widgets: widgets(state.widgets) };
+        }
+        return { widgets };
+      })
     })),
     {
       name: "layout-storage",

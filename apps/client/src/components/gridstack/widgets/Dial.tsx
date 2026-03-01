@@ -15,6 +15,7 @@ export function dial(spec: DialSpec) {
     const [value, setValue] = useState(50);
     const [size, setSize] = useState<number>(200);
     const ref = useRef<HTMLDivElement>(null);
+
     useResizeObserver(ref, (entry) => {
       const { width, height } = entry.contentRect;
       const newSize = Math.min(width, height);

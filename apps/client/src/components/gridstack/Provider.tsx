@@ -14,11 +14,9 @@ export const GridstackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const listenersRef = useRef<Array<(g: GridStack) => void>>([]);
 
   const init = (container: HTMLElement, opts?: GridStackOptions) => {
-    if (!gridRef.current) {
-      gridRef.current = GridStack.init(opts ?? {}, container);
-      listenersRef.current.forEach((cb) => cb(gridRef.current!));
-      listenersRef.current = [];
-    }
+    gridRef.current = GridStack.init(opts ?? {}, container);
+    listenersRef.current.forEach((cb) => cb(gridRef.current!));
+    listenersRef.current = [];
     return gridRef.current ?? undefined;
   };
 
