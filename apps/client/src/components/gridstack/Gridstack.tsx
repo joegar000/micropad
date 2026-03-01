@@ -4,7 +4,7 @@ import { useGridstackContext } from './Provider';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
 import { Widgets } from './widgets/Registration';
-import clsx from 'clsx';
+import useResizeObserver from '../../hooks/resizeobserver';
 
 export function Gridstack() {
   const gridRef = useRef<HTMLDivElement>(null);
@@ -24,6 +24,21 @@ export function Gridstack() {
     const grid = getGrid();
     if (!el || !grid) return;
   }, []);
+
+  useResizeObserver({ current: document.documentElement }, () => {
+    const grid = getGrid();
+    if (!dashRef.current || !grid) return;
+    dashRef.current.style.setProperty('width', '100%');
+    dashRef.current.style.setProperty('height', '100%');
+    const { height, width } = dashRef.current.getBoundingClientRect();
+    const cellSide = width / columns < height / rows ? width / columns : height / rows;
+    setCellHeight(cellSide);
+    setGridWidth(cellSide * columns);
+    setGridHeight(cellSide * rows);
+    dashRef.current.style.setProperty('width', `${cellSide * columns}px`);
+    dashRef.current.style.setProperty('height', `${cellSide * rows}px`);
+    grid.cellHeight(cellSide);
+  });
 
   useLayoutEffect(() => {
     if (!gridRef.current || !dashRef.current) return;
@@ -109,14 +124,14 @@ export function Gridstack() {
   }, [getGrid, columns, rows, setLayout]);
 
   return (
-    <div className={clsx("p-6 flex flex-col justify-center overflow-hidden flex-grow-1", gridHeight !== undefined && "flex justify-center items-center")}>
-      <div className="gridstack-container gridstack-editing bg-black" ref={dashRef}
+    <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
+      <div className="gridstack-container gridstack-editing bg-black border border-white" ref={dashRef}
         style={{
           '--columns': columns,
           '--cell-height': `${cellHeight}px`,
           '--grid-color': 'grey',
           height: gridHeight ?? '100%',
-          width: gridWidth
+          width: gridWidth ?? '100%'
         } as React.CSSProperties}
       >
         <div
