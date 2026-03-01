@@ -1,8 +1,17 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
-const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (entry: ResizeObserverEntry) => void) => {
-  useEffect(() => {
+const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (entry: Pick<ResizeObserverEntry, 'contentRect' | 'target'>) => void) => {
+  useLayoutEffect(() => {
     if (!ref.current) return;
+
+    // Call the callback once with a synthetic entry using the current size
+    const rect = ref.current.getBoundingClientRect();
+    const fakeEntry = {
+      target: ref.current,
+      contentRect: rect,
+    } as unknown as ResizeObserverEntry;
+
+    callback(fakeEntry);
 
     const observer = new ResizeObserver(entries => {
       for (let entry of entries) {
