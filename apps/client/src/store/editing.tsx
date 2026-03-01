@@ -9,11 +9,11 @@ interface EditingState {
 }
 
 export const useEditingStore = create<EditingState>()((set) => ({
-  isEditing: false,
+  isEditing: true,
   setIsEditing: (isEditing) => set(state => ({
     isEditing: valueOrCallback(isEditing, state.isEditing)
   })),
-  sidebarOpen: false,
+  sidebarOpen: true,
   setSidebarOpen: (sidebarOpen) => set(state => ({
     sidebarOpen: valueOrCallback(sidebarOpen, state.sidebarOpen)
   }))

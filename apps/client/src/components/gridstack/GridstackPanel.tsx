@@ -2,13 +2,13 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { GridStack } from "gridstack";
 import { Widgets, WidgetSpecs } from "./widgets/Registration";
 import { useGridstackContext } from "./Provider";
-import clsx from "clsx";
 import { useEditingStore } from "../../store/editing";
 
 export function GridstackPanel() {
   const [query, setQuery] = useState("");
   const shouldReopenRef = useRef(false);
-  const { getGrid } = useGridstackContext();
+  const { getGrid, onReady } = useGridstackContext();
+  const [cellHeight, setCellHeight] = useState<number | undefined>();
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
 
   const items = useMemo(() => {
@@ -30,29 +30,26 @@ export function GridstackPanel() {
   }, []);
 
   useEffect(() => {
-    const grid = getGrid();
-    if (!grid) return;
-
-    grid.on('dragstart', (_event, el) => {
-      if (el.closest('.sidebar-items')) {
-        shouldReopenRef.current = true;
-        setSidebarOpen(false);
-      }
-    });
-
-    grid.on('dragstop', (_event, el) => {
-      if (el.closest('.sidebar-items')) {
-        if (shouldReopenRef.current) {
-          setSidebarOpen(true);
+    onReady(grid => {
+      grid.on('drag', (_event, el) => {
+        // if (el.closest('.sidebar-items')) {
+        if (el.gridstackNode?.id?.includes('preview')) {
+          console.log('drag')
+          shouldReopenRef.current = true;
+          setSidebarOpen(false);
         }
-        shouldReopenRef.current = false;
-      }
+      });
+
+      grid.on('dragstop', (_event, el) => {
+        if (el.closest('.sidebar-items')) {
+          if (shouldReopenRef.current) {
+            setSidebarOpen(true);
+          }
+          shouldReopenRef.current = false;
+        }
+      });
     });
-    return () => {
-      grid.off('dragstart');
-      grid.off('dragstop');
-    }
-  }, []);
+  }, [setSidebarOpen, onReady]);
 
   return (
     <div>
@@ -77,7 +74,14 @@ export function GridstackPanel() {
           return (
             <Fragment key={it.type}>
               {Widget && (
-                <Widget id={`preview-${it.type}`} w={1} h={1} />
+                <div className="flex"
+                  ref={div => {
+                    div?.style.setProperty('width', `${getGrid()?.cellWidth()}`);
+                    div?.style.setProperty('height', `${getGrid()?.cellWidth()}`);
+                  }}
+                >
+                  <Widget id={`preview-${it.type}`} w={1} h={1} x={1} y={1} />
+                </div>
               )}
             </Fragment>
           );
