@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createIdStore } from "../util/id";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { zustandStorage } from "../util/indexeddb";
+import { valueOrCallback, type ValueOrCallback } from "../util/valueorcallback";
 
 export type WidgetLayout = {
   id: string;
@@ -14,7 +15,7 @@ export type WidgetLayout = {
 
 interface LayoutState {
   widgets: WidgetLayout[];
-  setLayout: (widgets: WidgetLayout[] | ((prev: WidgetLayout[]) => WidgetLayout[])) => void;
+  setLayout: ValueOrCallback<WidgetLayout[]>;
 }
 
 export const widgetIdStore = createIdStore();
@@ -23,16 +24,18 @@ export const useLayoutStore = create<LayoutState>()(
   persist(
     ((set) => ({
       widgets: [],
-      setLayout: (widgets) => set((state) => {
-        if (widgets instanceof Function) {
-          return { widgets: widgets(state.widgets) };
-        }
-        return { widgets };
-      })
+      setLayout: (widgets) => set(state => ({
+        widgets: valueOrCallback(widgets, state.widgets)
+      }))
     })),
     {
       name: "layout-storage",
-      storage: createJSONStorage(() => zustandStorage)
+      storage: createJSONStorage(() => zustandStorage),
+      onRehydrateStorage: () => (state) => {
+        for (const w of state?.widgets ?? []) {
+          widgetIdStore.mark(w.id);
+        }
+      }
     }
   )
 );

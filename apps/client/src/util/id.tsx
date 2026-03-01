@@ -12,6 +12,9 @@ export function createIdStore() {
     remove: (id: string) => {
       store.delete(id);
     },
+    mark: (id: string) => {
+      store.add(id);
+    },
   };
 }
 
