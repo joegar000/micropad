@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { createContext, use, useEffect, useRef } from "react";
+import { createContext, use, useLayoutEffect, useRef } from "react";
 import { useGridstackContext } from "..";
 
 export interface WidgetSpec {
@@ -34,7 +34,7 @@ function Widget({
   const ref = useRef<HTMLDivElement>(null);
   const { getGrid } = useGridstackContext();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const grid = getGrid();
     const el = ref.current;
     if (!grid || !el) return;
