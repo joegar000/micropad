@@ -4,6 +4,7 @@ import { useGridstackContext } from './Provider';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
 import { Widgets } from './widgets/Registration';
+import clsx from 'clsx';
 
 export function Gridstack() {
   const gridRef = useRef<HTMLDivElement>(null);
@@ -13,6 +14,8 @@ export function Gridstack() {
   const [rows] = useState(2);
   const setLayout = useLayoutStore((s) => s.setLayout);
   const widgets = useLayoutStore((state) => state.widgets);
+  const [gridWidth, setGridWidth] = useState<number | undefined>();
+  const [gridHeight, setGridHeight] = useState<number | undefined>();
 
   const { init, getGrid, onReady } = useGridstackContext();
 
@@ -24,14 +27,16 @@ export function Gridstack() {
 
   useLayoutEffect(() => {
     if (!gridRef.current || !dashRef.current) return;
-    const heightPx = dashRef.current.getBoundingClientRect().height;
-    const rowHeight = heightPx / rows;
-    setCellHeight(rowHeight);
+    const { height, width } = dashRef.current.getBoundingClientRect();
+    const cellSide = width / columns < height / rows ? width / columns : height / rows;
+    setCellHeight(cellSide);
+    setGridWidth(cellSide * columns);
+    setGridHeight(cellSide * rows);
     const grid = init(gridRef.current, {
       column: columns,
       maxRow: rows,
       minRow: rows,
-      cellHeight: rowHeight,
+      cellHeight: cellSide,
       margin: '0.5em',
       float: true,
       draggable: {
@@ -104,12 +109,14 @@ export function Gridstack() {
   }, [getGrid, columns, rows, setLayout]);
 
   return (
-    <div className="h-full w-full p-6 flex flex-col">
-      <div className="gridstack-container gridstack-editing bg-black flex-grow-1" ref={dashRef}
+    <div className={clsx("p-6 flex flex-col justify-center overflow-hidden flex-grow-1", gridHeight !== undefined && "flex justify-center items-center")}>
+      <div className="gridstack-container gridstack-editing bg-black" ref={dashRef}
         style={{
           '--columns': columns,
           '--cell-height': `${cellHeight}px`,
-          '--grid-color': 'grey'
+          '--grid-color': 'grey',
+          height: gridHeight ?? '100%',
+          width: gridWidth
         } as React.CSSProperties}
       >
         <div
