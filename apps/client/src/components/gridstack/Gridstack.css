@@ -5,6 +5,7 @@ body {
 }
 
 .gridstack-container.gridstack-editing {
+    border: 1px solid var(--grid-color);
     background-size: calc(100% / var(--columns)) var(--cell-height);
     background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);

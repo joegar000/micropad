@@ -5,6 +5,8 @@ import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
 import { Widgets } from './widgets/Registration';
 import useResizeObserver from '../../hooks/resizeobserver';
+import clsx from 'clsx';
+import { useEditingStore } from '../../store/editing';
 
 export function Gridstack() {
   const gridRef = useRef<HTMLDivElement>(null);
@@ -16,14 +18,13 @@ export function Gridstack() {
   const widgets = useLayoutStore((state) => state.widgets);
   const [gridWidth, setGridWidth] = useState<number | undefined>();
   const [gridHeight, setGridHeight] = useState<number | undefined>();
+  const isEditing = useEditingStore(s => s.isEditing);
 
   const { init, getGrid, onReady } = useGridstackContext();
 
   useEffect(() => {
-    const el = gridRef.current;
-    const grid = getGrid();
-    if (!el || !grid) return;
-  }, []);
+    isEditing ? getGrid()?.enable() : getGrid()?.disable();
+  }, [isEditing]);
 
   useResizeObserver({ current: document.documentElement }, () => {
     const grid = getGrid();
@@ -50,6 +51,8 @@ export function Gridstack() {
     const grid = init(gridRef.current, {
       column: columns,
       maxRow: rows,
+      disableResize: !isEditing,
+      disableDrag: !isEditing,
       minRow: rows,
       cellHeight: cellSide,
       margin: '0.5em',
@@ -125,7 +128,7 @@ export function Gridstack() {
 
   return (
     <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
-      <div className="gridstack-container gridstack-editing bg-black border border-white" ref={dashRef}
+      <div className={clsx("gridstack-container bg-black border", { "gridstack-editing": isEditing })} ref={dashRef}
         style={{
           '--columns': columns,
           '--cell-height': `${cellHeight}px`,
