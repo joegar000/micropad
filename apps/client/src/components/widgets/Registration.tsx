@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import { createContext, use } from "react";
+import { createContext, use, useEffect, useRef } from "react";
+import { useGridstackContext } from "../gridstack";
 
 export interface WidgetSpec {
   type: string;
@@ -30,9 +31,22 @@ function Widget({
   children,
   ...spec
 }: WidgetProps & WidgetSpec) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { getGrid } = useGridstackContext();
+
+  useEffect(() => {
+    const grid = getGrid();
+    const el = ref.current;
+    if (!grid || !el) return;
+    if (!el.closest('.grid-stack')) return;
+    grid.makeWidget(el);
+    console.log('2')
+  }, [ref]);
+
   return (
     <WidgetId.Provider value={id}>
       <div
+        ref={ref}
         className="grid-stack-item"
         gs-id={id}
         gs-x={x}

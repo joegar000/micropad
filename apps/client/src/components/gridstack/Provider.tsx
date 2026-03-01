@@ -16,7 +16,6 @@ export const GridstackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const init = (container: HTMLElement, opts?: GridStackOptions) => {
     if (!gridRef.current) {
       gridRef.current = GridStack.init(opts ?? {}, container);
-      // notify queued listeners
       listenersRef.current.forEach((cb) => cb(gridRef.current!));
       listenersRef.current = [];
     }
@@ -25,14 +24,11 @@ export const GridstackProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const getGrid = () => gridRef.current ?? undefined;
 
-  const onReady = (cb: (g: GridStack) => void) => {
-    if (gridRef.current) {
-      // call async to avoid surprising sync behavior for callers
-      setTimeout(() => cb(gridRef.current!), 0);
-      return () => {};
-    }
+  const onReady = (cb: (g: GridStack) => void | (() => void)) => {
+    const cleanup = gridRef.current ? cb(gridRef.current) : undefined;
     listenersRef.current.push(cb);
     return () => {
+      cleanup?.();
       listenersRef.current = listenersRef.current.filter((c) => c !== cb);
     };
   };
