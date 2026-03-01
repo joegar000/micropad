@@ -1,22 +1,18 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
-import { useLayoutStore, widgetIdStore, type WidgetLayout } from '../../store/layout';
+import { useLayoutStore, widgetIdStore } from '../../store/layout';
 import { useGridstackContext } from './Provider';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
+import { Widgets } from './widgets/Registration';
 
-
-interface GridstackProps {
-  children: React.ReactNode;
-  onExternalDrop?: (payload: { type: string; id: string }) => void;
-}
-
-export function Gridstack({ children }: GridstackProps) {
+export function Gridstack() {
   const gridRef = useRef<HTMLDivElement>(null);
   const dashRef = useRef<HTMLDivElement>(null);
   const [cellHeight, setCellHeight] = useState(0);
   const [columns] = useState(3);
   const [rows] = useState(2);
   const setLayout = useLayoutStore((s) => s.setLayout);
+  const widgets = useLayoutStore((state) => state.widgets);
   const currentLayout = useLayoutStore((s) => s.widgets);
 
   const { init, getGrid, onReady } = useGridstackContext();
@@ -107,7 +103,19 @@ export function Gridstack({ children }: GridstackProps) {
           className="grid-stack"
           ref={gridRef}
         >
-          {children}
+          {widgets.map((w) => {
+            const Widget = Widgets[w.type];
+            return (
+              <Widget
+                key={w.id}
+                id={w.id}
+                x={w.x}
+                y={w.y}
+                w={w.w}
+                h={w.h}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

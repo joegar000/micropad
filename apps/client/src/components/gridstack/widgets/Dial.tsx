@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import CircularSlider from "react-circular-slider-svg";
-import { widget, type WidgetSpec } from "../gridstack";
-import useResizeObserver from "../../hooks/resizeobserver";
+import { widget, type WidgetSpec } from "..";
+import useResizeObserver from "../../../hooks/resizeobserver";
 
 export interface DialSpec extends WidgetSpec {
   onChange: (value: number) => void;

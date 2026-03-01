@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { GridStack } from "gridstack";
-import { Widgets, WidgetSpecs } from "../widgets/Registration";
+import { Widgets, WidgetSpecs } from "../gridstack/widgets/Registration";
 import { useGridstackContext } from "../gridstack/Provider";
 import clsx from "clsx";
 

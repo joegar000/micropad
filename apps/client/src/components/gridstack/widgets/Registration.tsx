@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { createContext, use, useEffect, useRef } from "react";
-import { useGridstackContext } from "../gridstack";
+import { useGridstackContext } from "..";
 
 export interface WidgetSpec {
   type: string;
@@ -40,7 +40,6 @@ function Widget({
     if (!grid || !el) return;
     if (!el.closest('.grid-stack')) return;
     grid.makeWidget(el);
-    console.log('2')
   }, [ref]);
 
   return (

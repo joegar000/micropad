@@ -1,8 +1,8 @@
 import { useWidgetId, widget, type WidgetSpec } from "./Registration";
 import { useEffect, useRef, useState } from "react";
-import { useGridstackContext } from "../gridstack";
+import { useGridstackContext } from "..";
 import clsx from "clsx";
-import useResizeObserver from "../../hooks/resizeobserver";
+import useResizeObserver from "../../../hooks/resizeobserver";
 
 export interface SliderSpec extends WidgetSpec {
   onChange: (value: number) => void;

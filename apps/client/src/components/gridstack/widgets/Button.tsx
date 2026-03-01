@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { widget, type WidgetSpec } from "../gridstack";
+import { widget, type WidgetSpec } from "..";
 import { useEffect, useState } from "react";
 
 export interface ButtonSpec extends WidgetSpec {
