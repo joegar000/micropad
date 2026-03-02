@@ -14,6 +14,7 @@ export const useGridStore = create<GridStore>()((
     {
       name: 'layout-storage',
       storage: createJSONStorage(() => zustandStorage),
+      // TODO: Fix persist storage being cleared after `init` is called
       partialize: s => ({ widgets: s.widgets }),
       onRehydrateStorage: () => (state) => {
         for (const w of state?.widgets ?? []) {

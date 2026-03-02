@@ -27,7 +27,7 @@ export interface GridSlice {
   on(name: 'change' | 'added' | 'removed' | 'resizecontent', callback: GridStackNodesHandler): () => void;
   on(name: 'resizestart' | 'resize' | 'resizestop' | 'dragstart' | 'drag' | 'dragstop', callback: GridStackElementHandler): () => void;
   on(name: string, callback: GridStackEventHandlerCallback): () => void;
-  onReady: (cb: (g: GridStack) => void) => void;
+  onReady: (cb: (g: GridStack) => (() => void) | void) => void;
 }
 
 export type GridStore = LayoutSlice & GridSlice;

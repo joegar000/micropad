@@ -96,5 +96,5 @@ export function widget(Component: React.FC<Omit<WidgetProps, 'children'>>, spec:
   }
   Widgets[spec.type] = WidgetComponent;
   WidgetSpecs[spec.type] = spec;
-  return WidgetComponent
+  return WidgetComponent;
 }

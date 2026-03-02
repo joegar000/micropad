@@ -13,7 +13,7 @@ export const useEditingStore = create<EditingState>()((set) => ({
   setIsEditing: (isEditing) => set(state => ({
     isEditing: valueOrCallback(isEditing, state.isEditing)
   })),
-  sidebarOpen: true,
+  sidebarOpen: false,
   setSidebarOpen: (sidebarOpen) => set(state => ({
     sidebarOpen: valueOrCallback(sidebarOpen, state.sidebarOpen)
   }))

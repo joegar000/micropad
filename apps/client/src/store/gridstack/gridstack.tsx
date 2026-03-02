@@ -68,8 +68,10 @@ export const gridSlice: GridStoreSlice<GridSlice> = (set, get) : GridSlice => {
     onReady: (cb) => {
       const grid = get().gridstack;
       if (grid) {
-        cb(grid);
-        return;
+        const cleanup = cb(grid);
+        return () => {
+          cleanup?.();
+        };
       };
       const index = readyCallbacks.push(cb);
       return () => {
