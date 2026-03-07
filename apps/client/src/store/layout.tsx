@@ -3,14 +3,7 @@ import { createIdStore } from "../util/id";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { zustandStorage } from "../util/indexeddb";
 import { valueOrCallback, type ValueOrCallback } from "../util/valueorcallback";
-
-export interface WidgetLayout {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-};
+import type { GridStackNode } from "gridstack";
 
 export interface WidgetMeta {
   [id: string]: {
@@ -18,16 +11,40 @@ export interface WidgetMeta {
   }
 }
 
+export type SanitizedGridStackNode = {
+  h: NonNullable<GridStackNode['h']>,
+  w: NonNullable<GridStackNode['w']>,
+  x: NonNullable<GridStackNode['x']>,
+  y: NonNullable<GridStackNode['y']>,
+  id: NonNullable<GridStackNode['id']>
+}
+
 interface LayoutState {
   widgetMeta: WidgetMeta;
-  widgets: WidgetLayout[];
-  setLayout: ValueOrCallback<WidgetLayout[]>;
+  widgets: GridStackNode[];
+  setLayout: ValueOrCallback<GridStackNode[]>;
+  setLayoutMeta: ValueOrCallback<WidgetMeta>;
 }
 
 export const widgetIdStore = createIdStore();
 
+function sanitizeWidgets(widgets: GridStackNode[]): SanitizedGridStackNode[] {
+  return widgets.map(w => ({
+    id: w.id!,
+    h: w.h!,
+    w: w.w!,
+    x: w.x!,
+    y: w.y!
+  }));
+}
+
+let resolveLoading: () => void;
+export const layoutLoad = new Promise<void>(resolve => {
+  resolveLoading = resolve;
+});
+
 export const useLayoutStore = create<LayoutState>()(
-  // persist(
+  persist(
     ((set) => ({
       widgetMeta: {
         '1': { type: 'slider' },
@@ -38,21 +55,24 @@ export const useLayoutStore = create<LayoutState>()(
         { x: 0, y: 0, w: 1, h: 1, id: '1' },
         { x: 0, y: 1, w: 2, h: 1, id: '2' },
         { x: 2, y: 0, w: 1, h: 2, id: '3' },
-
       ],
       setLayout: (widgets) => set(state => ({
-        widgets: valueOrCallback(widgets, state.widgets)
+        widgets: sanitizeWidgets(valueOrCallback(widgets, state.widgets))
+      })),
+      setLayoutMeta: (widgetMeta) => set(state => ({
+        widgetMeta: valueOrCallback(widgetMeta, state.widgetMeta)
       }))
     })
-  // ),
-    // {
-    //   name: "layout-storage",
-    //   storage: createJSONStorage(() => zustandStorage),
-    //   onRehydrateStorage: () => (state) => {
-    //     for (const w of state?.widgets ?? []) {
-    //       widgetIdStore.mark(w.id);
-    //     }
-    //   }
-    // }
+  ),
+    {
+      name: "layout-storage",
+      storage: createJSONStorage(() => zustandStorage),
+      onRehydrateStorage: () => (state) => {
+        for (const w of state?.widgets ?? []) {
+          widgetIdStore.mark(w.id!);
+        }
+        resolveLoading();
+      }
+    }
   )
 );

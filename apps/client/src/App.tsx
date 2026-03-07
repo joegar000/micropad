@@ -12,9 +12,9 @@ export default function App() {
     <GridStackProvider initialOptions={{ children: widgets }}>
       <Grid>
         {widgets.map((w) => {
-          const Widget = widgetRegistry[widgetMeta[w.id].type];
+          const Widget = widgetRegistry[widgetMeta[w.id!].type];
           return (
-            <GridStackItem key={w.id} id={w.id}>
+            <GridStackItem key={w.id} id={w.id!}>
               <Widget />
             </GridStackItem>
           );
