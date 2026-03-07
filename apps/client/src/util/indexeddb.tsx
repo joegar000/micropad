@@ -5,7 +5,7 @@ import { type StateStorage } from 'zustand/middleware';
 export const zustandStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     const res = (await get(name)) || null;
-    console.log({ res })
+    console.info('loaded state', { res: JSON.parse(res) })
     return res;
   },
   setItem: async (name: string, value: string): Promise<void> => {
