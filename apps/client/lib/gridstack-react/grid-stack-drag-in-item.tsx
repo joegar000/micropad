@@ -1,9 +1,9 @@
-import { DDDragOpt, GridStack, GridStackWidget, Utils } from "gridstack";
+import { type DDDragOpt, GridStack, type GridStackWidget, Utils } from "gridstack";
 import {
-  ComponentProps,
+  type ComponentProps,
   Fragment,
-  PropsWithChildren,
-  ReactNode,
+  type PropsWithChildren,
+  type ReactNode,
   useEffect,
   useRef,
   useState,

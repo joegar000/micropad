@@ -1,12 +1,12 @@
-import { PropsWithChildren, useLayoutEffect } from "react";
+import { type PropsWithChildren, useLayoutEffect } from "react";
 import { useGridStackContext } from "./grid-stack-context";
 import {
-  GridItemHTMLElement,
+  type GridItemHTMLElement,
   GridStack,
-  GridStackNode,
+  type GridStackNode,
   Utils,
 } from "gridstack";
-import { DDElementHost } from "gridstack/dist/dd-element";
+import { type DDElementHost } from "gridstack/dist/dd-element";
 import { useGridStackItemContext } from "./grid-stack-item-context";
 import { useGridStackRenderContext } from "./grid-stack-render-context";
 

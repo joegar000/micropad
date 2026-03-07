@@ -1,12 +1,12 @@
 import {
-  ComponentProps,
-  PropsWithChildren,
+  type ComponentProps,
+  type PropsWithChildren,
   useCallback,
   useLayoutEffect,
   useRef,
 } from "react";
 import { useGridStackContext } from "./grid-stack-context";
-import { GridStack, GridStackOptions } from "gridstack";
+import { GridStack, type GridStackOptions } from "gridstack";
 import { GridStackRenderContext } from "./grid-stack-render-context";
 import { widgetContainers } from "./global";
 

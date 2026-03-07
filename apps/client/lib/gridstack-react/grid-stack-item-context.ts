@@ -1,4 +1,4 @@
-import { GridStackWidget } from "gridstack";
+import { type GridStackWidget } from "gridstack";
 import { createContext, useContext } from "react";
 
 export type GridStackItemContextType = {

@@ -1,5 +1,5 @@
-import { GridStackOptions } from "gridstack";
-import { PropsWithChildren } from "react";
+import { type GridStackOptions } from "gridstack";
+import { type PropsWithChildren } from "react";
 import { GridStackProvider } from "./grid-stack-provider";
 import { GridStackRender } from "./grid-stack-render";
 

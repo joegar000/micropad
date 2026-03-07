@@ -1,9 +1,9 @@
-import { PropsWithChildren, useCallback } from "react";
+import { type PropsWithChildren, useCallback } from "react";
 import { useGridStackRenderContext } from "./grid-stack-render-context";
 import { createPortal } from "react-dom";
 import { GridStackItemContext } from "./grid-stack-item-context";
 import { useGridStackContext } from "./grid-stack-context";
-import { GridItemHTMLElement, GridStackWidget } from "gridstack";
+import { type GridItemHTMLElement, type GridStackWidget } from "gridstack";
 
 export type GridStackItemProps = PropsWithChildren<{
   id: string;

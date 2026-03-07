@@ -1,4 +1,4 @@
-import { GridStack, GridStackWidget } from "gridstack";
+import { GridStack, type GridStackWidget } from "gridstack";
 
 export const widgetContainers = new Array<{
   element: HTMLElement;
