@@ -18,7 +18,6 @@ registerWidget('slider', (props: SliderProps) => {
   const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  console.log('change')
 
   // useResizeObserver(divRef, (entry) => {
   //   if (!divRef.current || !inputRef.current || rotation !== 'vertical') {
