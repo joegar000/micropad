@@ -62,7 +62,7 @@ export function GridStackDragInItem({
 
   return (
     <>
-      <div {...props} ref={panelRef} className={`grid-stack-item ${className}`}>
+      <div {...props} ref={panelRef} className={`grid-stack-item${className ? ` ${className}` : ''}`}>
         <div className="grid-stack-item-content">{children}</div>
       </div>
 
