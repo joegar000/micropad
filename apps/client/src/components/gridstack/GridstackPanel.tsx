@@ -1,55 +1,30 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { GridStack } from "gridstack";
-import { Widgets, WidgetSpecs } from "./widgets/Registration";
 import { useEditingStore } from "../../store/editing";
-import useGridStore from "../../store/gridstack";
+import { widgetRegistry } from "./widgets/Registration";
+import { GridStackDragInItem } from "../../../lib/gridstack-react";
 
 export function GridstackPanel() {
   const [query, setQuery] = useState("");
   const shouldReopenRef = useRef(false);
-  const onReady = useGridStore(s => s.onReady);
-  const on = useGridStore(s => s.on);
-  const gridstack = useGridStore(s => s.gridstack);
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
 
   const items = useMemo(() => {
     const qs = query.trim().toLowerCase();
-    return Object.keys(WidgetSpecs)
+    return Object.keys(widgetRegistry)
       .filter((t) => {
-        const s = WidgetSpecs[t];
         if (!qs) return true;
         return (
           t.toLowerCase().includes(qs) ||
-          (s.title || "").toLowerCase().includes(qs)
+          (t || "").toLowerCase().includes(qs)
         );
       })
-      .map((t) => ({ type: t, spec: WidgetSpecs[t] }));
+      .map((t) => ({ type: t }));
   }, [query]);
 
   useEffect(() => {
     GridStack.setupDragIn('.panel-items .grid-stack-item');
   }, []);
-
-  useEffect(() => {
-    return onReady(() => {
-      on('drag', (_event, el) => {
-        if (el.gridstackNode?.id?.includes('preview')) {
-          console.log('drag')
-          shouldReopenRef.current = true;
-          setSidebarOpen(false);
-        }
-      });
-
-      on('dragstop', (_event, el) => {
-        if (el.closest('.sidebar-items')) {
-          if (shouldReopenRef.current) {
-            setSidebarOpen(true);
-          }
-          shouldReopenRef.current = false;
-        }
-      });
-    });
-  }, [setSidebarOpen, onReady]);
 
   return (
     <div>
@@ -70,17 +45,15 @@ export function GridstackPanel() {
       </div>
       <div className="p-3 overflow-y-auto h-full panel-items flex flex-col gap-3">
         {items.map((it) => {
-          const Widget = Widgets[it.type];
+          const Widget = widgetRegistry[it.type];
           return (
+            
             <Fragment key={it.type}>
               {Widget && (
-                <div className="flex"
-                  ref={div => {
-                    div?.style.setProperty('width', `${gridstack?.cellWidth()}`);
-                    div?.style.setProperty('height', `${gridstack?.cellWidth()}`);
-                  }}
-                >
-                  <Widget id={`preview-${it.type}`} w={1} h={1} x={1} y={1} />
+                <div className="flex" style={{ aspectRatio: 1 }}>
+                  <GridStackDragInItem widget={{}} className="flex-grow-1">
+                    <Widget />
+                  </GridStackDragInItem>
                 </div>
               )}
             </Fragment>

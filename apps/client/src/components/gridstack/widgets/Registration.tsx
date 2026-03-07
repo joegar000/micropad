@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { createContext, use, useLayoutEffect, useRef } from "react";
-import useGridStore from "../../../store/gridstack";
+import { createContext, use, type FC, type ReactNode } from "react";
+import "./Registration.css";
 
 export interface WidgetSpec {
   type: string;
@@ -22,79 +22,43 @@ export function useWidgetId() {
   return use(WidgetId);
 }
 
-function Widget({
-  id,
-  x,
-  y,
-  w,
-  h,
-  children,
-  ...spec
-}: WidgetProps & WidgetSpec) {
-  const ref = useRef<HTMLDivElement>(null);
-  const gridstack = useGridStore(s => s.gridstack);
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!gridstack || !el) return;
-    if (!el.closest('.grid-stack')) return;
-    gridstack.setAnimation(false);
-    gridstack.makeWidget(el);
-    setTimeout(() => gridstack.setAnimation(true));
-  }, [ref]);
-
+export function Widget(props: { children: ReactNode, title?: string }) {
   return (
-    <WidgetId.Provider value={id}>
-      <div
-        ref={ref}
-        className="grid-stack-item"
-        gs-id={id}
-        gs-x={x}
-        gs-y={y}
-        gs-w={w}
-        gs-h={h}
-      >
-        <div
-          className={clsx(
-            "grid-stack-item-content",
-            "overflow-hidden",
-            "rounded-2xl",
-            "bg-neutral-800/80",
-            "backdrop-blur-md",
-            "border border-neutral-700",
-            "shadow-xl",
-            "text-neutral-100",
-            "flex",
-            "flex-col",
-            "justify-center"
-          )}
-        >
-          {spec.title && (
-            <div className="position-relative h-0">
-              <div className="p-2 text-sm font-medium text-neutral-400 position-absolute">
-                {spec.title}
-              </div>
-            </div>
-          )}
-          <div className="flex-grow-1 overflow-hidden">
-            {children}
+    <div
+      className={clsx(
+        "flex-grow-1",
+        "overflow-hidden",
+        "rounded-2xl",
+        "bg-neutral-800/80",
+        "backdrop-blur-md",
+        "border border-neutral-700",
+        "shadow-xl",
+        "text-neutral-100",
+        "flex",
+        "flex-col",
+        "justify-center"
+      )}
+    >
+      {props.title && (
+        <div className="position-relative h-0">
+          <div className="p-2 text-sm font-medium text-neutral-400 position-absolute">
+            {props.title}
           </div>
         </div>
+      )}
+      <div className="flex-grow-1 overflow-hidden">
+        {props.children}
       </div>
-    </WidgetId.Provider>
+    </div>
   );
 }
 
-export const Widgets: Record<string, React.FC<Omit<WidgetProps, 'children'>>> = {};
-export const WidgetSpecs: Record<string, WidgetSpec> = {};
-export function widget(Component: React.FC<Omit<WidgetProps, 'children'>>, spec: WidgetSpec) {
-  const WidgetComponent = (props: Omit<WidgetProps, 'children'>) => {
-    return <Widget {...props} {...spec}><Component {...props} /></Widget>
-  }
-  if (Widgets[spec.type]) {
-    throw new Error(`Widget type "${spec.type}" already exists.`);
-  }
-  Widgets[spec.type] = WidgetComponent;
-  WidgetSpecs[spec.type] = spec;
-  return WidgetComponent;
+const widgetRegistry: Record<string, FC> = {};
+
+export function registerWidget(type: string, component: FC<any>) {
+  if (widgetRegistry[type])
+    throw Error(`A widget named ${type} already exists`);
+  widgetRegistry[type] = component;
 }
+
+export { widgetRegistry };

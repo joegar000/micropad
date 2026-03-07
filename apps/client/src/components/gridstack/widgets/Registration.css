@@ -1,0 +1,8 @@
+.grid-stack-item {
+    display: flex;
+}
+
+.grid-stack-item-content {
+    display: flex;
+    flex-grow: 1;
+}

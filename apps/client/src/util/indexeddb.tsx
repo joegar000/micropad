@@ -4,7 +4,9 @@ import { type StateStorage } from 'zustand/middleware';
 // Custom storage object
 export const zustandStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    return (await get(name)) || null;
+    const res = (await get(name)) || null;
+    console.log({ res })
+    return res;
   },
   setItem: async (name: string, value: string): Promise<void> => {
     await set(name, value);
