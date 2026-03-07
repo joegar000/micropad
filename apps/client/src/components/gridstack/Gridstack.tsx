@@ -94,7 +94,7 @@ export function Grid({ children }: { children: ReactNode }) {
             '--grid-color': 'grey',
             height: gridHeight ?? '100%',
             width: gridWidth ?? '100%'
-          }}
+          } as Record<string, any>}
         >
           <div ref={containerRef} className="grid-stack">
             {gridStack ? children : null}
