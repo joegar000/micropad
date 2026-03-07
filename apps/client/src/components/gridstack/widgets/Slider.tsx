@@ -18,6 +18,7 @@ registerWidget('slider', (props: SliderProps) => {
   const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  console.log('change')
 
   // useResizeObserver(divRef, (entry) => {
   //   if (!divRef.current || !inputRef.current || rotation !== 'vertical') {
@@ -42,7 +43,7 @@ registerWidget('slider', (props: SliderProps) => {
   // }, [value]);
 
   return (
-    <Widget>
+    <Widget type='slider'>
       <div className="h-full flex flex-col items-center justify-center">
         <div ref={divRef} className="w-[90%] flex-grow-1 pt-10 flex justify-center">
           <input

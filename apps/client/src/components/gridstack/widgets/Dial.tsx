@@ -27,7 +27,7 @@ registerWidget('dial', (spec: DialProps) => {
 
 
   return (
-    <Widget>
+    <Widget type='dial'>
       <div className="h-full relative mt-[5%]">
         <div className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >

@@ -6,7 +6,48 @@ import { useEditingStore } from '../../store/editing';
 import { GridStackRenderContext, useGridStackContext } from '../../../lib/gridstack-react';
 import { widgetContainers } from '../../../lib/gridstack-react/global';
 import { GridStack } from 'gridstack';
+import { useLayoutStore, widgetIdStore } from '../../store/layout';
 import clsx from "clsx";
+import { isNotNil } from 'es-toolkit/predicate';
+import { cloneDeep } from 'es-toolkit/object';
+
+export function gridStackListeners() {
+  /*
+   * can't use setLayout and setLayoutMeta callback setStates
+   * since event listeners are called several times in succession
+   */
+  const currentLayout = useLayoutStore(s => s.widgets);
+  const setLayout = useLayoutStore(s => s.setLayout);
+  const currentMeta = useLayoutStore(s => s.widgetMeta);
+  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta);
+  const { _gridStack: { value: gridStack } } = useGridStackContext();
+
+  gridStack?.on('change', (_event, nodes) => {
+    const changedIds = nodes.map(n => n.id);
+    setLayout(currentNodes => {
+      return currentNodes.map(n => changedIds.includes(n.id) ? nodes.find(newN => newN.id === n.id)! : n)
+    });
+  });
+
+  gridStack?.on('added', (_event, nodes) => {
+    const newNodes = nodes.map(n => ({ ...n, id: widgetIdStore.generate() }));
+    const newMeta = cloneDeep(currentMeta);
+    newNodes.forEach(n => {
+      newMeta[n.id] = { type: n.el!.querySelector<HTMLElement>('[data-type]')!.dataset.type! };
+    });
+    setLayoutMeta(newMeta);
+    setLayout([...currentLayout, ...newNodes]);
+  });
+
+  gridStack?.on('removed', (_event, nodes) => {
+    const removedIds = nodes.map(n => n.id).filter(isNotNil);
+    removedIds.forEach(widgetIdStore.remove);
+    setLayout(currentLayout.filter(n => !removedIds.includes(n.id!)));
+    const newMeta = cloneDeep(currentMeta);
+    removedIds.forEach(id => delete newMeta[id]);
+    setLayoutMeta(newMeta);
+  });
+}
 
 export function Grid({ children }: { children: ReactNode }) {
   const {
@@ -21,6 +62,7 @@ export function Grid({ children }: { children: ReactNode }) {
   const [gridWidth, setGridWidth] = useState<number | undefined>();
   const [gridHeight, setGridHeight] = useState<number | undefined>();
   const isEditing = useEditingStore(s => s.isEditing);
+  gridStackListeners();
 
   const initGrid = useCallback((columns: number, rows: number, cellHeight: number) => {
     if (containerRef.current) {

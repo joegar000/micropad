@@ -22,9 +22,10 @@ export function useWidgetId() {
   return use(WidgetId);
 }
 
-export function Widget(props: { children: ReactNode, title?: string }) {
+export function Widget(props: { children: ReactNode, type: string, title?: string }) {
   return (
     <div
+      data-type={props.type}
       className={clsx(
         "flex-grow-1",
         "overflow-hidden",
