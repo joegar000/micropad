@@ -27,7 +27,7 @@ export default function Sidebar() {
             className={clsx(
               'fixed', 'top-0', 'right-0',
               'h-full', 'w-80', 'bg-neutral-900',
-              'text-neutral-100', 'shadow-xl', 'z-50',
+              'text-neutral-100', 'shadow-xl', 'z-100',
             )}
             role="complementary"
           >

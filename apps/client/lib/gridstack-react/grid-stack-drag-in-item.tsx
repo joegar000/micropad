@@ -15,6 +15,7 @@ export type GridStackDragInItemProps = PropsWithChildren<
     widget: Omit<GridStackWidget, "content">;
     dragOptions?: DDDragOpt;
     content?: ReactNode;
+    onDragStart?: () => void
   }
 >;
 
@@ -29,6 +30,7 @@ export function GridStackDragInItem({
   className,
   dragOptions,
   content,
+  onDragStart,
   ...props
 }: GridStackDragInItemProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -40,8 +42,8 @@ export function GridStackDragInItem({
       GridStack.setupDragIn(
         [panelRef.current],
         {
-          ...dragOptions,
           helper: (el) => {
+            onDragStart?.();
             const clone = Utils.cloneNode(el);
             const id = String(incrementalId.current++);
 

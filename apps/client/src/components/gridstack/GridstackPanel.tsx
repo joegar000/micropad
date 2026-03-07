@@ -2,12 +2,14 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { GridStack } from "gridstack";
 import { useEditingStore } from "../../store/editing";
 import { widgetRegistry } from "./widgets/Registration";
-import { GridStackDragInItem } from "../../../lib/gridstack-react";
+import { GridStackDragInItem, useGridStackContext } from "../../../lib/gridstack-react";
 
 export function GridstackPanel() {
   const [query, setQuery] = useState("");
   const shouldReopenRef = useRef(false);
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
+  const { _gridStack: { value: gridStack } }  = useGridStackContext();
+  const [dragging, setDragging] = useState(false);
 
   const items = useMemo(() => {
     const qs = query.trim().toLowerCase();
@@ -26,9 +28,22 @@ export function GridstackPanel() {
     GridStack.setupDragIn('.panel-items .grid-stack-item');
   }, []);
 
+  useEffect(() => {
+    const pointerUp = () => {
+      if (dragging) {
+        setSidebarOpen(true);
+        setDragging(false);
+      }
+    };
+    document.addEventListener('pointerup', pointerUp);
+    return () => {
+      document.removeEventListener('pointerup', pointerUp);
+    }
+  }, [dragging]);
+
   return (
-    <div>
-      <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
+    <div className="flex flex-col" style={{ maxHeight: '100vh', zIndex: 100 }}>
+      <div className="flex-grow-0 p-4 border-b border-neutral-800 flex items-center justify-between">
         <div className="text-lg font-semibold">Widgets</div>
         <div className="flex items-center gap-2">
           <input
@@ -43,15 +58,20 @@ export function GridstackPanel() {
           }} className="px-2 py-1">✕</button>
         </div>
       </div>
-      <div className="p-3 overflow-y-auto h-full panel-items flex flex-col gap-3">
+      <div className="flex-grow-1 p-3 overflow-y-auto h-full panel-items flex flex-col gap-3 items-center">
         {items.map((it) => {
           const Widget = widgetRegistry[it.type];
           return (
             
             <Fragment key={it.type}>
               {Widget && (
-                <div className="flex" style={{ aspectRatio: 1 }}>
-                  <GridStackDragInItem widget={{}} className="flex-grow-1">
+                <div className="flex" style={{ aspectRatio: 1, maxWidth: gridStack?.cellWidth(), maxHeight: gridStack?.cellWidth(), width: '100%' }}>
+                  <GridStackDragInItem widget={{}} className="flex-grow-1"
+                    onDragStart={() => {
+                      setDragging(true);
+                      setSidebarOpen(false);
+                    }}
+                  >
                     <Widget />
                   </GridStackDragInItem>
                 </div>
