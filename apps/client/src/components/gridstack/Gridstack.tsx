@@ -1,4 +1,4 @@
-import { useRef, useState, useLayoutEffect, useCallback, type ReactNode } from 'react';
+import { useRef, useState, useLayoutEffect, useCallback, type ReactNode, useEffect } from 'react';
 import "gridstack/dist/gridstack.min.css";
 import "./Gridstack.css";
 import useResizeObserver from '../../hooks/resizeobserver';
@@ -56,8 +56,8 @@ export function Grid({ children }: { children: ReactNode }) {
   } = useGridStackContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const dashRef = useRef<HTMLDivElement>(null);
-  const [rows] = useState(2);
-  const [columns] = useState(3);
+  const rows = useLayoutStore(s => s.rows);
+  const columns = useLayoutStore(s => s.columns);
   const [cellHeight, setCellHeight] = useState(0);
   const [gridWidth, setGridWidth] = useState<number | undefined>();
   const [gridHeight, setGridHeight] = useState<number | undefined>();
@@ -69,10 +69,9 @@ export function Grid({ children }: { children: ReactNode }) {
       try {
         return GridStack.init({
           column: columns,
-          maxRow: rows,
+          row: rows,
           disableResize: !isEditing,
           disableDrag: !isEditing,
-          minRow: rows,
           cellHeight,
           margin: '0.5em',
           float: true,
@@ -88,7 +87,7 @@ export function Grid({ children }: { children: ReactNode }) {
       }
     }
     return null;
-  }, []);
+  }, [initialOptions]);
 
   useResizeObserver({ current: document.documentElement }, () => {
     if (!dashRef.current || !gridStack) return;
@@ -101,12 +100,7 @@ export function Grid({ children }: { children: ReactNode }) {
     setGridHeight(cellSide * rows);
     dashRef.current.style.setProperty('width', `${cellSide * columns}px`);
     dashRef.current.style.setProperty('height', `${cellSide * rows}px`);
-    gridStack.updateOptions({
-      column: columns,
-      maxRow: rows,
-      minRow: rows,
-      cellHeight: cellSide
-    });
+    gridStack.cellHeight(cellSide);
   });
 
   useLayoutEffect(() => {
@@ -117,8 +111,18 @@ export function Grid({ children }: { children: ReactNode }) {
     setGridWidth(cellSide * columns);
     setGridHeight(cellSide * rows);
     setGridStack(initGrid(columns, rows, cellSide));
-  }, [gridStack, initGrid, setGridStack]);
+  }, [initGrid, setGridStack, rows, columns]);
 
+  useEffect(() => {
+    isEditing ? gridStack?.enable() : gridStack?.disable();
+  }, [isEditing]);
+
+  useEffect(() => {
+    gridStack?.updateOptions({ column: columns, row: rows });
+    // hack: setting rows through updateOptions is broken, so set on engine manually
+    // https://github.com/gridstack/gridstack.js/issues/3085
+    gridStack && (gridStack.engine.maxRow = rows);
+  }, [columns, rows]);
 
   const getContainerByWidgetId = useCallback((widgetId: string) => {
     return (

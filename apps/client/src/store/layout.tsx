@@ -22,6 +22,10 @@ export type SanitizedGridStackNode = {
 interface LayoutState {
   widgetMeta: WidgetMeta;
   widgets: GridStackNode[];
+  rows: number;
+  columns: number;
+  setRows: ValueOrCallback<number>;
+  setColumns: ValueOrCallback<number>;
   setLayout: ValueOrCallback<GridStackNode[]>;
   setLayoutMeta: ValueOrCallback<WidgetMeta>;
 }
@@ -56,6 +60,14 @@ export const useLayoutStore = create<LayoutState>()(
         { x: 0, y: 1, w: 2, h: 1, id: '2' },
         { x: 2, y: 0, w: 1, h: 2, id: '3' },
       ],
+      rows: 2,
+      setRows: (rows) => set(state => ({
+        rows: valueOrCallback(rows, state.rows)
+      })),
+      columns: 3,
+      setColumns: (columns) => set(state => ({
+        columns: valueOrCallback(columns, state.columns)
+      })),
       setLayout: (widgets) => set(state => ({
         widgets: sanitizeWidgets(valueOrCallback(widgets, state.widgets))
       })),

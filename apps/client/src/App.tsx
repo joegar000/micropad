@@ -4,6 +4,8 @@ import { useLayoutStore } from "./store/layout";
 import { widgetRegistry } from "./components/gridstack";
 import Sidebar from "./components/sidebar/Sidebar";
 import "./components/gridstack/widgets";
+import { Lock } from "./components/editing/lock";
+import { GridSize } from "./components/editing/gridsize";
 
 export default function App() {
   const widgets = useLayoutStore(s => s.widgets);
@@ -20,7 +22,9 @@ export default function App() {
           );
         })}
       </Grid>
+      <Lock />
       <Sidebar />
+      <GridSize />
     </GridStackProvider>
   );
 }

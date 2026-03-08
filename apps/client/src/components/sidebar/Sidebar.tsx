@@ -11,12 +11,17 @@ export default function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useEditingStore(
     useShallow(s => ({ setSidebarOpen: s.setSidebarOpen, sidebarOpen: s.sidebarOpen })),
   );
+  const isEditing = useEditingStore(s => s.isEditing);
+  const setIsEditing = useEditingStore(s => s.setIsEditing);
 
   return (
     <>
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-6 right-6 z-40 bg-neutral-800 text-white p-2 rounded-full shadow-lg"
+        className={clsx(
+          "fixed top-6 right-6 z-40 bg-neutral-800 text-white p-2 rounded-full shadow-lg",
+          { "hidden": !isEditing }
+        )}
         aria-label="Open widgets"
       >
         ☰
@@ -27,7 +32,7 @@ export default function Sidebar() {
             className={clsx(
               'fixed', 'top-0', 'right-0',
               'h-full', 'w-80', 'bg-neutral-900',
-              'text-neutral-100', 'shadow-xl', 'z-100',
+              'text-neutral-100', 'shadow-xl', 'z-100'
             )}
             role="complementary"
           >
