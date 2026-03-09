@@ -16,16 +16,6 @@ export default function Sidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className={clsx(
-          "fixed top-6 right-6 z-40 bg-neutral-800 text-white p-2 rounded-full shadow-lg",
-          { "hidden": !isEditing }
-        )}
-        aria-label="Open widgets"
-      >
-        ☰
-      </button>
       <Box ref={boxRef}>
         <Slide direction="left" in={sidebarOpen} container={boxRef.current} mountOnEnter>
           <div

@@ -133,7 +133,7 @@ export function Grid({ children }: { children: ReactNode }) {
   return (
     <GridStackRenderContext.Provider value={{ getContainerByWidgetId }}>
       <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
-        <div ref={dashRef} className={clsx("gridstack-container bg-black border", { "gridstack-editing": isEditing })}
+        <div ref={dashRef} className={clsx("gridstack-container", { "gridstack-editing": isEditing })}
           style={{
             '--columns': columns,
             '--cell-height': `${cellHeight}px`,
