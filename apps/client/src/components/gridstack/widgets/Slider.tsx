@@ -44,7 +44,7 @@ registerWidget('slider', (props: SliderProps) => {
   return (
     <Widget type='slider'>
       <div className="h-full flex flex-col items-center justify-center">
-        <div ref={divRef} className="w-[90%] flex-grow-1 pt-10 flex justify-center">
+        <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center overflow-hidden">
           <input
             ref={inputRef}
             style={{ transform: rotation === 'vertical' ? 'rotate(270deg)' : undefined }}

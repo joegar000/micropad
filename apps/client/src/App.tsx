@@ -26,12 +26,12 @@ export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Activity mode={isEditing ? 'visible' : 'hidden'}>
         <div className="p-1 flex justify-between">
           <Lock />
-          <SidebarButton />
+          <Activity mode={isEditing ? 'visible' : 'hidden'}>
+            <SidebarButton />
+          </Activity>
         </div>
-      </Activity>
       <GridStackProvider initialOptions={{ children: widgets }}>
         <Grid>
           {widgets.map((w) => {

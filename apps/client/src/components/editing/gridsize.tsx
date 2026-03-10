@@ -21,10 +21,10 @@ export function GridSize() {
         min={1}
         value={rows}
         onValueChange={value => {
-          if (value && value > minRows)
-            setRows(value);
-          else if (value !== null)
-            console.warn('Using too much space to decrease rows')
+          // if (value && value > minRows)
+            setRows(value!);
+          // else if (value !== null)
+          //   console.warn('Using too much space to decrease rows')
         }}
       />
       <div className="px-2">X</div>
@@ -34,10 +34,10 @@ export function GridSize() {
         min={1}
         value={columns}
         onValueChange={value => {
-          if (value !== null && value > minCols)
-            setColumns(value);
-          else if (value !== null)
-            console.warn('Using too much space to decrease columns');
+          // if (value !== null && value > minCols)
+            setColumns(value!);
+          // else if (value !== null)
+          //   console.warn('Using too much space to decrease columns');
         }}
       />
     </div>

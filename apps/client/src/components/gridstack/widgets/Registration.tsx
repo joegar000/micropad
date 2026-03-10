@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { createContext, use, type FC, type ReactNode } from "react";
 import "./Registration.css";
+import { useEditingStore } from "../../../store/editing";
 
 export interface WidgetSpec {
   type: string;
@@ -23,6 +24,7 @@ export function useWidgetId() {
 }
 
 export function Widget(props: { children: ReactNode, type: string, title?: string }) {
+  const isEditing = useEditingStore(s => s.isEditing);
   return (
     <div
       data-type={props.type}
@@ -37,7 +39,8 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
         "text-neutral-100",
         "flex",
         "flex-col",
-        "justify-center"
+        "justify-center",
+        { "pointer-events-none": isEditing }
       )}
     >
       {props.title && (

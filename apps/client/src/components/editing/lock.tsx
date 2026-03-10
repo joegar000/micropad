@@ -8,13 +8,11 @@ export function Lock() {
   const isEditing = useEditingStore(s => s.isEditing);
   const setIsEditing = useEditingStore(s => s.setIsEditing);
   return (
-    <div>
-      <Button
-        className="bg-neutral-800 text-white"
-        onClick={() => setIsEditing(!isEditing)}
-      >
-        {isEditing ? <LockOpenIcon /> : <LockOutlineIcon />}
-      </Button>
-    </div>
+    <Button
+      className="bg-neutral-800 text-white"
+      onClick={() => setIsEditing(!isEditing)}
+    >
+      {isEditing ? <LockOpenIcon /> : <LockOutlineIcon />}
+    </Button>
   );
 }
