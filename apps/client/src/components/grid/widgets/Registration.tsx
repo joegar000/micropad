@@ -29,6 +29,7 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
     <div
       data-type={props.type}
       className={clsx(
+        "m-2",
         "flex-grow-1",
         "overflow-hidden",
         "rounded-2xl",

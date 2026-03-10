@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import CircularSlider from "react-circular-slider-svg";
 import useResizeObserver from "../../../hooks/resizeobserver";
 import { registerWidget, Widget } from "./Registration";
@@ -19,11 +19,11 @@ registerWidget('dial', (spec: DialProps) => {
   const [size, setSize] = useState<number>(200);
   const ref = useRef<HTMLDivElement>(null);
 
-  useResizeObserver(ref, (entry) => {
+  useResizeObserver(ref, useCallback((entry) => {
     const { width, height } = entry.contentRect;
     const newSize = Math.min(width, height);
     setSize(newSize);
-  });
+  }, []));
 
 
   return (

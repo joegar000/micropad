@@ -23,11 +23,11 @@
     "@mui/material": "^7.3.8",
     "clsx": "^2.1.1",
     "es-toolkit": "^1.45.1",
-    "gridstack": "^12.4.2",
     "idb-keyval": "^6.2.2",
     "react": "^19.2.0",
     "react-circular-slider-svg": "^0.4.0",
     "react-dom": "^19.2.0",
+    "react-grid-layout": "^2.2.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

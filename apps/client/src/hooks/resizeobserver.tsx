@@ -1,6 +1,9 @@
 import { useLayoutEffect } from "react";
 
-const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (entry: Pick<ResizeObserverEntry, 'contentRect' | 'target'>) => void) => {
+interface ResizeOptions {
+  waitUntilMounted?: boolean;
+}
+const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (entry: Pick<ResizeObserverEntry, 'contentRect' | 'target'>) => void, options: ResizeOptions = {}) => {
   useLayoutEffect(() => {
     if (!ref.current) return;
 
@@ -11,7 +14,8 @@ const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (
       contentRect: rect,
     } as unknown as ResizeObserverEntry;
 
-    callback(fakeEntry);
+    if (options.waitUntilMounted !== true)
+      callback(fakeEntry);
 
     const observer = new ResizeObserver(entries => {
       for (let entry of entries) {
@@ -26,7 +30,7 @@ const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (
     return () => {
       observer.disconnect();
     };
-  }, [ref, callback]);
+  }, [ref, callback, options.waitUntilMounted]);
 };
 
 export default useResizeObserver;

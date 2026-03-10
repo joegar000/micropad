@@ -1,14 +1,11 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { GridStack } from "gridstack";
 import { useEditingStore } from "../../store/editing";
 import { widgetRegistry } from "./widgets/Registration";
-import { GridStackDragInItem, useGridStackContext } from "../../../lib/gridstack-react";
 
-export function GridstackPanel() {
+export function GridPanel() {
   const [query, setQuery] = useState("");
   const shouldReopenRef = useRef(false);
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
-  const { _gridStack: { value: gridStack } }  = useGridStackContext();
   const [dragging, setDragging] = useState(false);
 
   const items = useMemo(() => {
@@ -23,10 +20,6 @@ export function GridstackPanel() {
       })
       .map((t) => ({ type: t }));
   }, [query]);
-
-  useEffect(() => {
-    GridStack.setupDragIn('.panel-items .grid-stack-item');
-  }, []);
 
   useEffect(() => {
     const pointerUp = () => {
@@ -62,18 +55,27 @@ export function GridstackPanel() {
         {items.map((it) => {
           const Widget = widgetRegistry[it.type];
           return (
-            
+
             <Fragment key={it.type}>
               {Widget && (
-                <div className="flex" style={{ aspectRatio: 1, maxWidth: gridStack?.cellWidth(), maxHeight: gridStack?.cellWidth(), width: '100%' }}>
-                  <GridStackDragInItem widget={{}} className="flex-grow-1"
-                    onDragStart={() => {
+                <div className="flex" style={{ aspectRatio: 1, maxWidth: '10em', maxHeight: '10em', width: '100%' }}>
+                  <div
+                    className="flex-grow-1 flex"
+                    draggable={true}
+                    unselectable="on"
+                    onDragStart={e => {
+                      // this is a hack for firefox
+                      // Firefox requires some kind of initialization
+                      // which we can do by adding this attribute
+                      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
+                      e.dataTransfer.setData("text/plain", "");
+                      e.dataTransfer.setData("micropad/widget-type", it.type);
                       setDragging(true);
                       setSidebarOpen(false);
                     }}
                   >
                     <Widget />
-                  </GridStackDragInItem>
+                  </div>
                 </div>
               )}
             </Fragment>

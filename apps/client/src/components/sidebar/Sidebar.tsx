@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import { useEditingStore } from "../../store/editing";
 import { useShallow } from "zustand/react/shallow";
 import clsx from "clsx";
-import { GridstackPanel } from "../gridstack";
+import { GridPanel } from "../grid";
 
 export default function Sidebar() {
   const boxRef = useRef<HTMLElement>(null);
@@ -17,7 +17,7 @@ export default function Sidebar() {
   return (
     <>
       <Box ref={boxRef}>
-        <Slide direction="left" in={sidebarOpen} container={boxRef.current} mountOnEnter>
+        <Slide direction="left" in={sidebarOpen} container={boxRef.current} mountOnEnter unmountOnExit>
           <div
             className={clsx(
               'fixed', 'top-0', 'right-0',
@@ -26,7 +26,7 @@ export default function Sidebar() {
             )}
             role="complementary"
           >
-            <GridstackPanel />
+            <GridPanel />
           </div>
         </Slide>
       </Box>
