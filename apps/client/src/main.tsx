@@ -1,11 +1,13 @@
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { layoutLoad } from './store/layout.tsx';
-import { polyfill } from "mobile-drag-drop";
+// @ts-ignore
+import { enableDragDropTouch } from "@dragdroptouch/drag-drop-touch";
 
-polyfill();
+enableDragDropTouch();
 
 document.addEventListener('DOMContentLoaded', async () => {
   await layoutLoad;
