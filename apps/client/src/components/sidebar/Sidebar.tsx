@@ -2,17 +2,12 @@ import { useRef } from "react";
 import Slide from "@mui/material/Slide";
 import { Box } from "@mui/material";
 import { useEditingStore } from "../../store/editing";
-import { useShallow } from "zustand/react/shallow";
 import clsx from "clsx";
 import { GridPanel } from "../grid";
 
 export default function Sidebar() {
   const boxRef = useRef<HTMLElement>(null);
-  const { sidebarOpen, setSidebarOpen } = useEditingStore(
-    useShallow(s => ({ setSidebarOpen: s.setSidebarOpen, sidebarOpen: s.sidebarOpen })),
-  );
-  const isEditing = useEditingStore(s => s.isEditing);
-  const setIsEditing = useEditingStore(s => s.setIsEditing);
+  const sidebarOpen = useEditingStore(s => s.sidebarOpen);
 
   return (
     <>
