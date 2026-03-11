@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useEditingStore } from "../../store/editing";
 import { widgetRegistry } from "./widgets/Widget";
 import { Button } from "@mui/material";
@@ -6,7 +6,6 @@ import CloseIcon from '@mui/icons-material/Close';
 
 export function GridPanel() {
   const [query, setQuery] = useState("");
-  const shouldReopenRef = useRef(false);
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
   const [dragging, setDragging] = useState(false);
 
@@ -52,7 +51,6 @@ export function GridPanel() {
           <Button
             className="px-2 py-1"
             onClick={() => {
-              shouldReopenRef.current = false;
               setSidebarOpen(false);
             }}
           >
