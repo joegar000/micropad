@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useEditingStore } from "../../store/editing";
 import { widgetRegistry } from "./widgets/Widget";
+import { Button } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 
 export function GridPanel() {
   const [query, setQuery] = useState("");
@@ -47,12 +49,15 @@ export function GridPanel() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button onClick={() => {
-            shouldReopenRef.current = false;
-            scheduler.yield().then(() => {
+          <Button
+            className="px-2 py-1"
+            onClick={() => {
+              shouldReopenRef.current = false;
               setSidebarOpen(false);
-            })
-          }} className="px-2 py-1">✕</button>
+            }}
+          >
+            <CloseIcon />
+          </Button>
         </div>
       </div>
       <div className="flex-grow-1 p-3 overflow-y-auto h-full panel-items flex flex-col gap-3 items-center">
