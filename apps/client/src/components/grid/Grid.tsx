@@ -1,4 +1,4 @@
-import GridLayout, { noCompactor, useContainerWidth, type Layout, type LayoutItem } from 'react-grid-layout';
+import GridLayout, { noCompactor, useContainerWidth, type LayoutItem } from 'react-grid-layout';
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import clsx from 'clsx';
@@ -56,6 +56,8 @@ export function Grid({ children }: { children: ReactNode }) {
           height: gridHeight ?? '100%',
           width: gridWidth ?? '100%'
         } as Record<string, any>}
+        onDragEnter={(e) => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
       >
         {mounted && <GridLayout
           className='flex-grow-1'
@@ -74,7 +76,7 @@ export function Grid({ children }: { children: ReactNode }) {
             bounded: true
           }}
           dropConfig={{
-            enabled: true,
+            enabled: isEditing,
             defaultItem: { w: 2, h: 2 }
           }}
           resizeConfig={{
@@ -95,9 +97,9 @@ export function Grid({ children }: { children: ReactNode }) {
             }
           }}
           onDrop={(layout, item, e) => {
-            if (!(e instanceof DragEvent))
+            if (!('dataTransfer' in e))
               return;
-            const droppedType = e.dataTransfer?.getData("micropad/widget-type");
+            const droppedType = (e.dataTransfer as DataTransfer).getData("micropad/widget-type");
             if (droppedType && item) {
               const newId = widgetIdStore.generate();
               const newWidget = { ...item, i: newId };

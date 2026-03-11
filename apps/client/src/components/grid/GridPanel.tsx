@@ -22,20 +22,22 @@ export function GridPanel() {
   }, [query]);
 
   useEffect(() => {
-    const pointerUp = () => {
+    const dragEnd = () => {
       if (dragging) {
-        setSidebarOpen(true);
-        setDragging(false);
+        setTimeout(() => {
+          setSidebarOpen(true);
+          setDragging(false);
+        }, 0);
       }
     };
-    document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('dragend', dragEnd);
     return () => {
-      document.removeEventListener('pointerup', pointerUp);
+      document.removeEventListener('dragend', dragEnd);
     }
   }, [dragging]);
 
   return (
-    <div className="flex flex-col" style={{ maxHeight: '100vh', zIndex: 100 }}>
+    <div className="flex flex-col" style={{ maxHeight: '100vh', zIndex: 100 }} onDragEnter={(e) => e.preventDefault()} onDragOver={(e) => e.preventDefault()}>
       <div className="flex-grow-0 p-4 border-b border-neutral-800 flex items-center justify-between">
         <div className="text-lg font-semibold">Widgets</div>
         <div className="flex items-center gap-2">
@@ -47,7 +49,9 @@ export function GridPanel() {
           />
           <button onClick={() => {
             shouldReopenRef.current = false;
-            setSidebarOpen(false);
+            scheduler.yield().then(() => {
+              setSidebarOpen(false);
+            })
           }} className="px-2 py-1">✕</button>
         </div>
       </div>

@@ -17,7 +17,7 @@ export default function Sidebar() {
   return (
     <>
       <Box ref={boxRef}>
-        <Slide direction="left" in={sidebarOpen} container={boxRef.current} mountOnEnter unmountOnExit>
+        <Slide direction="left" in={sidebarOpen} container={boxRef.current}>
           <div
             className={clsx(
               'fixed', 'top-0', 'right-0',
