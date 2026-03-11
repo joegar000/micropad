@@ -6,6 +6,7 @@ import useResizeObserver from '../../hooks/resizeobserver';
 import { useCallback, useLayoutEffect, useState, type ReactNode } from 'react';
 import { useEditingStore } from '../../store/editing';
 import { useLayoutStore, widgetIdStore } from '../../store/layout';
+import { uniqWith } from 'es-toolkit';
 import "./grid.css";
 
 export function Grid({ children }: { children: ReactNode }) {
@@ -109,7 +110,8 @@ export function Grid({ children }: { children: ReactNode }) {
                 ...currentMeta,
                 [newId]: { type: droppedType }
               }));
-              setLayout(layout.map(l => l.i === item.i ? newWidget : l));
+              // uniqWith to fix polyfill bug where item will appear twice in `layout`
+              setLayout(uniqWith(layout.map(l => l.i === item.i ? newWidget : l), (a, b) => a.i === b.i));
             }
           }}
         >
