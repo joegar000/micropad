@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useEditingStore } from "../../store/editing";
-import { widgetRegistry } from "./widgets/Registration";
+import { widgetRegistry } from "./widgets/Widget";
 
 export function GridPanel() {
   const [query, setQuery] = useState("");

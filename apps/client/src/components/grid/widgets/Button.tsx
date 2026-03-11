@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { registerWidget, Widget } from "./Registration";
+import { registerWidget, Widget } from "./Widget";
 import { useState } from "react";
 
 export interface ButtonProps {

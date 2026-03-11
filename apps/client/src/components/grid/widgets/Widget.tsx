@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { createContext, use, type FC, type ReactNode } from "react";
-import "./Registration.css";
+import "./widget.css";
 import { useEditingStore } from "../../../store/editing";
 
 export interface WidgetSpec {
