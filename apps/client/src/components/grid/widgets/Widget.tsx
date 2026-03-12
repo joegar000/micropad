@@ -1,7 +1,11 @@
 import clsx from "clsx";
-import { createContext, use, type FC, type ReactNode } from "react";
+import { createContext, use, useState, type FC, type ReactNode } from "react";
 import "./widget.css";
 import { useEditingStore } from "../../../store/editing";
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useLayoutStore } from "../../../store/layout";
+import { IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 export interface WidgetSpec {
   type: string;
@@ -25,6 +29,21 @@ export function useWidgetId() {
 
 export function Widget(props: { children: ReactNode, type: string, title?: string }) {
   const isEditing = useEditingStore(s => s.isEditing);
+  const layout = useLayoutStore(s => s.widgets);
+  const layoutMeta = useLayoutStore(s => s.widgetMeta);
+  const setLayout = useLayoutStore(s => s.setLayout);
+  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta);
+  const [open, setOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setOpen(v => !v);
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setAnchorEl(null);
+  };
+
   return (
     <div
       data-type={props.type}
@@ -40,18 +59,41 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
         "text-neutral-100",
         "flex",
         "flex-col",
-        "justify-center",
-        { "pointer-events-none": isEditing }
+        "justify-center"
       )}
     >
       {props.title && (
-        <div className="position-relative h-0">
-          <div className="p-2 text-sm font-medium text-neutral-400 position-absolute">
+        <div className="flex">
+          <div className="p-2 text-sm font-medium text-neutral-400">
             {props.title}
+          </div>
+          <div className={clsx("flex-grow-1 flex justify-end", { 'hidden': !isEditing })}>
+            <IconButton
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left'
+              }}
+            >
+              <MenuItem onClick={handleClose}>
+                <DeleteIcon />
+              </MenuItem>
+            </Menu>
           </div>
         </div>
       )}
-      <div className="flex-grow-1 overflow-hidden">
+      <div className={clsx("flex-grow-1 overflow-hidden", { "pointer-events-none": isEditing })}>
         {props.children}
       </div>
     </div>
