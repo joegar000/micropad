@@ -74,7 +74,8 @@ export function Grid({ children }: { children: ReactNode }) {
           }}
           dragConfig={{
             enabled: isEditing,
-            bounded: true
+            bounded: true,
+            handle: isEditing ? undefined : '.not-exist'
           }}
           dropConfig={{
             enabled: isEditing,
