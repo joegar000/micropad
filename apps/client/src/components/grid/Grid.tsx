@@ -79,7 +79,7 @@ export function Grid({ children }: { children: ReactNode }) {
           }}
           dropConfig={{
             enabled: isEditing,
-            defaultItem: { w: 2, h: 2 }
+            defaultItem: { w: 1, h: 1 }
           }}
           resizeConfig={{
             enabled: isEditing
