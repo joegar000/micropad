@@ -4,6 +4,7 @@ import useResizeObserver from "../../../hooks/resizeobserver";
 import { registerWidget, Widget } from "./Widget";
 
 export interface DialProps {
+  title: string;
   endpoint: string;
   step?: number;
   min?: number;
@@ -27,7 +28,7 @@ registerWidget('dial', (spec: DialProps) => {
 
 
   return (
-    <Widget type='dial'>
+    <Widget type='dial' title={spec.title}>
       <div className="h-full relative mt-[5%]">
         <div className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >

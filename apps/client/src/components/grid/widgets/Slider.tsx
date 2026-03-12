@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { registerWidget, Widget } from "./Widget";
 
 export interface SliderProps {
+  title: string;
   endpoint: string;
   step?: number;
   min?: number;
@@ -42,7 +43,7 @@ registerWidget('slider', (props: SliderProps) => {
   // }, [value]);
 
   return (
-    <Widget type='slider'>
+    <Widget type='slider' title={props.title}>
       <div className="h-full flex flex-col items-center justify-center">
         <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center overflow-hidden">
           <input

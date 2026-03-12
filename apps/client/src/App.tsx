@@ -36,7 +36,7 @@ export default function App() {
           const Widget = widgetRegistry[widgetMeta[w.i!].type];
           return (
             <div className="flex" key={w.i}>
-              <Widget />
+              <Widget title={w.i} />
             </div>
           );
         })}
