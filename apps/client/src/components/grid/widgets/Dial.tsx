@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import CircularSlider from "react-circular-slider-svg";
 import useResizeObserver from "../../../hooks/resizeobserver";
-import { registerWidget, Widget } from "./Widget";
+import { registerWidget, Widget } from "./WidgetBase";
 
 export interface DialProps {
   title: string;

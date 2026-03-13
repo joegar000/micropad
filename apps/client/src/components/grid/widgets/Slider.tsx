@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import clsx from "clsx";
-import { registerWidget, Widget } from "./Widget";
+import { registerWidget, Widget } from "./WidgetBase";
 
 export interface SliderProps {
   title: string;
