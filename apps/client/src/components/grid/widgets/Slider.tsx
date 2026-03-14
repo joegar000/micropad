@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 import clsx from "clsx";
-import { registerWidget, Widget } from "./WidgetBase";
+import { registerWidget, BaseWidget, type WidgetSpec } from "./WidgetBase";
 
-export interface SliderProps {
-  title: string;
+export interface SliderSpec extends WidgetSpec<'slider'> {
   endpoint: string;
   step?: number;
   min?: number;
@@ -14,7 +13,7 @@ export interface SliderRequest {
   value: number;
 }
 
-registerWidget('slider', (props: SliderProps) => {
+registerWidget('slider', (props: SliderSpec) => {
   const [value, setValue] = useState<number>(50);
   const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
@@ -43,7 +42,7 @@ registerWidget('slider', (props: SliderProps) => {
   // }, [value]);
 
   return (
-    <Widget type='slider' title={props.title}>
+    <BaseWidget type='slider' title={props.title}>
       <div className="h-full flex flex-col items-center justify-center">
         <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center overflow-hidden">
           <input
@@ -61,6 +60,6 @@ registerWidget('slider', (props: SliderProps) => {
         </div>
         <div className="text-sm text-neutral-400 py-2">{value}%</div>
       </div>
-    </Widget>
+    </BaseWidget>
   );
 });

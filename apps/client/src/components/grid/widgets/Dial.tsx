@@ -1,10 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import CircularSlider from "react-circular-slider-svg";
 import useResizeObserver from "../../../hooks/resizeobserver";
-import { registerWidget, Widget } from "./WidgetBase";
+import { registerWidget, BaseWidget, type WidgetSpec } from "./WidgetBase";
 
-export interface DialProps {
-  title: string;
+export interface DialSpec extends WidgetSpec<'dial'> {
   endpoint: string;
   step?: number;
   min?: number;
@@ -15,7 +14,7 @@ export interface DialRequest {
   value: number;
 }
 
-registerWidget('dial', (spec: DialProps) => {
+registerWidget('dial', (spec: DialSpec) => {
   const [value, setValue] = useState(50);
   const [size, setSize] = useState<number>(200);
   const ref = useRef<HTMLDivElement>(null);
@@ -28,7 +27,7 @@ registerWidget('dial', (spec: DialProps) => {
 
 
   return (
-    <Widget type='dial' title={spec.title}>
+    <BaseWidget type='dial' title={spec.title}>
       <div className="h-full relative mt-[5%]">
         <div className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >
@@ -62,6 +61,6 @@ registerWidget('dial', (spec: DialProps) => {
           />
         </div>
       </div>
-    </Widget>
+    </BaseWidget>
   );
 });

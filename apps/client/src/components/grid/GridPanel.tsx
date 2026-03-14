@@ -1,25 +1,25 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, use, useEffect, useMemo, useState } from "react";
 import { useEditingStore } from "../../store/editing";
-import { widgetRegistry } from "./widgets/WidgetBase";
 import { Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { WidgetSpecContext } from "./widgets/speclookup";
+import { baseWidgetRegistry, SpecContext, type WidgetSpec } from "./widgets/WidgetBase";
 
 export function GridPanel() {
   const [query, setQuery] = useState("");
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
   const [dragging, setDragging] = useState(false);
+  const specs = use(WidgetSpecContext);
 
-  const items = useMemo(() => {
+  const items: WidgetSpec<string>[] = useMemo(() => {
     const qs = query.trim().toLowerCase();
-    return Object.keys(widgetRegistry)
-      .filter((t) => {
-        if (!qs) return true;
-        return (
-          t.toLowerCase().includes(qs) ||
-          (t || "").toLowerCase().includes(qs)
-        );
-      })
-      .map((t) => ({ type: t }));
+    return Object.values(specs).filter((spec: WidgetSpec<string>) => {
+      if (!qs) return true;
+      return (
+        spec.title.toLowerCase().includes(qs) ||
+        (spec.title || "").toLowerCase().includes(qs)
+      );
+    });
   }, [query]);
 
   useEffect(() => {
@@ -60,9 +60,8 @@ export function GridPanel() {
       </div>
       <div className="flex-grow-1 p-3 overflow-y-auto h-full panel-items flex flex-col gap-3 items-center">
         {items.map((it) => {
-          const Widget = widgetRegistry[it.type];
+          const Widget = baseWidgetRegistry.get(it.baseType);
           return (
-
             <Fragment key={it.type}>
               {Widget && (
                 <div className="flex" style={{ aspectRatio: 1, maxWidth: '10em', maxHeight: '10em', width: '100%' }}>
@@ -81,7 +80,9 @@ export function GridPanel() {
                       setSidebarOpen(false);
                     }}
                   >
-                    <Widget />
+                    <SpecContext value={it}>
+                      <Widget {...it} />
+                    </SpecContext>
                   </div>
                 </div>
               )}

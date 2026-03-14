@@ -109,7 +109,7 @@ export function Grid({ children }: { children: ReactNode }) {
               setJustDropped(true);
               setLayoutMeta(currentMeta => ({
                 ...currentMeta,
-                [newId]: { type: droppedType }
+                [newId]: { type: droppedType as `${string}.${string}` }
               }));
               // uniqWith to fix polyfill bug where item will appear twice in `layout`
               setLayout(uniqWith(layout.map(l => l.i === item.i ? newWidget : l), (a, b) => a.i === b.i));

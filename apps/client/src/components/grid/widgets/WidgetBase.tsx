@@ -1,38 +1,39 @@
 import clsx from "clsx";
 import { createContext, use, useState, type FC, type ReactNode } from "react";
-import "./widget.css";
 import { useEditingStore } from "../../../store/editing";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useLayoutStore } from "../../../store/layout";
-import { IconButton, Menu, MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { WidgetSpecContext } from "./speclookup";
+import "./widgetbase.css";
+import { cloneDeep } from "es-toolkit";
 
-export interface WidgetSpec {
-  type: string;
-  title?: string;
+export interface WidgetSpec<BaseType extends string> {
+  title: string;
+  type: `${string}.${string}`;
+  baseType: BaseType;
 }
 
-export interface WidgetProps {
-  id: string;
-  x?: number;
-  y?: number;
-  w?: number;
-  h?: number;
-  children: React.ReactNode;
+export const baseWidgetRegistry: Map<string, FC<WidgetSpec<string>>> = new Map();
+
+export function registerWidget(type: string, component: FC<any>) {
+  if (baseWidgetRegistry.has(type))
+    throw Error(`A widget of type ${type} already exists`);
+  baseWidgetRegistry.set(type, component);
 }
 
-const WidgetId = createContext<string>("");
+const WidgetIdContext = createContext<string | null>(null);
 
-export function useWidgetId() {
-  return use(WidgetId);
-}
+export const SpecContext = createContext<WidgetSpec<any> | null>(null);
 
-export function Widget(props: { children: ReactNode, type: string, title?: string }) {
+export function BaseWidget(props: { children: ReactNode }) {
+  const id = use(WidgetIdContext);
+  const spec = use(SpecContext)!;
+
   const isEditing = useEditingStore(s => s.isEditing);
-  const layout = useLayoutStore(s => s.widgets);
-  const layoutMeta = useLayoutStore(s => s.widgetMeta);
   const setLayout = useLayoutStore(s => s.setLayout);
-  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta);
+  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta)
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -46,7 +47,7 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
 
   return (
     <div
-      data-type={props.type}
+      data-type={spec.type}
       className={clsx(
         "m-2",
         "flex-grow-1",
@@ -62,12 +63,12 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
         "justify-center"
       )}
     >
-      {props.title && (
+      {spec.title && (
         <div className="flex">
           <div className="p-2 text-sm font-medium text-neutral-400">
-            {props.title}
+            {spec.title}
           </div>
-          <div className={clsx("flex-grow-1 flex justify-end", { 'hidden': !isEditing })}>
+          {id && <div className={clsx("flex-grow-1 flex justify-end", { 'hidden': !isEditing })}>
             <IconButton
               onClick={handleClick}
             >
@@ -78,7 +79,7 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
               open={open}
               onClose={handleClose}
               anchorOrigin={{
-                vertical: 'top',
+                vertical: 'center',
                 horizontal: 'left',
               }}
               transformOrigin={{
@@ -87,10 +88,19 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
               }}
             >
               <MenuItem onClick={handleClose}>
-                <DeleteIcon />
+                <div onClick={() => {
+                  setLayout(l => l.filter(w => w.i !== id));
+                  setLayoutMeta(currentMeta => {
+                    const newMeta = cloneDeep(currentMeta);
+                    delete newMeta[id];
+                    return newMeta;
+                  })
+                }}>
+                  <DeleteIcon />
+                </div>
               </MenuItem>
             </Menu>
-          </div>
+          </div>}
         </div>
       )}
       <div className={clsx("flex-grow-1 overflow-hidden", { "pointer-events-none": isEditing })}>
@@ -100,12 +110,17 @@ export function Widget(props: { children: ReactNode, type: string, title?: strin
   );
 }
 
-const widgetRegistry: Record<string, FC> = {};
-
-export function registerWidget(type: string, component: FC<any>) {
-  if (widgetRegistry[type])
-    throw Error(`A widget named ${type} already exists`);
-  widgetRegistry[type] = component;
+export function Widget(props: { id: string }) {
+  const layoutMeta = useLayoutStore(s => s.widgetMeta);
+  const meta = layoutMeta[props.id];
+  const specLookup = use(WidgetSpecContext);
+  const spec = specLookup[meta.type];
+  const Component = baseWidgetRegistry.get(spec.baseType)!;
+  return (
+    <WidgetIdContext.Provider value={props.id}>
+      <SpecContext.Provider value={spec}>
+        <Component {...spec} />
+      </SpecContext.Provider>
+    </WidgetIdContext.Provider>
+  );
 }
-
-export { widgetRegistry };

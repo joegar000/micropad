@@ -1,9 +1,8 @@
 import clsx from "clsx";
-import { registerWidget, Widget } from "./WidgetBase";
+import { registerWidget, BaseWidget, type WidgetSpec } from "./WidgetBase";
 import { useState } from "react";
 
-export interface ButtonProps {
-  title: string;
+export interface ButtonSpec extends WidgetSpec<'button'> {
   text: string;
   endpoint: string;
   canToggle?: boolean;
@@ -14,11 +13,11 @@ export interface ButtonRequest {
   isToggled?: boolean;
 }
 
-registerWidget('button', (props: ButtonProps) => {
+registerWidget('button', (props: ButtonSpec) => {
   const [toggled, setToggled] = useState(false);
   // TODO: consider `useOptimistic` here
   return (
-    <Widget title={props.title} type='button'>
+    <BaseWidget title={props.title} type='button'>
       <div className="px-4 py-2 flex h-full w-full">
         <button
           onClick={async () => {
@@ -41,6 +40,6 @@ registerWidget('button', (props: ButtonProps) => {
           {props.text}
         </button>
       </div>
-    </Widget>
+    </BaseWidget>
   );
 });
