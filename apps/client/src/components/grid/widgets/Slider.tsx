@@ -1,15 +1,15 @@
 import { useCallback, useRef, useState } from "react";
-import clsx from "clsx";
 import { BaseWidget } from "./WidgetBase";
 import { type ISliderSpec } from "micropad-widgets";
 import { useWidgetEventEmitter, useWidgetUpdateListener } from "../../../socket";
 import { debounce } from "es-toolkit";
+import { Slider } from "@mui/material";
+import RotateRightIcon from '@mui/icons-material/RotateRight';
 
 export default function SliderWiget(props: ISliderSpec) {
   const [value, setValue] = useState<number>(50);
-  // const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
+  const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const emitWidgetEvent = useWidgetEventEmitter(props.type);
 
   useWidgetUpdateListener(props.type, (data) => {
@@ -24,22 +24,26 @@ export default function SliderWiget(props: ISliderSpec) {
   );
 
   return (
-    <BaseWidget>
+    <BaseWidget
+      extraOptions={[
+        {
+          icon: <RotateRightIcon />,
+          onClick: () => setRotation(r => r === 'horizontal' ? 'vertical' : 'horizontal')
+        }
+      ]}
+    >
       <div className="h-full flex flex-col items-center justify-center">
-        <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center overflow-hidden">
-          <input
-            ref={inputRef}
-            aria-label="Volume"
-            type="range"
+        <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center w-[90%]">
+          <Slider
+            orientation={rotation}
             min={props.min ?? 0}
             max={props.max ?? 100}
             step={props.step ?? 1}
             value={value}
-            onChange={(e) => {
-              setValue(e.target.valueAsNumber);
-              debounceChange(e.target.valueAsNumber);
+            onChange={(_e, newValue) => {
+              setValue(newValue);
+              debounceChange(newValue);
             }}
-            className={clsx("accent-neutral-400", 'w-full')}
           />
         </div>
         <div className="text-sm text-neutral-400 py-2">{value}%</div>

@@ -23,7 +23,10 @@ const WidgetIdContext = createContext<string | null>(null);
 
 export const SpecContext = createContext<IWidgetSpec | null>(null);
 
-export function BaseWidget(props: { children: ReactNode }) {
+export function BaseWidget(props: {
+  children: ReactNode,
+  extraOptions?: { icon: ReactNode, onClick: () => void, title?: string }[]
+}) {
   const id = use(WidgetIdContext);
   const spec = use(SpecContext)!;
 
@@ -83,15 +86,25 @@ export function BaseWidget(props: { children: ReactNode }) {
                 horizontal: 'left'
               }}
             >
+              {props.extraOptions?.map(opt => (
+                <MenuItem onClick={handleClose}>
+                  <div title={opt.title} onClick={opt.onClick}>
+                    {opt.icon}
+                  </div>
+                </MenuItem>
+              ))}
               <MenuItem onClick={handleClose}>
-                <div onClick={() => {
-                  setLayout(l => l.filter(w => w.i !== id));
-                  setLayoutMeta(currentMeta => {
-                    const newMeta = cloneDeep(currentMeta);
-                    delete newMeta[id];
-                    return newMeta;
-                  })
-                }}>
+                <div
+                  title="Delete"
+                  onClick={() => {
+                    setLayout(l => l.filter(w => w.i !== id));
+                    setLayoutMeta(currentMeta => {
+                      const newMeta = cloneDeep(currentMeta);
+                      delete newMeta[id];
+                      return newMeta;
+                    })
+                }}
+                >
                   <DeleteIcon />
                 </div>
               </MenuItem>
