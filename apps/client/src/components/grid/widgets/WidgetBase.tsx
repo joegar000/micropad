@@ -3,29 +3,25 @@ import { createContext, use, useState, type FC, type ReactNode } from "react";
 import { useEditingStore } from "../../../store/editing";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useLayoutStore } from "../../../store/layout";
-import { Button, IconButton, Menu, MenuItem } from "@mui/material";
+import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import { cloneDeep } from "es-toolkit";
+import { type IWidgetSpec } from "micropad-widgets";
 
-export interface WidgetSpec<BaseType extends string> {
-  title: string;
-  type: `${string}.${string}`;
-  baseType: BaseType;
-}
-
-export const baseWidgetRegistry: Map<string, FC<WidgetSpec<string>>> = new Map();
+export const baseWidgetRegistry: Map<string, FC<IWidgetSpec>> = new Map();
 
 export function registerWidget(type: string, component: FC<any>) {
   if (baseWidgetRegistry.has(type))
     throw Error(`A widget of type ${type} already exists`);
   baseWidgetRegistry.set(type, component);
+  return baseWidgetRegistry;
 }
 
 const WidgetIdContext = createContext<string | null>(null);
 
-export const SpecContext = createContext<WidgetSpec<any> | null>(null);
+export const SpecContext = createContext<IWidgetSpec | null>(null);
 
 export function BaseWidget(props: { children: ReactNode }) {
   const id = use(WidgetIdContext);

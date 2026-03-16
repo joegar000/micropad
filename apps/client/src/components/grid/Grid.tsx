@@ -8,6 +8,7 @@ import { useEditingStore } from '../../store/editing';
 import { useLayoutStore, widgetIdStore } from '../../store/layout';
 import { uniqWith } from 'es-toolkit';
 import "./grid.css";
+import "./widgets";
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();

@@ -3,7 +3,8 @@ import { useEditingStore } from "../../store/editing";
 import { Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { WidgetSpecContext } from "./widgets/speclookup";
-import { baseWidgetRegistry, SpecContext, type WidgetSpec } from "./widgets/WidgetBase";
+import { baseWidgetRegistry, SpecContext } from "./widgets";
+import { type IWidgetSpec } from "micropad-widgets";
 
 export function GridPanel() {
   const [query, setQuery] = useState("");
@@ -11,16 +12,16 @@ export function GridPanel() {
   const [dragging, setDragging] = useState(false);
   const specs = use(WidgetSpecContext);
 
-  const items: WidgetSpec<string>[] = useMemo(() => {
+  const items: IWidgetSpec[] = useMemo(() => {
     const qs = query.trim().toLowerCase();
-    return Object.values(specs).filter((spec: WidgetSpec<string>) => {
+    return Object.values(specs).filter((spec: IWidgetSpec) => {
       if (!qs) return true;
       return (
         spec.title.toLowerCase().includes(qs) ||
         (spec.title || "").toLowerCase().includes(qs)
       );
     });
-  }, [query]);
+  }, [query, specs]);
 
   useEffect(() => {
     const dragEnd = () => {

@@ -9,9 +9,10 @@ import { useEditingStore } from "./store/editing";
 import { Activity } from "react";
 import { SidebarButton } from "./components/editing/sidebarbutton";
 import Sidebar from "./components/sidebar/Sidebar";
-import type { ButtonSpec, DialSpec, SliderSpec } from "./components/grid/widgets";
 import { WidgetSpecContext } from "./components/grid/widgets/speclookup";
 import { Widget } from "./components/grid";
+import { useSocket } from "./socket";
+import { useEffect, useState } from "react";
 
 const darkTheme = createTheme({
   palette: {
@@ -19,40 +20,24 @@ const darkTheme = createTheme({
   },
 });
 
-const testWidgets: { [type: `${string}.${string}`]: (ButtonSpec | DialSpec | SliderSpec) } = {
-  ['p1.btn1']: {
-    baseType: 'button',
-    type: 'p1.btn1',
-    text: 'hello!',
-    endpoint: '/#',
-    title: 'greeting'
-  },
-  ['p1.btn2']: {
-    baseType: 'button',
-    type: 'p1.btn2',
-    text: 'goodbye!',
-    endpoint: '/#',
-    title: 'farewell!'
-  },
-  ['p2.slider2']: {
-    baseType: 'slider',
-    type: 'p2.slider2',
-    endpoint: '/#',
-    title: 'slidin\' around',
-  },
-  ['p3.dial3']: {
-    baseType: 'dial',
-    type: 'p3.dial3',
-    endpoint: '/#',
-    title: 'the dial'
-  }
-};
-
 export default function App() {
   const widgets = useLayoutStore(s => s.widgets);
   const isEditing = useEditingStore(s => s.isEditing);
+  const socket = useSocket();
+  const [specs, setSpecs] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('widgets', (data) => {
+      setSpecs(data.widgets);
+    });
+    return () => {
+      socket.off('widgets');
+    };
+  }, [socket]);
+
   return (
-    <WidgetSpecContext.Provider value={testWidgets}>
+    <WidgetSpecContext.Provider value={specs}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <div className="p-1 flex justify-between">

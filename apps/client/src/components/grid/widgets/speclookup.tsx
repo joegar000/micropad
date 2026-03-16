@@ -1,8 +1,8 @@
 import { createContext } from "react";
-import type { WidgetSpec } from "./WidgetBase";
+import type { IWidgetSpec } from "micropad-widgets";
 
 export interface WidgetSpecLookup {
-  [type: `${string}.${string}`]: WidgetSpec<string>;
+  [type: `${string}.${string}`]: IWidgetSpec;
 }
 
 export const WidgetSpecContext = createContext<WidgetSpecLookup>({});

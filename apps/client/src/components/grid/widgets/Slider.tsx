@@ -1,65 +1,49 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import clsx from "clsx";
-import { registerWidget, BaseWidget, type WidgetSpec } from "./WidgetBase";
+import { BaseWidget } from "./WidgetBase";
+import { type ISliderSpec } from "micropad-widgets";
+import { useWidgetEventEmitter, useWidgetUpdateListener } from "../../../socket";
+import { debounce } from "es-toolkit";
 
-export interface SliderSpec extends WidgetSpec<'slider'> {
-  endpoint: string;
-  step?: number;
-  min?: number;
-  max?: number;
-}
-
-export interface SliderRequest {
-  value: number;
-}
-
-registerWidget('slider', (props: SliderSpec) => {
+export default function SliderWiget(props: ISliderSpec) {
   const [value, setValue] = useState<number>(50);
-  const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
+  // const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const emitWidgetEvent = useWidgetEventEmitter(props.type);
 
-  // useResizeObserver(divRef, (entry) => {
-  //   if (!divRef.current || !inputRef.current || rotation !== 'vertical') {
-  //     inputRef.current?.style.removeProperty('width');
-  //     inputRef.current?.style.removeProperty('min-width');
-  //     inputRef.current?.style.removeProperty('max-width');
-  //     return;
-  //   };
-  //   const { height } = entry.contentRect;
-  //   inputRef.current.style.minWidth = `${height}px`;
-  //   inputRef.current.style.maxWidth = `${height}px`;
-  //   inputRef.current.style.width = `${height}px`;
-  // });
+  useWidgetUpdateListener(props.type, (data) => {
+    if (data.value !== undefined) {
+      setValue(data.value);
+    }
+  });
 
-  // useEffect(() => {
-  //   gridstack.on('resizestop', (_event, item) => {
-  //       if (item.getAttribute('gs-id') !== widgetId) return;
-  //       const w = Number(item.getAttribute('gs-w') ?? '1');
-  //       const h = Number(item.getAttribute('gs-h') ?? '1');
-  //       setRotation(w >= h ? 'horizontal' : 'vertical');
-  //   });
-  // }, [value]);
+  const debounceChange = useCallback(
+    debounce((value: number) => emitWidgetEvent('change', { value }), 200),
+    [emitWidgetEvent]
+  );
 
   return (
-    <BaseWidget type='slider' title={props.title}>
+    <BaseWidget>
       <div className="h-full flex flex-col items-center justify-center">
         <div ref={divRef} className="flex-grow-1 pt-10 flex justify-center overflow-hidden">
           <input
             ref={inputRef}
-            style={{ transform: rotation === 'vertical' ? 'rotate(270deg)' : undefined }}
             aria-label="Volume"
             type="range"
             min={props.min ?? 0}
             max={props.max ?? 100}
             step={props.step ?? 1}
             value={value}
-            onChange={(e) => setValue(Number(e.target.value))}
-            className={clsx("accent-neutral-400", { 'w-full': rotation === 'horizontal' })}
+            onChange={(e) => {
+              setValue(e.target.valueAsNumber);
+              debounceChange(e.target.valueAsNumber);
+            }}
+            className={clsx("accent-neutral-400", 'w-full')}
           />
         </div>
         <div className="text-sm text-neutral-400 py-2">{value}%</div>
       </div>
     </BaseWidget>
   );
-});
+}

@@ -4,6 +4,7 @@ import { type StateStorage } from 'zustand/middleware';
 // Custom storage object
 export const zustandStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
+    await del(name);
     const res = (await get(name)) || null;
     console.info('loaded state', { res: JSON.parse(res) })
     return res;

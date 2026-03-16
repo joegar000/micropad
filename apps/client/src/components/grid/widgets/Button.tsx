@@ -1,28 +1,26 @@
 import clsx from "clsx";
-import { registerWidget, BaseWidget, type WidgetSpec } from "./WidgetBase";
+import { BaseWidget } from "./WidgetBase";
 import { useState } from "react";
+import { type IButtonSpec } from "micropad-widgets";
+import { useWidgetEventEmitter, useWidgetUpdateListener } from "../../../socket";
 
-export interface ButtonSpec extends WidgetSpec<'button'> {
-  text: string;
-  endpoint: string;
-  canToggle?: boolean;
-}
-
-export interface ButtonRequest {
-  canToggle?: boolean;
-  isToggled?: boolean;
-}
-
-registerWidget('button', (props: ButtonSpec) => {
+export default function ButtonWidget(props: IButtonSpec) {
   const [toggled, setToggled] = useState(false);
-  // TODO: consider `useOptimistic` here
+  const emitWidgetEvent = useWidgetEventEmitter(props.type);
+
+  useWidgetUpdateListener(props.type, (data) => {
+    if (data.toggled !== undefined) {
+      setToggled(data.toggled);
+    }
+  });
+
   return (
-    <BaseWidget title={props.title} type='button'>
+    <BaseWidget>
       <div className="px-4 py-2 flex h-full w-full">
         <button
           onClick={async () => {
-            const res = await fetch(props.endpoint);
-            if (res.ok && props.canToggle) {
+            emitWidgetEvent('click', { toggled: !toggled });
+            if (props.canToggle) {
               setToggled(t => !t);
             }
           }}
@@ -42,4 +40,4 @@ registerWidget('button', (props: ButtonSpec) => {
       </div>
     </BaseWidget>
   );
-});
+}

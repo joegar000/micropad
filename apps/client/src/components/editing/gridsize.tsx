@@ -5,9 +5,9 @@ import NumberField from "../mui/NumberField";
 
 export function GridSize() {
   const isEditing = useEditingStore(s => s.isEditing);
-  const layout = useLayoutStore(s => s.widgets);
-  const minRows = layout.reduce((p, c) => Math.max(p, c.y!), -1);
-  const minCols = layout.reduce((p, c) => Math.max(p, c.x!), -1);
+  // const layout = useLayoutStore(s => s.widgets);
+  // const minRows = layout.reduce((p, c) => Math.max(p, c.y!), -1);
+  // const minCols = layout.reduce((p, c) => Math.max(p, c.x!), -1);
   const rows = useLayoutStore(s => s.rows);
   const setRows = useLayoutStore(s => s.setRows);
   const columns = useLayoutStore(s => s.columns);

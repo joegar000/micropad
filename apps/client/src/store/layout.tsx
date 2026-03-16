@@ -4,10 +4,10 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { zustandStorage } from "../util/indexeddb";
 import { valueOrCallback, type ValueOrCallback } from "../util/valueorcallback";
 import type { LayoutItem } from "react-grid-layout";
-import type { WidgetSpec } from "../components/grid";
+import type { IWidgetSpec } from "micropad-widgets";
 
 export interface WidgetMeta {
-  [id: string]: Pick<WidgetSpec<string>, 'type'>;
+  [id: string]: Pick<IWidgetSpec, 'type'>;
 }
 
 interface LayoutState {
