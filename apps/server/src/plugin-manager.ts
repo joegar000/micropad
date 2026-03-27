@@ -1,48 +1,34 @@
 import fs from "fs"
-import { IButtonSpec, ISliderSpec } from "micropad-widgets";
+import { IButtonModel, ISliderModel } from "micropad-widgets";
+import { BaseWidgetViewModel } from "micropad-widgets/types/base.js";
 import path from "path"
 import { Socket } from "socket.io";
 
-class PluginPacket {
-    widgetSpecs: { [type: string]: IButtonSpec | ISliderSpec } = {};
-    handlers: { [event: string]: (data: any, socket: Socket) => void } = {};
-
-    constructor(
-        public pluginName: string,
-        public socket: Socket
-    ) {}
-
-    registerWidget(
-        widgetName: string,
-        { spec, on }: {
-            spec: (Omit<(IButtonSpec | ISliderSpec), 'type'>),
-            on: (eventName: string, ...args: any[]) => void
-        }
-    ) {
-        const type = `${this.pluginName}.${widgetName}` as const;
-        this.widgetSpecs[type] = { ...spec, type };
-        this.socket.onAny((eventName: string, ...args) => {
-            const eventPrefix = `${this.pluginName}:${widgetName}:`
-            if (eventName.startsWith(eventPrefix)) {
-                on(eventName.replace(eventPrefix, ''), ...args);
-            }
-        });
+class WidgetPacket {
+    widgets: BaseWidgetViewModel[] = [];
+    addWidgets(...viewModels: BaseWidgetViewModel[]) {
+        this.widgets.push(...viewModels);
     }
 }
 
 export class PluginAPI {
-    widgetSpecs: { [type: string]: IButtonSpec | ISliderSpec } = {};
+    widgetSpecs: { [pluginName: string]: { [type: string]: BaseWidgetViewModel } } = {}
     handlers: { [event: string]: (data: any, socket: Socket) => void } = {};
-    pluginName: string = '';
 
     constructor(
         public ws: Socket
     ) {}
 
-    createPlugin(pluginName: string, cb: (packet: PluginPacket) => void) {
-        const packet = new PluginPacket(pluginName, this.ws);
+    createPlugin(pluginName: string, cb: (packet: WidgetPacket) => void) {
+        const packet = new WidgetPacket();
         cb(packet);
-        this.widgetSpecs = { ...this.widgetSpecs, ...packet.widgetSpecs };
+        this.widgetSpecs = {
+            ...this.widgetSpecs,
+            [pluginName]: packet.widgets.reduce((p, c) => ({
+                ...p,
+                [c.spec.type]: c
+            }), {})
+        };
     }
 
     serialize() {
@@ -57,8 +43,6 @@ export async function loadPlugins(socket: Socket) {
     const pluginsDir = path.resolve("./src/plugins");
     const dirs = fs.readdirSync(pluginsDir);
     for (const dir of dirs) {
-        const pluginName = dir;
-        api.pluginName = pluginName;
         const pluginPath = path.join(pluginsDir, dir)
         const mod = await import(`${pluginPath}/index.js`);
         const plugin = mod.default;

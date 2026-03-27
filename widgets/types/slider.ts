@@ -1,11 +1,43 @@
 import { z } from "zod";
-import { WidgetSpec } from "./base.js";
+import { BaseWidgetModel, type BaseWidgetViewModel } from "./base.js";
+import { type Socket } from "socket.io";
 
-export const SliderSpec = WidgetSpec.extend({
-    endpoint: z.string(),
+export const SliderModel = BaseWidgetModel.extend({
     step: z.optional(z.number()),
     min: z.optional(z.number()),
     max: z.optional(z.number())
 });
 
-export type ISliderSpec = z.infer<typeof SliderSpec>;
+export type ISliderModel = z.infer<typeof SliderModel>;
+
+export class SliderViewModel implements BaseWidgetViewModel {
+    constructor(public spec: ISliderModel) {}
+
+    static fromConfig(config: {
+        pluginName: string,
+        widgetName: string,
+        title: string,
+        step?: number,
+        min?: number,
+        max?: number
+    }) {
+        return new this({
+            type: `${config.pluginName}.${config.widgetName}`,
+            title: config.title,
+            step: config.step,
+            min: config.min,
+            max: config.max
+        });
+    }
+
+    emitChange(socket: Socket, data: { value: number }) {
+        socket.emit(`${this.spec.type}.change`, data);
+    }
+
+    onChange(socket: Socket, cb: (data: { value: number }) => void) {
+        socket.on(`${this.spec.type}.change`, cb);
+        return () => {
+            socket.off(`${this.spec.type}.change`, cb);
+        }
+    }
+}

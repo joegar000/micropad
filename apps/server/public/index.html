@@ -1,0 +1,21 @@
+<html>
+
+<head>
+    <title>Micropad QR Code</title>
+</head>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const search = new URLSearchParams(window.location.search);
+        const qrcode = decodeURIComponent(search.get('qr'));
+        const img = document.querySelector('img');
+        img.src = qrcode;
+    });
+</script>
+
+
+<body style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;">
+    <h2>Scan to open Micropad</h2><img src="#" alt="QR Code" />
+</body>
+
+</html>
