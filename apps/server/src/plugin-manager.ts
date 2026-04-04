@@ -1,15 +1,8 @@
 import fs from "fs"
-import { IButtonModel, ISliderModel } from "micropad-widgets";
 import { BaseWidgetViewModel } from "micropad-widgets/types/base.js";
 import path from "path"
 import { Socket } from "socket.io";
 
-class WidgetPacket {
-    widgets: BaseWidgetViewModel[] = [];
-    addWidgets(...viewModels: BaseWidgetViewModel[]) {
-        this.widgets.push(...viewModels);
-    }
-}
 
 export class PluginAPI {
     widgetSpecs: { [pluginName: string]: { [type: string]: BaseWidgetViewModel } } = {}
@@ -19,12 +12,17 @@ export class PluginAPI {
         public ws: Socket
     ) {}
 
-    createPlugin(pluginName: string, cb: (packet: WidgetPacket) => void) {
-        const packet = new WidgetPacket();
-        cb(packet);
+    createPlugin(
+        pluginName: string,
+        cb: ({ addWidgets }: { addWidgets: (...widgets: BaseWidgetViewModel[]) => void }) => void
+    ) {
+        const widgets: BaseWidgetViewModel[] = [];
+        cb({
+            addWidgets: (...w: BaseWidgetViewModel[]) => widgets.push(...w)
+        });
         this.widgetSpecs = {
             ...this.widgetSpecs,
-            [pluginName]: packet.widgets.reduce((p, c) => ({
+            [pluginName]: widgets.reduce((p, c) => ({
                 ...p,
                 [c.spec.type]: c
             }), {})
