@@ -1,7 +1,8 @@
 import fs from "fs"
-import { BaseWidgetViewModel } from "micropad-widgets/types/base.js";
+import { type BaseWidgetViewModel } from "micropad-widgets";
 import path from "path"
 import { Socket } from "socket.io";
+import volume from "./plugins/volume/index.js";
 
 
 export class PluginAPI {
@@ -38,15 +39,6 @@ export class PluginAPI {
 
 export async function loadPlugins(socket: Socket) {
     const api = new PluginAPI(socket);
-    const pluginsDir = path.resolve("./src/plugins");
-    const dirs = fs.readdirSync(pluginsDir);
-    for (const dir of dirs) {
-        const pluginPath = path.join(pluginsDir, dir)
-        const mod = await import(`${pluginPath}/index.js`);
-        const plugin = mod.default;
-        if (typeof plugin === "function") {
-            plugin(api);
-        }
-    }
+    volume(api);
     return api;
 }

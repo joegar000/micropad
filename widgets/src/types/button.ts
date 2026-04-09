@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { BaseWidgetModel, type BaseWidgetViewModel } from "./base.js";
-import { type Socket } from "socket.io";
+import type { Socket as ServerSocket } from "socket.io";
+import type { Socket as ClientSocket } from "socket.io-client";
 
 export const ButtonModel = BaseWidgetModel.extend({
     text: z.string(),
@@ -28,26 +29,28 @@ export class ButtonViewModel implements BaseWidgetViewModel {
     }
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
-    emitClick(socket: Socket, data: { active: boolean }) {
+    emitClick(socket: ClientSocket | ServerSocket, data: { active: boolean }) {
         socket.emit(`${this.spec.type}.click`, data);
     }
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
-    onClick(socket: Socket, cb: (data: { active: boolean }) => void) {
+    onClick(socket: ClientSocket | ServerSocket, cb: (data: { active: boolean }) => void) {
         socket.on(`${this.spec.type}.change`, cb);
         return () => {
+            // @ts-ignore
             socket.off(`${this.spec.type}.click`, cb);
         }
     }
     
-    emitActiveChange(socket: Socket, data: { active: boolean }) {
+    emitActiveChange(socket: ClientSocket | ServerSocket, data: { active: boolean }) {
         socket.emit(`${this.spec.type}.activeChange`, data);
     }
 
-    onActiveChange(socket: Socket, cb: (data: { isActive: boolean }) => void) {
+    onActiveChange(socket: ClientSocket | ServerSocket, cb: (data: { isActive: boolean }) => void) {
         if (this.spec.canToggle) {
             socket.on(`${this.spec.type}.activeChange`, cb);
             return () => {
+                // @ts-ignore
                 socket.off(`${this.spec.type}.activeChange`, cb);
             }
         }

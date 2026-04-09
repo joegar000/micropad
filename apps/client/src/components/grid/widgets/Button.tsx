@@ -1,16 +1,17 @@
 import clsx from "clsx";
 import { BaseWidget } from "./WidgetBase";
-import { useState } from "react";
-import { type IButtonSpec } from "micropad-widgets";
-import { useWidgetEventEmitter, useWidgetUpdateListener } from "../../../socket";
+import { useMemo, useState } from "react";
+import { ButtonViewModel, type IButtonModel } from "micropad-widgets";
+import { useSocket } from "../../../socket";
 
-export default function ButtonWidget(props: IButtonSpec) {
+export default function ButtonWidget(props: IButtonModel) {
   const [toggled, setToggled] = useState(false);
-  const emitWidgetEvent = useWidgetEventEmitter(props.type);
+  const buttonViewModel = useMemo(() => new ButtonViewModel(props), [props]);
+  const socket = useSocket();
 
-  useWidgetUpdateListener(props.type, (data) => {
-    if (data.toggled !== undefined) {
-      setToggled(data.toggled);
+  buttonViewModel.onActiveChange(socket, (data) => {
+    if (data.isActive !== undefined) {
+      setToggled(data.isActive);
     }
   });
 
@@ -19,7 +20,7 @@ export default function ButtonWidget(props: IButtonSpec) {
       <div className="px-4 py-2 flex h-full w-full">
         <button
           onClick={async () => {
-            emitWidgetEvent('click', { toggled: !toggled });
+            buttonViewModel.emitClick(socket, { active: !toggled });
             if (props.canToggle) {
               setToggled(t => !t);
             }

@@ -1,5 +1,4 @@
 import { Grid } from "./components/grid/Grid";
-import { useLayoutStore } from "./store/layout";
 import "./components/grid/widgets";
 import { Lock } from "./components/editing/lock";
 import { GridSize } from "./components/editing/gridsize";
@@ -13,6 +12,7 @@ import { WidgetSpecContext } from "./components/grid/widgets/speclookup";
 import { Widget } from "./components/grid";
 import { useSocket } from "./socket";
 import { useEffect, useState } from "react";
+import { GridsContext, useGrids } from "./store/layout/grid";
 
 const darkTheme = createTheme({
   palette: {
@@ -21,18 +21,17 @@ const darkTheme = createTheme({
 });
 
 export default function App() {
-  const widgets = useLayoutStore(s => s.widgets);
   const isEditing = useEditingStore(s => s.isEditing);
   const socket = useSocket();
   const [specs, setSpecs] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('widgets', (data) => {
+    socket.on('app', (data: any) => {
       setSpecs(data.widgets);
     });
     return () => {
-      socket.off('widgets');
+      socket.off('app');
     };
   }, [socket]);
 
@@ -40,12 +39,38 @@ export default function App() {
     <WidgetSpecContext.Provider value={specs}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <div className="p-1 flex justify-between">
-          <Lock />
+        <div className="p-1 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Lock />
+          </div>
           <Activity mode={isEditing ? 'visible' : 'hidden'}>
             <SidebarButton />
           </Activity>
         </div>
+        <AppGrid />
+        <Sidebar />
+      </ThemeProvider>
+    </WidgetSpecContext.Provider>
+  );
+}
+
+function AppGrid() {
+  const isEditing = useEditingStore(s => s.isEditing);
+  const grid = useGrids();
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    useGrids.persist.onFinishHydration(() => {
+      setLoaded(true);
+    });
+  }, []);
+  if (!loaded) {
+    return <div>Loading...</div>;
+  }
+
+  const widgets = grid.grids[0]?.widgets || [];
+  return (
+    <>
+      <GridsContext.Provider value={grid}>
         <Grid>
           {widgets.map((w) => {
             return (
@@ -55,13 +80,12 @@ export default function App() {
             );
           })}
         </Grid>
-        <Sidebar />
-        <Activity mode={isEditing ? 'visible' : 'hidden'}>
-          <div className="p-1">
-            <GridSize />
-          </div>
-        </Activity>
-      </ThemeProvider>
-    </WidgetSpecContext.Provider>
+      </GridsContext.Provider>
+      <Activity mode={isEditing ? 'visible' : 'hidden'}>
+        <div className="p-1">
+          <GridSize />
+        </div>
+      </Activity>
+    </>
   );
 }

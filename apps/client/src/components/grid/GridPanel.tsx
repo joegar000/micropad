@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { WidgetSpecContext } from "./widgets/speclookup";
 import { baseWidgetRegistry, SpecContext } from "./widgets";
-import { type IWidgetSpec } from "micropad-widgets";
+import { type IWidgetModel } from "micropad-widgets";
 
 export function GridPanel() {
   const [query, setQuery] = useState("");
@@ -12,9 +12,9 @@ export function GridPanel() {
   const [dragging, setDragging] = useState(false);
   const specs = use(WidgetSpecContext);
 
-  const items: IWidgetSpec[] = useMemo(() => {
+  const items: IWidgetModel[] = useMemo(() => {
     const qs = query.trim().toLowerCase();
-    return Object.values(specs).filter((spec: IWidgetSpec) => {
+    return Object.values(specs).filter((spec: IWidgetModel) => {
       if (!qs) return true;
       return (
         spec.title.toLowerCase().includes(qs) ||
@@ -61,6 +61,7 @@ export function GridPanel() {
       </div>
       <div className="flex-grow-1 p-3 overflow-y-auto h-full panel-items flex flex-col gap-3 items-center">
         {items.map((it) => {
+          // @ts-ignore
           const Widget = baseWidgetRegistry.get(it.baseType);
           return (
             <Fragment key={it.type}>

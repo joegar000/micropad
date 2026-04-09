@@ -1,26 +1,29 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BaseWidget } from "./WidgetBase";
-import { type ISliderSpec } from "micropad-widgets";
-import { useWidgetEventEmitter, useWidgetUpdateListener } from "../../../socket";
+import { type ISliderModel, SliderViewModel } from "micropad-widgets";
 import { debounce } from "es-toolkit";
 import { Slider } from "@mui/material";
 import RotateRightIcon from '@mui/icons-material/RotateRight';
+import { useSocket } from "../../../socket";
 
-export default function SliderWiget(props: ISliderSpec) {
+export default function SliderWiget(props: ISliderModel) {
   const [value, setValue] = useState<number>(50);
   const [rotation, setRotation] = useState<'horizontal' | 'vertical'>('vertical');
   const divRef = useRef<HTMLDivElement>(null);
-  const emitWidgetEvent = useWidgetEventEmitter(props.type);
+  const sliderViewModel = useMemo(() => new SliderViewModel(props), [props]);
+  const socket = useSocket();
 
-  useWidgetUpdateListener(props.type, (data) => {
-    if (data.value !== undefined) {
-      setValue(data.value);
-    }
-  });
+  useEffect(() => {
+    return sliderViewModel.onChange(socket, (data) => {
+      if (data.value !== undefined) {
+        setValue(data.value);
+      }
+    });
+  }, [sliderViewModel]);
 
   const debounceChange = useCallback(
-    debounce((value: number) => emitWidgetEvent('change', { value }), 200),
-    [emitWidgetEvent]
+    debounce((value: number) => sliderViewModel.emitChange(socket, { value }), 200),
+    [sliderViewModel, socket]
   );
 
   return (

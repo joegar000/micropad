@@ -8,9 +8,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import { cloneDeep } from "es-toolkit";
-import { type IWidgetSpec } from "micropad-widgets";
+import { type IWidgetModel } from "micropad-widgets";
 
-export const baseWidgetRegistry: Map<string, FC<IWidgetSpec>> = new Map();
+export const baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
 
 export function registerWidget(type: string, component: FC<any>) {
   if (baseWidgetRegistry.has(type))
@@ -21,7 +21,7 @@ export function registerWidget(type: string, component: FC<any>) {
 
 const WidgetIdContext = createContext<string | null>(null);
 
-export const SpecContext = createContext<IWidgetSpec | null>(null);
+export const SpecContext = createContext<IWidgetModel | null>(null);
 
 export function BaseWidget(props: {
   children: ReactNode,
@@ -123,7 +123,9 @@ export function Widget(props: { id: string }) {
   const layoutMeta = useLayoutStore(s => s.widgetMeta);
   const meta = layoutMeta[props.id];
   const specLookup = use(WidgetSpecContext);
+  // @ts-ignore
   const spec = specLookup[meta.type];
+  // @ts-ignore
   const Component = baseWidgetRegistry.get(spec.baseType)!;
   return (
     <WidgetIdContext.Provider value={props.id}>

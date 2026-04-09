@@ -10,12 +10,18 @@
         const qrcode = decodeURIComponent(search.get('qr'));
         const img = document.querySelector('img');
         img.src = qrcode;
+        const ip = decodeURIComponent(search.get('ip'));
+        const directLink = document.querySelector('#direct-link');
+        directLink.href = ip;
+        directLink.innerText = ip;
     });
 </script>
 
 
 <body style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;">
-    <h2>Scan to open Micropad</h2><img src="#" alt="QR Code" />
+    <h2>Scan to open Micropad</h2>
+    <img src="#" alt="QR Code" />
+    <a id="direct-link" href="#" target="_blank">Open Micropad</a>
 </body>
 
 </html>

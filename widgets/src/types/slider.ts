@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { BaseWidgetModel, type BaseWidgetViewModel } from "./base.js";
-import { type Socket } from "socket.io";
+import { BaseWidgetModel, type BaseWidgetViewModel, type SocketLike } from "./base.js";
 
 export const SliderModel = BaseWidgetModel.extend({
     step: z.optional(z.number()),
@@ -30,13 +29,14 @@ export class SliderViewModel implements BaseWidgetViewModel {
         });
     }
 
-    emitChange(socket: Socket, data: { value: number }) {
+    emitChange(socket: SocketLike, data: { value: number }) {
         socket.emit(`${this.spec.type}.change`, data);
     }
 
-    onChange(socket: Socket, cb: (data: { value: number }) => void) {
+    onChange(socket: SocketLike, cb: (data: { value: number }) => void) {
         socket.on(`${this.spec.type}.change`, cb);
         return () => {
+            // @ts-ignore
             socket.off(`${this.spec.type}.change`, cb);
         }
     }

@@ -6,47 +6,45 @@ import { fileURLToPath } from 'node:url';
 import { connectApp } from './app.js';
 import { app as electron, BrowserWindow } from 'electron';
 import qrcode from 'qrcode';
-import { Bonjour } from 'bonjour-service';
-import os from 'node:os';
-import { getLocalIP } from './ip.js';
-import nodeMachineId from 'node-machine-id';
-
-const app = express();
-const server = createServer(app);
-const io = new Server(server, { serveClient: false });
-const machineId = nodeMachineId.machineIdSync();
-const ip = getLocalIP();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const client = path.join(__dirname, "../../client/dist");
-
-app.use(express.static(client));
-
-app.get("/{*any}", (req, res) => {
-    res.sendFile(path.join(client, "index.html"));
-});
-
-io.on('connection', (socket) => {
-    console.log('new connection')
-    connectApp(socket);
-});
-
-server.listen(3000, '0.0.0.0', () => {
-    console.log('server running at http://localhost:3000');
-});
-
-let mainWindow;
+import { getAddress } from './ip.js';
 
 (async () => {
+    const app = express();
+    const server = createServer(app);
+    const io = new Server(server, {
+        serveClient: false,
+        cors: {
+            origin: '*'
+        }
+    });
+    const address = await getAddress();
+    console.log('discovered address:', address);
 
-    const bonjour = new Bonjour();
-    const service = bonjour.publish({ name: `micropad-${machineId}`, type: 'ws', port: 3000, host: `micropad-${machineId}.local` });
-    console.log('generated service name', service.host)
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const client = path.join(__dirname, "../../../client/dist");
 
-    const frontendBase = process.env.FRONTEND_URL ?? `http://${ip}:5173`;
+    app.use(express.static(client));
+
+    app.get("/{*any}", (req, res) => {
+        res.sendFile(path.join(client, "index.html"));
+    });
+
+    io.on('connection', (socket) => {
+        console.log('new connection')
+        connectApp(socket);
+    });
+
+    io.listen(server);
+
+    server.listen(3000, '0.0.0.0', () => {
+        console.log('server running at http://localhost:3000');
+    });
+
+    let mainWindow;
+
+    const frontendBase = `http://${address}:3000`;
     const frontendUrl = new URL(frontendBase);
-    frontendUrl.searchParams.set('server', service.host);
     const qrCodeDataURL = await qrcode.toDataURL(frontendUrl.toString(), {
         type: 'image/png',
         errorCorrectionLevel: 'H',
@@ -63,23 +61,20 @@ let mainWindow;
             maximizable: false,
             alwaysOnTop: true
         });
-        mainWindow.loadURL('file://' + path.join(__dirname, `../../public/index.html?qr=${encodeURIComponent(qrCodeDataURL)}`));
+
+        mainWindow.loadURL('file://' + path.join(__dirname, `../../public/index.html?qr=${encodeURIComponent(qrCodeDataURL)}&ip=${encodeURIComponent(frontendUrl.toString())}`));
     });
 
-    const cleanup = () => {
+    const cleanup = (config: { electron?: boolean } = {}) => {
         return new Promise<void>(resolve => {
-            bonjour.unpublishAll(() => {
-                bonjour.destroy();
-                console.log('mDNS server destroyed.');
-
-                electron.quit();
-                resolve();
-            });
+            console.log('shutting down...');
+            !config.electron && electron.quit();
+            resolve();
         });
     }
 
     electron.on('before-quit', async () => {
-        await cleanup();
+        await cleanup({ electron: true });
         process.exit(0);
     });
     
