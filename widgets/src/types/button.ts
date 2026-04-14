@@ -1,17 +1,21 @@
 import { z } from "zod";
-import { BaseWidgetModel, type BaseWidgetViewModel } from "./base.js";
+import { BaseWidgetModel, BaseWidgetViewModel } from "./base.js";
 import type { Socket as ServerSocket } from "socket.io";
 import type { Socket as ClientSocket } from "socket.io-client";
 
 export const ButtonModel = BaseWidgetModel.extend({
     text: z.string(),
-    canToggle: z.optional(z.boolean())
+    canToggle: z.optional(z.boolean()),
+    id: z.literal('button')
 });
 
 export type IButtonModel = z.infer<typeof ButtonModel>;
 
-export class ButtonViewModel implements BaseWidgetViewModel {
-    constructor(public spec: IButtonModel) {}
+export class ButtonViewModel extends BaseWidgetViewModel {
+    static id = 'button';
+    constructor(public spec: IButtonModel) {
+        super();
+    }
 
     static fromConfig(config: {
         pluginName: string,
@@ -24,7 +28,8 @@ export class ButtonViewModel implements BaseWidgetViewModel {
             type: `${config.pluginName}.${config.widgetName}`,
             title: config.title,
             text: config.text,
-            canToggle: config.canToggle
+            canToggle: config.canToggle,
+            id: 'button'
         })
     }
 

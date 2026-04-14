@@ -13,6 +13,7 @@ import { Widget } from "./components/grid";
 import { useSocket } from "./socket";
 import { useEffect, useState } from "react";
 import { GridsContext, useGrids } from "./store/layout/grid";
+import type { IBaseWidgetModel } from "micropad-widgets";
 
 const darkTheme = createTheme({
   palette: {
@@ -23,16 +24,18 @@ const darkTheme = createTheme({
 export default function App() {
   const isEditing = useEditingStore(s => s.isEditing);
   const socket = useSocket();
-  const [specs, setSpecs] = useState<Record<string, any>>({});
+  const [specs, setSpecs] = useState<IBaseWidgetModel[]>([]);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('app', (data: any) => {
+    socket.on('app', (data: { widgets: IBaseWidgetModel[] }) => {
+      console.log('received', data)
       setSpecs(data.widgets);
     });
+    socket.emit('app.get');
     return () => {
       socket.off('app');
-    };
+    }
   }, [socket]);
 
   return (

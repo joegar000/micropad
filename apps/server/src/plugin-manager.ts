@@ -6,8 +6,7 @@ import volume from "./plugins/volume/index.js";
 
 
 export class PluginAPI {
-    widgetSpecs: { [pluginName: string]: { [type: string]: BaseWidgetViewModel } } = {}
-    handlers: { [event: string]: (data: any, socket: Socket) => void } = {};
+    widgets: BaseWidgetViewModel[] = [];
 
     constructor(
         public ws: Socket
@@ -17,22 +16,14 @@ export class PluginAPI {
         pluginName: string,
         cb: ({ addWidgets }: { addWidgets: (...widgets: BaseWidgetViewModel[]) => void }) => void
     ) {
-        const widgets: BaseWidgetViewModel[] = [];
         cb({
-            addWidgets: (...w: BaseWidgetViewModel[]) => widgets.push(...w)
+            addWidgets: (...w: BaseWidgetViewModel[]) => this.widgets.push(...w)
         });
-        this.widgetSpecs = {
-            ...this.widgetSpecs,
-            [pluginName]: widgets.reduce((p, c) => ({
-                ...p,
-                [c.spec.type]: c
-            }), {})
-        };
     }
 
     serialize() {
         return {
-            widgets: this.widgetSpecs
+            widgets: this.widgets.map(w => w.spec)
         }
     }
 }

@@ -8,15 +8,21 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import { cloneDeep } from "es-toolkit";
-import { type IWidgetModel } from "micropad-widgets";
+import type { IWidgetModel, BaseWidgetViewModel } from "micropad-widgets";
 
-export const baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
+export class WidgetRegistry {
+  static baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
 
-export function registerWidget(type: string, component: FC<any>) {
-  if (baseWidgetRegistry.has(type))
-    throw Error(`A widget of type ${type} already exists`);
-  baseWidgetRegistry.set(type, component);
-  return baseWidgetRegistry;
+  static bindViewModel(vm: typeof BaseWidgetViewModel, component: FC<any>) {
+    if (this.baseWidgetRegistry.has(vm.id))
+      throw Error(`A widget of type ${vm.id} already exists`);
+    this.baseWidgetRegistry.set(vm.id, component);
+    return this.baseWidgetRegistry;
+  }
+
+  static get(spec: IWidgetModel): FC<IWidgetModel> {
+    return this.baseWidgetRegistry.get(spec.id)!;
+  }
 }
 
 const WidgetIdContext = createContext<string | null>(null);

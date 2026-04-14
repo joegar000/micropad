@@ -1,16 +1,20 @@
 import { z } from "zod";
-import { BaseWidgetModel, type BaseWidgetViewModel, type SocketLike } from "./base.js";
+import { BaseWidgetModel, BaseWidgetViewModel, type SocketLike } from "./base.js";
 
 export const SliderModel = BaseWidgetModel.extend({
     step: z.optional(z.number()),
     min: z.optional(z.number()),
-    max: z.optional(z.number())
+    max: z.optional(z.number()),
+    id: z.literal('slider')
 });
 
 export type ISliderModel = z.infer<typeof SliderModel>;
 
-export class SliderViewModel implements BaseWidgetViewModel {
-    constructor(public spec: ISliderModel) {}
+export class SliderViewModel extends BaseWidgetViewModel {
+    static id = 'slider';
+    constructor(public spec: ISliderModel) {
+        super();
+    }
 
     static fromConfig(config: {
         pluginName: string,
@@ -25,7 +29,8 @@ export class SliderViewModel implements BaseWidgetViewModel {
             title: config.title,
             step: config.step,
             min: config.min,
-            max: config.max
+            max: config.max,
+            id: 'slider'
         });
     }
 

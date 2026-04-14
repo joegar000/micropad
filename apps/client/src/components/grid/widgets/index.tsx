@@ -1,8 +1,9 @@
-import { registerWidget } from "./WidgetBase";
+import { ButtonViewModel, SliderViewModel } from "micropad-widgets";
 import Button from "./Button";
 import Slider from "./Slider";
+import { WidgetRegistry } from "./WidgetBase";
 
-let baseWidgetRegistry = registerWidget('button', Button);
-baseWidgetRegistry = registerWidget('slider', Slider);
+WidgetRegistry.bindViewModel(ButtonViewModel, Button);
+WidgetRegistry.bindViewModel(SliderViewModel, Slider);
 export * from "./WidgetBase";
-export { baseWidgetRegistry };
+export { WidgetRegistry };

@@ -32,7 +32,10 @@ import { getAddress } from './ip.js';
 
     io.on('connection', (socket) => {
         console.log('new connection')
-        connectApp(socket);
+        socket.on('app.get', () => {
+            console.log('app requested')
+            connectApp(socket);
+        });
     });
 
     io.listen(server);
@@ -58,8 +61,7 @@ import { getAddress } from './ip.js';
             title: 'Micropad QR Code',
             resizable: false,
             minimizable: false,
-            maximizable: false,
-            alwaysOnTop: true
+            maximizable: false
         });
 
         mainWindow.loadURL('file://' + path.join(__dirname, `../../public/index.html?qr=${encodeURIComponent(qrCodeDataURL)}&ip=${encodeURIComponent(frontendUrl.toString())}`));
