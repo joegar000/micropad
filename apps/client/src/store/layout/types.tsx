@@ -9,5 +9,5 @@ export interface Grid {
   rows: number;
   columns: number;
   widgets: LayoutItem[];
-  meta: Record<string, WidgetMeta>;
+  meta: WidgetMeta;
 }

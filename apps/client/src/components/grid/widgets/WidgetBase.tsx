@@ -2,13 +2,13 @@ import clsx from "clsx";
 import { createContext, use, useState, type FC, type ReactNode } from "react";
 import { useEditingStore } from "../../../store/editing";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useLayoutStore } from "../../../store/layout";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import { cloneDeep } from "es-toolkit";
 import type { IWidgetModel, BaseWidgetViewModel } from "micropad-widgets";
+import { useGrids } from "../../../store/layout/grid";
 
 export class WidgetRegistry {
   static baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
@@ -37,8 +37,10 @@ export function BaseWidget(props: {
   const spec = use(SpecContext)!;
 
   const isEditing = useEditingStore(s => s.isEditing);
-  const setLayout = useLayoutStore(s => s.setLayout);
-  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta)
+  const setLayout = useGrids(s => s.setLayout);
+  const layout = useGrids(s => s.currentGrid.widgets);
+  const setLayoutMeta = useGrids(s => s.setLayoutMeta)
+  const layoutMeta = useGrids(s => s.currentGrid.meta);
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -103,12 +105,11 @@ export function BaseWidget(props: {
                 <div
                   title="Delete"
                   onClick={() => {
-                    setLayout(l => l.filter(w => w.i !== id));
-                    setLayoutMeta(currentMeta => {
-                      const newMeta = cloneDeep(currentMeta);
-                      delete newMeta[id];
-                      return newMeta;
-                    })
+                    const newLayout = layout.filter(w => w.i !== id);
+                    setLayout(newLayout);
+                    const newMeta = cloneDeep(layoutMeta);
+                    delete newMeta[id];
+                    setLayoutMeta(newMeta);
                 }}
                 >
                   <DeleteIcon />
@@ -126,13 +127,11 @@ export function BaseWidget(props: {
 }
 
 export function Widget(props: { id: string }) {
-  const layoutMeta = useLayoutStore(s => s.widgetMeta);
+  const layoutMeta = useGrids(s => s.currentGrid.meta);
   const meta = layoutMeta[props.id];
   const specLookup = use(WidgetSpecContext);
-  // @ts-ignore
-  const spec = specLookup[meta.type];
-  // @ts-ignore
-  const Component = baseWidgetRegistry.get(spec.baseType)!;
+  const spec = specLookup[meta.type] as IWidgetModel;
+  const Component = WidgetRegistry.get(spec);
   return (
     <WidgetIdContext.Provider value={props.id}>
       <SpecContext.Provider value={spec}>

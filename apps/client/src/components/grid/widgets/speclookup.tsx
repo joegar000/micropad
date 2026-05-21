@@ -5,4 +5,4 @@ export interface WidgetSpecLookup {
   [type: `${string}.${string}`]: IWidgetModel;
 }
 
-export const WidgetSpecContext = createContext<IBaseWidgetModel[]>([]);
+export const WidgetSpecContext = createContext<Record<IWidgetModel['type'], IBaseWidgetModel>>({});

@@ -8,11 +8,13 @@ import { createContext } from "react";
 
 interface GridState {
   grids: Grid[];
-  setRows: (rows: number, gIndex: number) => void;
-  setColumns: (cols: number, gIndex: number) => void;
-  setLayout: (widgets: LayoutItem[], gIndex: number) => void;
-  setLayoutMeta: (meta: WidgetMeta, gIndex: number) => void;
-  addGrid: (grid: Grid, atIndex?: number) => void;
+  currentGrid: Grid;
+  currentIndex: number;
+  setRows: (rows: number, gIndex?: number) => void;
+  setColumns: (cols: number, gIndex?: number) => void;
+  setLayout: (widgets: LayoutItem[], gIndex?: number) => void;
+  setLayoutMeta: (meta: WidgetMeta, gIndex?: number) => void;
+  addGrid: (grid: Grid, gIndex?: number) => void;
   setGrids: (grids: Grid[]) => void;
   removeGrid: (atIndex: number) => void;
 }
@@ -20,35 +22,42 @@ interface GridState {
 export const useGrids = create<GridState>()(
   persist(
     immer(
-      ((set, _get) => ({
-        grids: [],
-        setRows: (rows, gIndex) => {
+      ((set, get) => ({
+        grids: [{ rows: 0, columns: 0, widgets: [], meta: {} }],
+        currentGrid: { rows: 0, columns: 0, widgets: [], meta: {} },
+        currentIndex: 0,
+        setRows: (rows: number, gIndex?: number) => {
+          const index = gIndex ?? get().currentIndex;
           set(s => {
-            s.grids[gIndex].rows = rows;
+            s.grids[index].rows = rows;
           })
         },
-        setColumns: (cols: number, gIndex: number) => {
+        setColumns: (cols: number, gIndex?: number) => {
+          const index = gIndex ?? get().currentIndex;
           set(s => {
-            s.grids[gIndex].columns = cols;
+            s.grids[index].columns = cols;
           })
         },
-        setLayout: (widgets, gIndex) => {
+        setLayout: (widgets, gIndex?: number) => {
+          const index = gIndex ?? get().currentIndex;
           set(s => {
-            s.grids[gIndex].widgets = widgets;
+            s.grids[index].widgets = widgets;
           });
         },
-        setLayoutMeta: (meta, gIndex) => {
+        setLayoutMeta: (meta, gIndex?: number) => {
+          const index = gIndex ?? get().currentIndex;
           set(s => {
             // @ts-ignore
-            s.grids[gIndex].meta = meta;
+            s.grids[index].meta = meta;
           });
         },
-        addGrid: (grid, atIndex) => {
+        addGrid: (grid, gIndex?: number) => {
+          const index = gIndex ?? get().currentIndex;
           set(s => {
-            if (atIndex === undefined)
+            if (index === undefined)
               s.grids.push(grid);
             else
-              s.grids.splice(atIndex, 0, grid);
+              s.grids.splice(index, 0, grid);
           })
         },
         setGrids: (grids) => {

@@ -39,7 +39,8 @@ export default function App() {
   }, [socket]);
 
   return (
-    <WidgetSpecContext.Provider value={specs}>
+    // @ts-ignore
+    <WidgetSpecContext.Provider value={specs.reduce((acc, spec) => { acc[spec.type] = spec; return acc; }, {})}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <div className="p-1 flex justify-between items-center">

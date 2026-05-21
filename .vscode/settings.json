@@ -1,0 +1,8 @@
+{
+    "yaml.schemas": {
+        "file:///Users/davidgarcia/.vscode/extensions/continue.continue-1.2.22-darwin-x64/config-yaml-schema.json": [
+            ".continue/**/*.yaml",
+            "file:///Users/davidgarcia/Coding/micropad/.continue/agents/new-config.yaml"
+        ]
+    }
+}

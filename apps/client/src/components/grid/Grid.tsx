@@ -5,19 +5,22 @@ import clsx from 'clsx';
 import useResizeObserver from '../../hooks/resizeobserver';
 import { useCallback, useLayoutEffect, useState, type ReactNode } from 'react';
 import { useEditingStore } from '../../store/editing';
-import { useLayoutStore, widgetIdStore } from '../../store/layout';
+import { widgetIdStore } from '../../store/layout';
 import { uniqWith } from 'es-toolkit';
 import "./grid.css";
 import "./widgets";
+import { useGrids } from '../../store/layout/grid';
+import type { WidgetMeta } from '../../store/layout/types';
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();
-  const rows = useLayoutStore(s => s.rows);
-  const columns = useLayoutStore(s => s.columns);
-  const layout = useLayoutStore(s => s.widgets);
+  const rows = useGrids(s => s.currentGrid.rows);
+  const columns = useGrids(s => s.currentGrid.columns);
+  const layout = useGrids(s => s.currentGrid.widgets);
   const isEditing = useEditingStore(s => s.isEditing);
-  const setLayout = useLayoutStore(s => s.setLayout);
-  const setLayoutMeta = useLayoutStore(s => s.setLayoutMeta);
+  const setLayout = useGrids(s => s.setLayout);
+  const setLayoutMeta = useGrids(s => s.setLayoutMeta);
+  const layoutMeta = useGrids(s => s.currentGrid.meta);
   const [justDropped, setJustDropped] = useState(false);
 
   const [cellHeight, setCellHeight] = useState(0);
@@ -108,10 +111,9 @@ export function Grid({ children }: { children: ReactNode }) {
               const newWidget = { ...item, i: newId };
 
               setJustDropped(true);
-              setLayoutMeta(currentMeta => ({
-                ...currentMeta,
-                [newId]: { type: droppedType as `${string}.${string}` }
-              }));
+              // @ts-ignore
+              const newMeta: WidgetMeta = {...layoutMeta, [newId]: { type: droppedType as `${string}.${string}` }};
+              setLayoutMeta(newMeta);
               // uniqWith to fix polyfill bug where item will appear twice in `layout`
               setLayout(uniqWith(layout.map(l => l.i === item.i ? newWidget : l), (a, b) => a.i === b.i));
             }

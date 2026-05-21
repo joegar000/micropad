@@ -16,7 +16,7 @@ export function GridPanel() {
   const items: IWidgetModel[] = useMemo(() => {
     const qs = query.trim().toLowerCase();
     // @ts-ignore
-    return specs.filter((spec: IWidgetModel) => {
+    return Object.values(specs).filter((spec: IWidgetModel) => {
       if (!qs) return true;
       return (
         spec.title.toLowerCase().includes(qs) ||
