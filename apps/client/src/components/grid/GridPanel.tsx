@@ -15,8 +15,7 @@ export function GridPanel() {
 
   const items: IWidgetModel[] = useMemo(() => {
     const qs = query.trim().toLowerCase();
-    // @ts-ignore
-    return Object.values(specs).filter((spec: IWidgetModel) => {
+    return Object.values(specs).filter((spec) => {
       if (!qs) return true;
       return (
         spec.title.toLowerCase().includes(qs) ||
@@ -38,7 +37,7 @@ export function GridPanel() {
     return () => {
       document.removeEventListener('dragend', dragEnd);
     }
-  }, [dragging]);
+  }, [dragging, setSidebarOpen]);
 
   return (
     <div className="flex flex-col" style={{ maxHeight: '100vh', zIndex: 100 }} onDragEnter={(e) => e.preventDefault()} onDragOver={(e) => e.preventDefault()}>

@@ -26,6 +26,7 @@
     "es-toolkit": "^1.45.1",
     "idb-keyval": "^6.2.2",
     "immer": "^11.1.4",
+    "micropad-protocol": "0.0.1",
     "micropad-widgets": "0.0.1",
     "qr-scanner": "^1.4.2",
     "react": "^19.2.0",

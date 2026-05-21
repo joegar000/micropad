@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, use, type ReactNode } from "react";
 import { type Socket } from "socket.io-client";
 

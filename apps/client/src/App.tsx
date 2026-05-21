@@ -12,8 +12,9 @@ import { WidgetSpecContext } from "./components/grid/widgets/speclookup";
 import { Widget } from "./components/grid";
 import { useSocket } from "./socket";
 import { useEffect, useState } from "react";
-import { GridsContext, useGrids } from "./store/layout/grid";
-import type { IBaseWidgetModel } from "micropad-widgets";
+import { selectCurrentPage, useLayoutStore } from "./store/layout/grid";
+import type { IWidgetModel } from "micropad-widgets";
+import { AppSnapshotSchema, SocketEvent, type AppSnapshot } from "micropad-protocol";
 
 const darkTheme = createTheme({
   palette: {
@@ -24,24 +25,35 @@ const darkTheme = createTheme({
 export default function App() {
   const isEditing = useEditingStore(s => s.isEditing);
   const socket = useSocket();
-  const [specs, setSpecs] = useState<IBaseWidgetModel[]>([]);
+  const [specs, setSpecs] = useState<IWidgetModel[]>([]);
+  const setLayoutFromBridge = useLayoutStore(s => s.setLayoutFromBridge);
+  const markBridgeReady = useLayoutStore(s => s.markBridgeReady);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('app', (data: { widgets: IBaseWidgetModel[] }) => {
-      console.log('received', data)
-      setSpecs(data.widgets);
-    });
-    socket.emit('app.get');
+    const applySnapshot = (data: AppSnapshot) => {
+      const snapshot = AppSnapshotSchema.parse(data);
+      setSpecs(snapshot.widgets as IWidgetModel[]);
+      if (snapshot.layout) {
+        setLayoutFromBridge(snapshot.layout);
+      } else {
+        markBridgeReady();
+      }
+    };
+
+    socket.on(SocketEvent.AppSnapshot, applySnapshot);
+    socket.on('app', applySnapshot);
+    socket.emit(SocketEvent.AppGet);
     return () => {
-      socket.off('app');
+      socket.off(SocketEvent.AppSnapshot, applySnapshot);
+      socket.off('app', applySnapshot);
     }
-  }, [socket]);
+  }, [socket, markBridgeReady, setLayoutFromBridge]);
 
   return (
-    // @ts-ignore
-    <WidgetSpecContext.Provider value={specs.reduce((acc, spec) => { acc[spec.type] = spec; return acc; }, {})}>
+    <WidgetSpecContext.Provider value={specs.reduce<Record<string, IWidgetModel>>((acc, spec) => { acc[spec.type] = spec; return acc; }, {})}>
       <ThemeProvider theme={darkTheme}>
+        <LayoutBridgeSync />
         <CssBaseline />
         <div className="p-1 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -58,33 +70,52 @@ export default function App() {
   );
 }
 
+function LayoutBridgeSync() {
+  const socket = useSocket();
+  const layout = useLayoutStore(s => s.layout);
+  const bridgeReady = useLayoutStore(s => s.bridgeReady);
+
+  useEffect(() => {
+    if (!bridgeReady) {
+      return;
+    }
+
+    const sync = window.setTimeout(() => {
+      socket.emit(SocketEvent.LayoutUpdate, layout);
+    }, 250);
+
+    return () => window.clearTimeout(sync);
+  }, [bridgeReady, layout, socket]);
+
+  return null;
+}
+
 function AppGrid() {
   const isEditing = useEditingStore(s => s.isEditing);
-  const grid = useGrids();
-  const [loaded, setLoaded] = useState(false);
+  const page = useLayoutStore(selectCurrentPage);
+  const [loaded, setLoaded] = useState(useLayoutStore.persist.hasHydrated());
   useEffect(() => {
-    useGrids.persist.onFinishHydration(() => {
+    const unsub = useLayoutStore.persist.onFinishHydration(() => {
       setLoaded(true);
     });
+    return unsub;
   }, []);
   if (!loaded) {
     return <div>Loading...</div>;
   }
 
-  const widgets = grid.grids[0]?.widgets || [];
+  const widgets = page.widgets;
   return (
     <>
-      <GridsContext.Provider value={grid}>
-        <Grid>
-          {widgets.map((w) => {
-            return (
-              <div className="flex" key={w.i}>
-                <Widget id={w.i} />
-              </div>
-            );
-          })}
-        </Grid>
-      </GridsContext.Provider>
+      <Grid>
+        {widgets.map((w) => {
+          return (
+            <div className="flex" key={w.id}>
+              <Widget id={w.id} />
+            </div>
+          );
+        })}
+      </Grid>
       <Activity mode={isEditing ? 'visible' : 'hidden'}>
         <div className="p-1">
           <GridSize />

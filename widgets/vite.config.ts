@@ -1,14 +1,7 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-    plugins: [
-        dts({
-            entryRoot: 'src',
-            rollupTypes: true,
-        }),
-    ],
     build: {
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
@@ -17,7 +10,7 @@ export default defineConfig({
             fileName: (format) => `index.${format === 'cjs' ? 'cjs' : 'es.js'}`,
         },
         rollupOptions: {
-            external: ['socket.io', 'socket.io-client'],
+            external: ['socket.io', 'socket.io-client', 'micropad-protocol'],
             output: [
                 {
                     format: 'es',

@@ -1,8 +1,5 @@
-// @ts-ignore
 import { enableDragDropTouch } from "@dragdroptouch/drag-drop-touch";
-import { Buffer } from 'buffer';
 
-export default () => {
+export default function polyfill() {
   enableDragDropTouch();
-  (globalThis as any).Buffer = Buffer;
 }

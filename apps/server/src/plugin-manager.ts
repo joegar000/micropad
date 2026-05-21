@@ -1,6 +1,4 @@
-import fs from "fs"
 import { type BaseWidgetViewModel } from "micropad-widgets";
-import path from "path"
 import { Socket } from "socket.io";
 import volume from "./plugins/volume/index.js";
 

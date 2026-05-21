@@ -4,10 +4,11 @@ const useInt = (initialValue: number) => {
   const [value, setValue] = useState(initialValue);
 
   const setIntValue = useCallback((newValue: number) => {
-    if (newValue < value)
-      setValue(Math.floor(newValue));
-    else
-      setValue(Math.ceil(newValue));
+    setValue(currentValue => {
+      if (newValue < currentValue)
+        return Math.floor(newValue);
+      return Math.ceil(newValue);
+    });
   }, []);
 
   return [value, setIntValue] as const;

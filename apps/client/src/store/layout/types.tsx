@@ -1,13 +1,39 @@
-import type { IWidgetModel } from "micropad-widgets";
+import type { LayoutPage, MicropadLayout, WidgetInstance } from "micropad-protocol";
 import type { LayoutItem } from "react-grid-layout";
 
-export interface WidgetMeta {
-  [id: string]: Pick<IWidgetModel, 'type'>;
+export type { LayoutPage, MicropadLayout, WidgetInstance };
+
+export function getCurrentPage(layout: MicropadLayout): LayoutPage {
+  return layout.pages.find(page => page.id === layout.currentPageId) ?? layout.pages[0]!;
 }
 
-export interface Grid {
-  rows: number;
-  columns: number;
-  widgets: LayoutItem[];
-  meta: WidgetMeta;
+export function widgetToLayoutItem(widget: WidgetInstance): LayoutItem {
+  return {
+    i: widget.id,
+    x: widget.x,
+    y: widget.y,
+    w: widget.w,
+    h: widget.h
+  };
+}
+
+export function applyLayoutItemsToWidgets(
+  widgets: WidgetInstance[],
+  items: LayoutItem[]
+): WidgetInstance[] {
+  const placementById = new Map(items.map(item => [item.i, item]));
+  return widgets.map(widget => {
+    const placement = placementById.get(widget.id);
+    if (!placement) {
+      return widget;
+    }
+
+    return {
+      ...widget,
+      x: placement.x,
+      y: placement.y,
+      w: placement.w,
+      h: placement.h
+    };
+  });
 }

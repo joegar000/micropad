@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { WidgetEvent } from "micropad-protocol";
 
 export const BaseWidgetModel = z.object({
     title: z.string(),
@@ -17,6 +18,11 @@ export interface SocketLike {
 export interface BaseWidgetViewModel {
     spec: IBaseWidgetModel;
 }
+
+export type WidgetEventContext = Partial<Pick<
+    WidgetEvent,
+    "clientId" | "deviceId" | "layoutId" | "pageId" | "widgetInstanceId" | "seq"
+>>;
 
 export abstract class BaseWidgetViewModel {
     static get id(): string {

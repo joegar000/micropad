@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import clsx from "clsx";
 import { createContext, use, useState, type FC, type ReactNode } from "react";
 import { useEditingStore } from "../../../store/editing";
@@ -6,17 +7,16 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
-import { cloneDeep } from "es-toolkit";
 import type { IWidgetModel, BaseWidgetViewModel } from "micropad-widgets";
-import { useGrids } from "../../../store/layout/grid";
+import { selectCurrentPage, useLayoutStore } from "../../../store/layout/grid";
 
 export class WidgetRegistry {
   static baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
 
-  static bindViewModel(vm: typeof BaseWidgetViewModel, component: FC<any>) {
+  static bindViewModel<T extends IWidgetModel>(vm: typeof BaseWidgetViewModel, component: FC<T>) {
     if (this.baseWidgetRegistry.has(vm.id))
       throw Error(`A widget of type ${vm.id} already exists`);
-    this.baseWidgetRegistry.set(vm.id, component);
+    this.baseWidgetRegistry.set(vm.id, component as FC<IWidgetModel>);
     return this.baseWidgetRegistry;
   }
 
@@ -29,6 +29,10 @@ const WidgetIdContext = createContext<string | null>(null);
 
 export const SpecContext = createContext<IWidgetModel | null>(null);
 
+export function useWidgetInstanceId() {
+  return use(WidgetIdContext);
+}
+
 export function BaseWidget(props: {
   children: ReactNode,
   extraOptions?: { icon: ReactNode, onClick: () => void, title?: string }[]
@@ -37,10 +41,7 @@ export function BaseWidget(props: {
   const spec = use(SpecContext)!;
 
   const isEditing = useEditingStore(s => s.isEditing);
-  const setLayout = useGrids(s => s.setLayout);
-  const layout = useGrids(s => s.currentGrid.widgets);
-  const setLayoutMeta = useGrids(s => s.setLayoutMeta)
-  const layoutMeta = useGrids(s => s.currentGrid.meta);
+  const removeWidget = useLayoutStore(s => s.removeWidget);
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -105,11 +106,7 @@ export function BaseWidget(props: {
                 <div
                   title="Delete"
                   onClick={() => {
-                    const newLayout = layout.filter(w => w.i !== id);
-                    setLayout(newLayout);
-                    const newMeta = cloneDeep(layoutMeta);
-                    delete newMeta[id];
-                    setLayoutMeta(newMeta);
+                    removeWidget(id);
                 }}
                 >
                   <DeleteIcon />
@@ -127,14 +124,23 @@ export function BaseWidget(props: {
 }
 
 export function Widget(props: { id: string }) {
-  const layoutMeta = useGrids(s => s.currentGrid.meta);
-  const meta = layoutMeta[props.id];
+  const page = useLayoutStore(selectCurrentPage);
+  const widget = page.widgets.find(candidate => candidate.id === props.id);
   const specLookup = use(WidgetSpecContext);
-  const spec = specLookup[meta.type] as IWidgetModel;
+  if (!widget) {
+    return null;
+  }
+
+  const spec = specLookup[widget.widgetType] as IWidgetModel | undefined;
+  if (!spec) {
+    return null;
+  }
+
   const Component = WidgetRegistry.get(spec);
   return (
     <WidgetIdContext.Provider value={props.id}>
       <SpecContext.Provider value={spec}>
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Component {...spec} />
       </SpecContext.Provider>
     </WidgetIdContext.Provider>

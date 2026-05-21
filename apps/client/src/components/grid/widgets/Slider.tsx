@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BaseWidget } from "./WidgetBase";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BaseWidget, useWidgetInstanceId } from "./WidgetBase";
 import { type ISliderModel, SliderViewModel } from "micropad-widgets";
 import { debounce } from "es-toolkit";
 import { Slider } from "@mui/material";
@@ -12,6 +12,8 @@ export default function SliderWiget(props: ISliderModel) {
   const divRef = useRef<HTMLDivElement>(null);
   const sliderViewModel = useMemo(() => new SliderViewModel(props), [props]);
   const socket = useSocket();
+  const widgetInstanceId = useWidgetInstanceId();
+  const eventContext = useMemo(() => widgetInstanceId ? { widgetInstanceId } : {}, [widgetInstanceId]);
 
   useEffect(() => {
     return sliderViewModel.onChange(socket, (data) => {
@@ -19,12 +21,11 @@ export default function SliderWiget(props: ISliderModel) {
         setValue(data.value);
       }
     });
-  }, [sliderViewModel]);
+  }, [sliderViewModel, socket]);
 
-  const debounceChange = useCallback(
-    debounce((value: number) => sliderViewModel.emitChange(socket, { value }), 200),
-    [sliderViewModel, socket]
-  );
+  const debounceChange = useMemo(() => {
+    return debounce((value: number) => sliderViewModel.emitChange(socket, { value }, eventContext), 200);
+  }, [sliderViewModel, socket, eventContext]);
 
   return (
     <BaseWidget

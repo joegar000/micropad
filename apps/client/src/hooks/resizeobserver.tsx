@@ -18,7 +18,7 @@ const useResizeObserver = (ref: React.RefObject<HTMLElement | null>, callback: (
       callback(fakeEntry);
 
     const observer = new ResizeObserver(entries => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         if (entry.target === ref.current) {
           callback(entry);
         }

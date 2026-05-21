@@ -1,3 +1,3 @@
-export * from "./Grid.tsx";
-export * from "./widgets/WidgetBase.tsx"
-export * from "./GridPanel.tsx";
+export { Grid } from "./Grid.tsx";
+export { GridPanel } from "./GridPanel.tsx";
+export { Widget } from "./widgets/WidgetBase.tsx";

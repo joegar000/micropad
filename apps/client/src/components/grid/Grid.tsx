@@ -3,24 +3,22 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import clsx from 'clsx';
 import useResizeObserver from '../../hooks/resizeobserver';
-import { useCallback, useLayoutEffect, useState, type ReactNode } from 'react';
+import { useCallback, useState, type CSSProperties, type ReactNode } from 'react';
 import { useEditingStore } from '../../store/editing';
-import { widgetIdStore } from '../../store/layout';
-import { uniqWith } from 'es-toolkit';
 import "./grid.css";
 import "./widgets";
-import { useGrids } from '../../store/layout/grid';
-import type { WidgetMeta } from '../../store/layout/types';
+import { selectCurrentPage, useLayoutStore, widgetIdStore } from '../../store/layout/grid';
+import { widgetToLayoutItem } from '../../store/layout/types';
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();
-  const rows = useGrids(s => s.currentGrid.rows);
-  const columns = useGrids(s => s.currentGrid.columns);
-  const layout = useGrids(s => s.currentGrid.widgets);
+  const page = useLayoutStore(selectCurrentPage);
+  const rows = page.rows;
+  const columns = page.columns;
+  const layout = page.widgets.map(widgetToLayoutItem);
   const isEditing = useEditingStore(s => s.isEditing);
-  const setLayout = useGrids(s => s.setLayout);
-  const setLayoutMeta = useGrids(s => s.setLayoutMeta);
-  const layoutMeta = useGrids(s => s.currentGrid.meta);
+  const setWidgetPlacements = useLayoutStore(s => s.setWidgetPlacements);
+  const addWidget = useLayoutStore(s => s.addWidget);
   const [justDropped, setJustDropped] = useState(false);
 
   const [cellHeight, setCellHeight] = useState(0);
@@ -38,16 +36,7 @@ export function Grid({ children }: { children: ReactNode }) {
     setGridHeight(cellSide * rows);
     containerRef.current.style.setProperty('width', `${cellSide * columns}px`);
     containerRef.current.style.setProperty('height', `${cellSide * rows}px`);
-  }, [columns, rows]), { waitUntilMounted: true });
-
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const { height, width } = containerRef.current.getBoundingClientRect();
-    const cellSide = Math.floor(width / columns < height / rows ? width / columns : height / rows);
-    setCellHeight(cellSide);
-    setGridWidth(cellSide * columns);
-    setGridHeight(cellSide * rows);
-  }, [rows, columns]);
+  }, [columns, containerRef, rows]), { waitUntilMounted: true });
 
   return (
     <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
@@ -60,7 +49,7 @@ export function Grid({ children }: { children: ReactNode }) {
           '--grid-color': 'grey',
           height: gridHeight ?? '100%',
           width: gridWidth ?? '100%'
-        } as Record<string, any>}
+        } as CSSProperties & Record<"--columns" | "--cell-height" | "--grid-color", string | number>}
         onDragEnter={(e) => e.preventDefault()}
         onDragOver={(e) => e.preventDefault()}
       >
@@ -97,25 +86,28 @@ export function Grid({ children }: { children: ReactNode }) {
           }}
           onLayoutChange={(newLayout) => {
             if (!justDropped) {
-              setLayout(newLayout as LayoutItem[]);
+              setWidgetPlacements(newLayout as LayoutItem[]);
             } else {
               setJustDropped(false);
             }
           }}
-          onDrop={(layout, item, e) => {
+          onDrop={(_layout, item, e) => {
             if (!('dataTransfer' in e))
               return;
             const droppedType = (e.dataTransfer as DataTransfer).getData("micropad/widget-type");
             if (droppedType && item) {
               const newId = widgetIdStore.generate();
-              const newWidget = { ...item, i: newId };
 
               setJustDropped(true);
-              // @ts-ignore
-              const newMeta: WidgetMeta = {...layoutMeta, [newId]: { type: droppedType as `${string}.${string}` }};
-              setLayoutMeta(newMeta);
-              // uniqWith to fix polyfill bug where item will appear twice in `layout`
-              setLayout(uniqWith(layout.map(l => l.i === item.i ? newWidget : l), (a, b) => a.i === b.i));
+              addWidget({
+                id: newId,
+                widgetType: droppedType,
+                x: item.x,
+                y: item.y,
+                w: item.w,
+                h: item.h,
+                config: {}
+              });
             }
           }}
         >

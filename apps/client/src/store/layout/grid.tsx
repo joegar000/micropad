@@ -1,82 +1,144 @@
 import { create } from "zustand";
-import type { Grid, WidgetMeta } from "./types";
 import { immer } from "zustand/middleware/immer";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { zustandStorage } from "../../util/indexeddb";
 import type { LayoutItem } from "react-grid-layout";
 import { createContext } from "react";
+import {
+  createDefaultLayout,
+  nowIso,
+  type MicropadLayout,
+  type WidgetInstance
+} from "micropad-protocol";
+import { createIdStore } from "../../util/id";
+import { applyLayoutItemsToWidgets, getCurrentPage } from "./types";
 
-interface GridState {
-  grids: Grid[];
-  currentGrid: Grid;
-  currentIndex: number;
-  setRows: (rows: number, gIndex?: number) => void;
-  setColumns: (cols: number, gIndex?: number) => void;
-  setLayout: (widgets: LayoutItem[], gIndex?: number) => void;
-  setLayoutMeta: (meta: WidgetMeta, gIndex?: number) => void;
-  addGrid: (grid: Grid, gIndex?: number) => void;
-  setGrids: (grids: Grid[]) => void;
-  removeGrid: (atIndex: number) => void;
+export interface LayoutStoreState {
+  layout: MicropadLayout;
+  bridgeReady: boolean;
+  setLayoutFromBridge: (layout: MicropadLayout) => void;
+  markBridgeReady: () => void;
+  setCurrentPage: (pageId: string) => void;
+  setRows: (rows: number) => void;
+  setColumns: (cols: number) => void;
+  setWidgetPlacements: (widgets: LayoutItem[]) => void;
+  addWidget: (widget: WidgetInstance) => void;
+  removeWidget: (widgetId: string) => void;
+  setWidgetConfig: (widgetId: string, config: WidgetInstance["config"]) => void;
 }
 
-export const useGrids = create<GridState>()(
+export const widgetIdStore = createIdStore();
+
+let resolveLoading: () => void;
+export const layoutLoad = new Promise<void>(resolve => {
+  resolveLoading = resolve;
+});
+
+const defaultLayout = createDefaultLayout({
+  layoutId: "layout-local-default",
+  pageId: "page-main",
+  rows: 3,
+  columns: 5
+});
+
+function touch(layout: MicropadLayout) {
+  layout.updatedAt = nowIso();
+}
+
+function markWidgetIds(layout: MicropadLayout) {
+  for (const page of layout.pages) {
+    for (const widget of page.widgets) {
+      widgetIdStore.mark(widget.id);
+    }
+  }
+}
+
+export const useLayoutStore = create<LayoutStoreState>()(
   persist(
     immer(
-      ((set, get) => ({
-        grids: [{ rows: 0, columns: 0, widgets: [], meta: {} }],
-        currentGrid: { rows: 0, columns: 0, widgets: [], meta: {} },
-        currentIndex: 0,
-        setRows: (rows: number, gIndex?: number) => {
-          const index = gIndex ?? get().currentIndex;
+      set => ({
+        layout: defaultLayout,
+        bridgeReady: false,
+        setLayoutFromBridge: layout => {
+          markWidgetIds(layout);
           set(s => {
-            s.grids[index].rows = rows;
-          })
-        },
-        setColumns: (cols: number, gIndex?: number) => {
-          const index = gIndex ?? get().currentIndex;
-          set(s => {
-            s.grids[index].columns = cols;
-          })
-        },
-        setLayout: (widgets, gIndex?: number) => {
-          const index = gIndex ?? get().currentIndex;
-          set(s => {
-            s.grids[index].widgets = widgets;
+            s.layout = layout;
+            s.bridgeReady = true;
           });
         },
-        setLayoutMeta: (meta, gIndex?: number) => {
-          const index = gIndex ?? get().currentIndex;
+        markBridgeReady: () => {
           set(s => {
-            // @ts-ignore
-            s.grids[index].meta = meta;
+            s.bridgeReady = true;
           });
         },
-        addGrid: (grid, gIndex?: number) => {
-          const index = gIndex ?? get().currentIndex;
+        setCurrentPage: pageId => {
           set(s => {
-            if (index === undefined)
-              s.grids.push(grid);
-            else
-              s.grids.splice(index, 0, grid);
-          })
+            if (s.layout.pages.some(page => page.id === pageId)) {
+              s.layout.currentPageId = pageId;
+              touch(s.layout);
+            }
+          });
         },
-        setGrids: (grids) => {
+        setRows: rows => {
           set(s => {
-            s.grids = grids;
-          })
+            getCurrentPage(s.layout).rows = rows;
+            touch(s.layout);
+          });
         },
-        removeGrid: (atIndex) => {
+        setColumns: cols => {
           set(s => {
-            s.grids.splice(atIndex, 1);
+            getCurrentPage(s.layout).columns = cols;
+            touch(s.layout);
+          });
+        },
+        setWidgetPlacements: widgets => {
+          set(s => {
+            const page = getCurrentPage(s.layout);
+            page.widgets = applyLayoutItemsToWidgets(page.widgets, widgets);
+            touch(s.layout);
+          });
+        },
+        addWidget: widget => {
+          widgetIdStore.mark(widget.id);
+          set(s => {
+            getCurrentPage(s.layout).widgets.push(widget);
+            touch(s.layout);
+          });
+        },
+        removeWidget: widgetId => {
+          set(s => {
+            const page = getCurrentPage(s.layout);
+            page.widgets = page.widgets.filter(widget => widget.id !== widgetId);
+            touch(s.layout);
+          });
+        },
+        setWidgetConfig: (widgetId, config) => {
+          set(s => {
+            const page = getCurrentPage(s.layout);
+            const widget = page.widgets.find(candidate => candidate.id === widgetId);
+            if (widget) {
+              widget.config = config;
+              touch(s.layout);
+            }
           });
         }
-      }))
+      })
     ),
     {
-      name: 'grids',
-      storage: createJSONStorage(() => zustandStorage)
+      name: "layout-storage-v2",
+      storage: createJSONStorage(() => zustandStorage),
+      onRehydrateStorage: () => state => {
+        if (state?.layout) {
+          markWidgetIds(state.layout);
+        }
+        resolveLoading();
+      }
     }
   )
 );
 
-export const GridsContext = createContext<GridState | null>(null);
+export const selectCurrentPage = (state: LayoutStoreState) => getCurrentPage(state.layout);
+
+export const GridsContext = createContext<LayoutStoreState | null>(null);
+
+export const useGrids = useLayoutStore;

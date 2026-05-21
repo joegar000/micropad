@@ -7,10 +7,15 @@ import { connectApp } from './app.js';
 import { app as electron, BrowserWindow } from 'electron';
 import qrcode from 'qrcode';
 import { getAddress } from './ip.js';
+import { Bonjour, type Service } from 'bonjour-service';
+import { FileLayoutStore } from './layout-store.js';
 
 (async () => {
     const app = express();
     const server = createServer(app);
+    const layoutStore = new FileLayoutStore();
+    const bonjour = new Bonjour();
+    let mdnsService: Service | undefined;
     const io = new Server(server, {
         serveClient: false,
         cors: {
@@ -32,9 +37,9 @@ import { getAddress } from './ip.js';
 
     io.on('connection', (socket) => {
         console.log('new connection')
-        socket.on('app.get', () => {
-            console.log('app requested')
-            connectApp(socket);
+        void connectApp(socket, layoutStore).catch(error => {
+            console.error('failed to connect app', error);
+            socket.disconnect(true);
         });
     });
 
@@ -42,6 +47,17 @@ import { getAddress } from './ip.js';
 
     server.listen(3000, '0.0.0.0', () => {
         console.log('server running at http://localhost:3000');
+        mdnsService = bonjour.publish({
+            name: 'Micropad',
+            type: 'micropad',
+            protocol: 'tcp',
+            port: 3000,
+            txt: {
+                path: '/',
+                protocol: 'http',
+                version: '1'
+            }
+        });
     });
 
     let mainWindow;
@@ -70,6 +86,9 @@ import { getAddress } from './ip.js';
     const cleanup = (config: { electron?: boolean } = {}) => {
         return new Promise<void>(resolve => {
             console.log('shutting down...');
+            mdnsService?.stop?.();
+            bonjour.unpublishAll(() => bonjour.destroy());
+            server.close();
             !config.electron && electron.quit();
             resolve();
         });
@@ -82,10 +101,14 @@ import { getAddress } from './ip.js';
     
 
     // Handle Ctrl+C (Terminal)
-    process.on('SIGINT', cleanup);
+    process.on('SIGINT', () => {
+        void cleanup();
+    });
 
     // Handle system termination signals
-    process.on('SIGTERM', cleanup);
+    process.on('SIGTERM', () => {
+        void cleanup();
+    });
     
     process.on('uncaughtException', async (error) => {
         // Try to unpublish before exiting

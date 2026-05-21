@@ -12,7 +12,7 @@ From the repository root run:
 npm install
 ```
 
-This installs dependencies for the workspace packages located in apps/client and apps/server.
+This installs dependencies for the workspace packages located in apps/client, apps/server, packages/*, and widgets.
 
 Start development servers
 - Start both client and server (from the repo root):
@@ -35,7 +35,8 @@ npm run dev --workspace=apps/server
 
 Notes:
 - The client dev script runs Vite (vite serve .) for a fast dev server with HMR.
-- The server dev script runs tsx watch src/index.ts (automatic restart on changes).
+- The server dev script runs Electron against the built server output.
+- The bridge stores layouts in `~/.micropad/layouts.json` by default. Set `MICROPAD_DATA_DIR` to use a different data directory.
 
 Useful workspace commands
 - Lint the client:
@@ -54,6 +55,18 @@ npm run build --workspace=apps/client
 
 ```bash
 npm run build --workspace=apps/server
+```
+
+- Build the shared protocol package:
+
+```bash
+npm run build --workspace=packages/protocol
+```
+
+- Build the widget package:
+
+```bash
+npm run build --workspace=widgets
 ```
 
 - Run the built server:
