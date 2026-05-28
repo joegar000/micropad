@@ -41,12 +41,18 @@ export default function App() {
       }
     };
 
+    const requestSnapshot = () => {
+      socket.emit(SocketEvent.AppGet);
+    };
+
     socket.on(SocketEvent.AppSnapshot, applySnapshot);
     socket.on('app', applySnapshot);
-    socket.emit(SocketEvent.AppGet);
+    socket.on('connect', requestSnapshot);
+    requestSnapshot();
     return () => {
       socket.off(SocketEvent.AppSnapshot, applySnapshot);
       socket.off('app', applySnapshot);
+      socket.off('connect', requestSnapshot);
     }
   }, [socket, markBridgeReady, setLayoutFromBridge]);
 

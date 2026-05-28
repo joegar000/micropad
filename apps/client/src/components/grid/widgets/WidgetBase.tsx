@@ -20,8 +20,8 @@ export class WidgetRegistry {
     return this.baseWidgetRegistry;
   }
 
-  static get(spec: IWidgetModel): FC<IWidgetModel> {
-    return this.baseWidgetRegistry.get(spec.id)!;
+  static get(spec: IWidgetModel): FC<IWidgetModel> | undefined {
+    return this.baseWidgetRegistry.get(spec.id);
   }
 }
 
@@ -137,6 +137,10 @@ export function Widget(props: { id: string }) {
   }
 
   const Component = WidgetRegistry.get(spec);
+  if (!Component) {
+    return null;
+  }
+
   return (
     <WidgetIdContext.Provider value={props.id}>
       <SpecContext.Provider value={spec}>

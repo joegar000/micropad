@@ -32,4 +32,6 @@ export async function connectApp(socket: Socket, layoutStore: FileLayoutStore) {
             updatedAt: saved.updatedAt
         });
     });
+
+    await sendSnapshot();
 }

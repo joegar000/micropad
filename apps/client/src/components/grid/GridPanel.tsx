@@ -63,32 +63,36 @@ export function GridPanel() {
       <div className="flex-grow-1 p-3 overflow-y-auto h-full panel-items flex flex-col gap-3 items-center">
         {items.map((it) => {
           const Widget = WidgetRegistry.get(it);
-          console.log(it, Widget)
           return (
             <Fragment key={it.type}>
-              {Widget && (
-                <div className="flex" style={{ aspectRatio: 1, maxWidth: '10em', maxHeight: '10em', width: '100%' }}>
-                  <div
-                    className="flex-grow-1 flex"
-                    draggable={true}
-                    unselectable="on"
-                    onDragStart={e => {
-                      // this is a hack for firefox
-                      // Firefox requires some kind of initialization
-                      // which we can do by adding this attribute
-                      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
-                      e.dataTransfer.setData("text/plain", "");
-                      e.dataTransfer.setData("micropad/widget-type", it.type);
-                      setDragging(true);
-                      setSidebarOpen(false);
-                    }}
-                  >
+              <div className="flex" style={{ aspectRatio: 1, maxWidth: '10em', maxHeight: '10em', width: '100%' }}>
+                <div
+                  className="flex-grow-1 flex"
+                  draggable={true}
+                  unselectable="on"
+                  onDragStart={e => {
+                    // this is a hack for firefox
+                    // Firefox requires some kind of initialization
+                    // which we can do by adding this attribute
+                    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
+                    e.dataTransfer.setData("text/plain", "");
+                    e.dataTransfer.setData("micropad/widget-type", it.type);
+                    setDragging(true);
+                    setSidebarOpen(false);
+                  }}
+                >
+                  {Widget ? (
                     <SpecContext value={it}>
                       <Widget {...it} />
                     </SpecContext>
-                  </div>
+                  ) : (
+                    <div className="m-2 flex flex-grow-1 flex-col justify-center rounded-2xl border border-neutral-700 bg-neutral-800/80 p-4 text-neutral-100 shadow-xl">
+                      <div className="text-sm font-medium text-neutral-300">{it.title}</div>
+                      <div className="mt-2 break-all text-xs text-neutral-500">{it.type}</div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </Fragment>
           );
         })}
