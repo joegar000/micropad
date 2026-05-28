@@ -1,9 +1,8 @@
 import os from "node:os";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import dns from 'dns';
+import MachineId from 'node-machine-id';
 
-const execFileAsync = promisify(execFile);
+const { machineIdSync } = MachineId;
 
 export type LocalNetworkIdentity = {
     localIp: string;
@@ -41,26 +40,21 @@ export function toMdnsHostname(hostname: string): string {
     return `${sanitized || 'micropad'}.local`;
 }
 
-async function getMacLocalHostname() {
-    if (process.platform !== 'darwin') {
-        return undefined;
+export function toStableMicropadMdnsHostname(machineId: string, override?: string): string {
+    if (override?.trim()) {
+        return toMdnsHostname(override);
     }
 
-    try {
-        const result = await execFileAsync('scutil', ['--get', 'LocalHostName']);
-        const localHostname = result.stdout.trim();
-        return localHostname || undefined;
-    } catch {
-        return undefined;
-    }
+    const suffix = machineId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toLowerCase();
+    return `micropad-${suffix || 'local'}.local`;
 }
 
 export async function getLocalNetworkIdentity(): Promise<LocalNetworkIdentity> {
     const systemHost = os.hostname().replace(/\.$/, '');
-    const macLocalHostname = await getMacLocalHostname();
+    const stableHost = toStableMicropadMdnsHostname(machineIdSync(), process.env.MICROPAD_MDNS_HOST);
     return {
         localIp: getLocalIP(),
-        mdnsHost: toMdnsHostname(macLocalHostname ?? systemHost),
+        mdnsHost: stableHost,
         systemHost
     };
 }
