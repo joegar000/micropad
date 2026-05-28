@@ -11,14 +11,14 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 - [x] Add bridge-owned file layout persistence as an interim step before SQLite.
 - [x] Add `app:snapshot`, `layout:update`, `layout:saved`, and `widget:event` protocol events while keeping legacy widget event compatibility.
 - [x] Add basic mDNS/DNS-SD service publishing for the bridge.
-- [x] Make `npm run build` cover protocol, widgets, client, and server.
-- [x] Refactor source organization: server bridge/desktop/network/storage folders, client lib/store/hook filenames, and split protocol schema modules.
+- [x] Make `npm run build` cover protocol, widgets, client, and desktop bridge.
+- [x] Refactor source organization: bridge/desktop/network/storage folders, client lib/store/hook filenames, and split protocol schema modules.
+- [x] Rename top-level `apps/server` workspace to `apps/desktop` and decide to defer a separate bridge package until persistence/pairing boundaries stabilize.
 
 ## Next
 
-- [ ] Decide whether to rename top-level `apps/server` into separate `apps/desktop` and bridge package/workspace.
 - [ ] Replace bridge JSON layout persistence with SQLite and migration support.
-- [ ] Split Electron shell concerns from bridge/server concerns more cleanly.
+- [ ] Extract bridge runtime into a separate package/workspace after SQLite persistence and pairing models stabilize.
 - [ ] Add a pairing model with short-lived tokens, device identity, client/session identity, and layout assignment.
 - [ ] Remove wildcard CORS once pairing/auth exists.
 - [ ] Capture device profiles from clients: screen size, DPR, orientation, device label, and device kind.

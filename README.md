@@ -12,10 +12,10 @@ From the repository root run:
 npm install
 ```
 
-This installs dependencies for the workspace packages located in apps/client, apps/server, packages/*, and widgets.
+This installs dependencies for the workspace packages located in apps/client, apps/desktop, packages/*, and widgets.
 
-Start development servers
-- Start both client and server (from the repo root):
+Start development
+- Start both client and desktop bridge (from the repo root):
 
 ```bash
 npm run dev
@@ -27,15 +27,15 @@ npm run dev
 npm run dev --workspace=apps/client
 ```
 
-- Start server only:
+- Start desktop bridge only:
 
 ```bash
-npm run dev --workspace=apps/server
+npm run dev --workspace=apps/desktop
 ```
 
 Notes:
 - The client dev script runs Vite (vite serve .) for a fast dev server with HMR.
-- The server dev script runs Electron against the built server output.
+- The desktop dev script runs Electron against the built desktop bridge output.
 - The bridge stores layouts in `~/.micropad/layouts.json` by default. Set `MICROPAD_DATA_DIR` to use a different data directory.
 
 Useful workspace commands
@@ -51,10 +51,10 @@ npm run lint --workspace=apps/client
 npm run build --workspace=apps/client
 ```
 
-- Build the server (TypeScript compile):
+- Build the desktop bridge (TypeScript compile):
 
 ```bash
-npm run build --workspace=apps/server
+npm run build --workspace=apps/desktop
 ```
 
 - Build the shared protocol package:
@@ -69,12 +69,12 @@ npm run build --workspace=packages/protocol
 npm run build --workspace=widgets
 ```
 
-- Run the built server:
+- Run the built desktop bridge:
 
 ```bash
-npm run start --workspace=apps/server
+npm run start --workspace=apps/desktop
 ```
 
 Quick tips
-- If you prefer separate terminals, run the client and server workspace commands individually instead of the combined npm run dev at root.
-- If you add environment variables for the server, export them before running the server dev command.
+- If you prefer separate terminals, run the client and desktop workspace commands individually instead of the combined npm run dev at root.
+- If you add environment variables for the bridge, export them before running the desktop dev command.

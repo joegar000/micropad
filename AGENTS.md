@@ -18,16 +18,16 @@ Micropad is a local-first Stream Deck alternative.
 ## Current Architecture
 
 - `apps/client`: Vite React client/PWA/editor.
-- `apps/server`: Electron-owned bridge/server.
+- `apps/desktop`: Electron-owned desktop app and embedded bridge runtime.
 - `widgets`: shared widget model/view-model package.
 - `packages/protocol`: shared Zod schemas and socket event names for layouts, device profiles, widget events, and app snapshots.
 
 Important source folders:
 
-- `apps/server/src/bridge`: socket/app snapshot handlers.
-- `apps/server/src/desktop`: Electron window/UI helpers.
-- `apps/server/src/network`: local address and platform helpers.
-- `apps/server/src/storage`: bridge-owned persistence.
+- `apps/desktop/src/bridge`: socket/app snapshot handlers.
+- `apps/desktop/src/desktop`: Electron window/UI helpers.
+- `apps/desktop/src/network`: local address and platform helpers.
+- `apps/desktop/src/storage`: bridge-owned persistence.
 - `apps/client/src/lib`: non-React client helpers.
 - `apps/client/src/store`: client stores and layout adapters.
 
@@ -45,7 +45,7 @@ The project currently uses Socket.IO. The protocol package should remain transpo
 
 - Keep changes scoped and incremental.
 - Prefer shared schemas in `packages/protocol` for persisted data and socket payloads.
-- Keep `apps/server` as the authority for saved layouts and privileged actions.
+- Keep the bridge code under `apps/desktop` as the authority for saved layouts and privileged actions until it is intentionally extracted.
 - Keep client IndexedDB as cache/local UI state, not the canonical store.
 - Avoid adding a new abstraction unless it removes real complexity or matches an existing local pattern.
 - Do not commit secrets, generated local data, or user-specific runtime state.

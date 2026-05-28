@@ -1,7 +1,7 @@
 {
-  "name": "micropad-server",
+  "name": "micropad-desktop",
   "version": "0.0.1",
-  "description": "Backend for micropad",
+  "description": "Desktop runtime bridge for Micropad",
   "license": "ISC",
   "author": "David Garcia",
   "type": "module",
