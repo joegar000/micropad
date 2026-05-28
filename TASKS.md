@@ -1,6 +1,6 @@
 # Micropad Migration Tasks
 
-Last updated: 2026-05-21
+Last updated: 2026-05-28
 
 This file tracks the work needed to evolve Micropad into the local-first desktop bridge plus mobile PWA architecture. Keep it current as tasks move between phases.
 
@@ -14,6 +14,8 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 - [x] Make `npm run build` cover protocol, widgets, client, and desktop bridge.
 - [x] Refactor source organization: bridge/desktop/network/storage folders, client lib/store/hook filenames, and split protocol schema modules.
 - [x] Rename top-level `apps/server` workspace to `apps/desktop` and decide to defer a separate bridge package until persistence/pairing boundaries stabilize.
+- [x] Add basic unit tests for protocol schemas/helpers and file-backed bridge layout storage.
+- [x] Make desktop QR/runtime URLs use the advertised `.local` mDNS host with a LAN IP fallback.
 
 ## Next
 
@@ -67,8 +69,7 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 
 ## Tests And QA
 
-- [ ] Add protocol schema tests.
-- [ ] Add layout store persistence and migration tests.
+- [ ] Add layout store migration tests.
 - [ ] Add socket contract tests for app snapshot, layout update, and widget events.
 - [ ] Add client editor interaction tests for drag, drop, resize, and delete.
 - [ ] Add bridge integration tests for pairing and layout assignment.

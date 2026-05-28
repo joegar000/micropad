@@ -8,7 +8,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/src/index.js",
+    "start": "tsc && electron dist/src/index.js",
     "dev": "tsc && electron dist/src/index.js"
   },
   "dependencies": {

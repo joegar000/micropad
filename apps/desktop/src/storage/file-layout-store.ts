@@ -25,14 +25,14 @@ export class FileLayoutStore {
     constructor(private readonly filePath = defaultStorePath()) {}
 
     async getDefaultLayout() {
-        const data = await this.read();
+        const data = await this.read({ seedDefault: true });
         const layout = data.layouts.find(candidate => candidate.id === data.defaultLayoutId) ?? data.layouts[0];
         return layout ?? createDefaultLayout();
     }
 
     async saveLayout(layout: MicropadLayout) {
         const parsed = LayoutUpdateSchema.parse(layout);
-        const data = await this.read();
+        const data = await this.read({ seedDefault: false });
         const existingIndex = data.layouts.findIndex(candidate => candidate.id === parsed.id);
 
         if (existingIndex >= 0) {
@@ -46,7 +46,7 @@ export class FileLayoutStore {
         return parsed;
     }
 
-    private async read(): Promise<LayoutStoreFile> {
+    private async read(options: { seedDefault: boolean }): Promise<LayoutStoreFile> {
         try {
             const raw = await fs.readFile(this.filePath, "utf8");
             const parsed = LayoutStoreFileSchema.safeParse(JSON.parse(raw));
@@ -58,6 +58,12 @@ export class FileLayoutStore {
             if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
                 console.warn("Failed to read Micropad layout store:", error);
             }
+        }
+
+        if (!options.seedDefault) {
+            return {
+                layouts: []
+            };
         }
 
         const layout = createDefaultLayout();

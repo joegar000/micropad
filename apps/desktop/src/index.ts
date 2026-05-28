@@ -4,11 +4,14 @@ import express from 'express';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'node:url';
 import { connectApp } from './bridge/socket-handlers.js';
-import { app as electron, type BrowserWindow } from 'electron';
-import { getAddress } from './network/local-address.js';
+import Electron from 'electron';
+import type { BrowserWindow } from 'electron';
+import { getLocalNetworkIdentity } from './network/local-address.js';
 import { Bonjour, type Service } from 'bonjour-service';
 import { openQrPairingWindow } from './desktop/qr-window.js';
 import { FileLayoutStore } from './storage/file-layout-store.js';
+
+const { app: electron } = Electron;
 
 (async () => {
     const app = express();
@@ -16,14 +19,15 @@ import { FileLayoutStore } from './storage/file-layout-store.js';
     const layoutStore = new FileLayoutStore();
     const bonjour = new Bonjour();
     let mdnsService: Service | undefined;
+    let mainWindow: BrowserWindow | undefined;
     const io = new Server(server, {
         serveClient: false,
         cors: {
             origin: '*'
         }
     });
-    const address = await getAddress();
-    console.log('discovered address:', address);
+    const network = await getLocalNetworkIdentity();
+    console.log('local network identity:', network);
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
@@ -45,31 +49,45 @@ import { FileLayoutStore } from './storage/file-layout-store.js';
 
     io.listen(server);
 
-    server.listen(3000, '0.0.0.0', () => {
-        console.log('server running at http://localhost:3000');
-        mdnsService = bonjour.publish({
-            name: 'Micropad',
-            type: 'micropad',
-            protocol: 'tcp',
-            port: 3000,
-            txt: {
-                path: '/',
-                protocol: 'http',
-                version: '1'
-            }
-        });
-    });
-
-    const frontendBase = `http://${address}:3000`;
+    const frontendBase = `http://${network.mdnsHost}:3000`;
     const frontendUrl = new URL(frontendBase);
+    const fallbackUrl = new URL(`http://${network.localIp}:3000`);
     const serverPublic = path.join(__dirname, "../../public");
-    let mainWindow: BrowserWindow | undefined;
 
-    electron.whenReady().then(async () => {
+    async function openMainWindow() {
+        if (mainWindow) {
+            return;
+        }
         mainWindow = await openQrPairingWindow({
             frontendUrl,
             publicDir: serverPublic
         });
+    }
+
+    server.listen(3000, '0.0.0.0', () => {
+        console.log(`server running at http://localhost:3000`);
+        console.log(`mDNS URL: ${frontendUrl.toString()}`);
+        console.log(`fallback URL: ${fallbackUrl.toString()}`);
+        mdnsService = bonjour.publish({
+            name: 'Micropad',
+            type: 'micropad',
+            protocol: 'tcp',
+            host: network.mdnsHost,
+            port: 3000,
+            txt: {
+                path: '/',
+                protocol: 'http',
+                url: frontendUrl.toString(),
+                fallbackUrl: fallbackUrl.toString(),
+                version: '1'
+            }
+        });
+
+        if (electron.isReady()) {
+            void openMainWindow();
+            return;
+        }
+        void electron.whenReady().then(openMainWindow);
     });
 
     const cleanup = (config: { electron?: boolean } = {}) => {

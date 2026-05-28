@@ -1,6 +1,8 @@
 import path from "node:path";
 import qrcode from "qrcode";
-import { BrowserWindow } from "electron";
+import Electron from "electron";
+
+const { BrowserWindow } = Electron;
 
 export async function openQrPairingWindow(options: {
     frontendUrl: URL;

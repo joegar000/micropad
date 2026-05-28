@@ -56,6 +56,7 @@ The project currently uses Socket.IO. The protocol package should remain transpo
 Run these before handing off meaningful code changes:
 
 ```bash
+npm test
 npm run build
 npm run lint --workspace=apps/client
 ```
