@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { SocketProvider } from './socket.tsx';
-import polyfill from './polyfill.tsx';
+import applyBrowserPolyfills from './browser-polyfills';
 import { io } from 'socket.io-client';
 
-polyfill();
+applyBrowserPolyfills();
 
 document.addEventListener('DOMContentLoaded', async () => {
   createRoot(document.getElementById('app')!).render(

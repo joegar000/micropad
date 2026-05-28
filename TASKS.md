@@ -12,11 +12,11 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 - [x] Add `app:snapshot`, `layout:update`, `layout:saved`, and `widget:event` protocol events while keeping legacy widget event compatibility.
 - [x] Add basic mDNS/DNS-SD service publishing for the bridge.
 - [x] Make `npm run build` cover protocol, widgets, client, and server.
-- [x] Add lightweight Spec Kit-compatible project memory and platform foundation spec in `.specify/`.
+- [x] Refactor source organization: server bridge/desktop/network/storage folders, client lib/store/hook filenames, and split protocol schema modules.
 
 ## Next
 
-- [ ] Run official `specify init --here --integration codex` when `uvx` and `CODEX_HOME` are available, then reconcile generated files with the existing `.specify/` content.
+- [ ] Decide whether to rename top-level `apps/server` into separate `apps/desktop` and bridge package/workspace.
 - [ ] Replace bridge JSON layout persistence with SQLite and migration support.
 - [ ] Split Electron shell concerns from bridge/server concerns more cleanly.
 - [ ] Add a pairing model with short-lived tokens, device identity, client/session identity, and layout assignment.

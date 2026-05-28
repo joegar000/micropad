@@ -2,13 +2,13 @@ import GridLayout, { noCompactor, useContainerWidth, type LayoutItem } from 'rea
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import clsx from 'clsx';
-import useResizeObserver from '../../hooks/resizeobserver';
+import useResizeObserver from '../../hooks/use-resize-observer';
 import { useCallback, useState, type CSSProperties, type ReactNode } from 'react';
-import { useEditingStore } from '../../store/editing';
+import { useEditingStore } from '../../store/editing-store';
 import "./grid.css";
 import "./widgets";
-import { selectCurrentPage, useLayoutStore, widgetIdStore } from '../../store/layout/grid';
-import { widgetToLayoutItem } from '../../store/layout/types';
+import { selectCurrentPage, useLayoutStore, widgetIdStore } from '../../store/layout-store';
+import { widgetToLayoutItem } from '../../store/layout-model';
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();

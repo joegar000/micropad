@@ -1,5 +1,5 @@
 import { Fragment, use, useEffect, useMemo, useState } from "react";
-import { useEditingStore } from "../../store/editing";
+import { useEditingStore } from "../../store/editing-store";
 import { Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { WidgetSpecContext } from "./widgets/speclookup";

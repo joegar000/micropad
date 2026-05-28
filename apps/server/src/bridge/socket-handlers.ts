@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import { loadPlugins } from "./plugin-manager.js";
-import type { FileLayoutStore } from "./layout-store.js";
+import { loadPlugins } from "../plugins/registry.js";
+import type { FileLayoutStore } from "../storage/file-layout-store.js";
 import { AppSnapshotSchema, SocketEvent, LayoutUpdateSchema, type AppSnapshot } from "micropad-protocol";
 
 export async function connectApp(socket: Socket, layoutStore: FileLayoutStore) {

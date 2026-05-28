@@ -2,20 +2,6 @@
 
 This file is durable working context for coding agents in this repository. Use it for project conventions, architecture direction, and verification expectations. Use `TASKS.md` for the evolving task checklist.
 
-This repo uses a lightweight Spec Kit-compatible structure in `.specify/`:
-
-- `.specify/memory/constitution.md` contains project principles that every larger spec should satisfy.
-- `.specify/specs/001-platform-foundation/` contains the first durable product/platform spec, plan, and task breakdown.
-- `TASKS.md` remains the human-readable cross-feature migration board.
-
-The official Spec Kit CLI was not run during initial setup because `uvx` and `CODEX_HOME` were not available in the local environment. To install official Codex skills later, use:
-
-```bash
-uvx --from git+https://github.com/github/spec-kit.git specify init --here --integration codex
-```
-
-After running the official initializer, preserve the project-specific content in `AGENTS.md`, `TASKS.md`, and `.specify/memory/constitution.md`.
-
 ## Product Direction
 
 Micropad is a local-first Stream Deck alternative.
@@ -36,6 +22,15 @@ Micropad is a local-first Stream Deck alternative.
 - `widgets`: shared widget model/view-model package.
 - `packages/protocol`: shared Zod schemas and socket event names for layouts, device profiles, widget events, and app snapshots.
 
+Important source folders:
+
+- `apps/server/src/bridge`: socket/app snapshot handlers.
+- `apps/server/src/desktop`: Electron window/UI helpers.
+- `apps/server/src/network`: local address and platform helpers.
+- `apps/server/src/storage`: bridge-owned persistence.
+- `apps/client/src/lib`: non-React client helpers.
+- `apps/client/src/store`: client stores and layout adapters.
+
 The project currently uses Socket.IO. The protocol package should remain transport-agnostic where practical.
 
 ## Durable Decisions
@@ -49,8 +44,6 @@ The project currently uses Socket.IO. The protocol package should remain transpo
 ## Working Rules
 
 - Keep changes scoped and incremental.
-- For major features, write or update a `.specify/specs/<NNN-feature>/` spec before implementation.
-- Use the Spec Kit order for larger work: specify, clarify if needed, plan, tasks, implement.
 - Prefer shared schemas in `packages/protocol` for persisted data and socket payloads.
 - Keep `apps/server` as the authority for saved layouts and privileged actions.
 - Keep client IndexedDB as cache/local UI state, not the canonical store.

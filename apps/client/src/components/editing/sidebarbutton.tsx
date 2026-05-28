@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEditingStore } from "../../store/editing";
+import { useEditingStore } from "../../store/editing-store";
 import { Button } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 

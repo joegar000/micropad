@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { valueOrCallback, type ValueOrCallback } from "../util/valueorcallback";
+import { valueOrCallback, type ValueOrCallback } from "../lib/value-or-callback";
 
 interface EditingState {
   isEditing: boolean;

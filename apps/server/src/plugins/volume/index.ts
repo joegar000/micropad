@@ -1,5 +1,5 @@
-import { setVolume, getVolume } from "easy-volume";
-import { PluginAPI } from "../../plugin-manager.js";
+import { setVolume } from "easy-volume";
+import { PluginAPI } from "../registry.js";
 import { SliderViewModel } from "micropad-widgets";
 
 export default function volume(api: PluginAPI) {

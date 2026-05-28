@@ -1,14 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import clsx from "clsx";
 import { createContext, use, useState, type FC, type ReactNode } from "react";
-import { useEditingStore } from "../../../store/editing";
+import { useEditingStore } from "../../../store/editing-store";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import type { IWidgetModel, BaseWidgetViewModel } from "micropad-widgets";
-import { selectCurrentPage, useLayoutStore } from "../../../store/layout/grid";
+import { selectCurrentPage, useLayoutStore } from "../../../store/layout-store";
 
 export class WidgetRegistry {
   static baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();

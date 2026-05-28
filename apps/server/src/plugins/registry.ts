@@ -1,6 +1,6 @@
 import { type BaseWidgetViewModel } from "micropad-widgets";
 import { Socket } from "socket.io";
-import volume from "./plugins/volume/index.js";
+import volume from "./volume/index.js";
 
 
 export class PluginAPI {

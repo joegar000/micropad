@@ -1,5 +1,5 @@
 import Slide from "@mui/material/Slide";
-import { useEditingStore } from "../../store/editing";
+import { useEditingStore } from "../../store/editing-store";
 import clsx from "clsx";
 import { GridPanel } from "../grid";
 

@@ -4,7 +4,7 @@ import { Lock } from "./components/editing/lock";
 import { GridSize } from "./components/editing/gridsize";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useEditingStore } from "./store/editing";
+import { useEditingStore } from "./store/editing-store";
 import { Activity } from "react";
 import { SidebarButton } from "./components/editing/sidebarbutton";
 import Sidebar from "./components/sidebar/Sidebar";
@@ -12,7 +12,7 @@ import { WidgetSpecContext } from "./components/grid/widgets/speclookup";
 import { Widget } from "./components/grid";
 import { useSocket } from "./socket";
 import { useEffect, useState } from "react";
-import { selectCurrentPage, useLayoutStore } from "./store/layout/grid";
+import { selectCurrentPage, useLayoutStore } from "./store/layout-store";
 import type { IWidgetModel } from "micropad-widgets";
 import { AppSnapshotSchema, SocketEvent, type AppSnapshot } from "micropad-protocol";
 

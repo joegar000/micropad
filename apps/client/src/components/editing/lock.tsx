@@ -1,4 +1,4 @@
-import { useEditingStore } from "../../store/editing";
+import { useEditingStore } from "../../store/editing-store";
 import { Button } from "@mui/material";
 import LockOutlineIcon from '@mui/icons-material/LockOutline';
 import LockOpenIcon from '@mui/icons-material/LockOpen';

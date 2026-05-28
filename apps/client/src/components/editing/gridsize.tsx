@@ -1,7 +1,7 @@
 import clsx from "clsx";
-import { useEditingStore } from "../../store/editing";
+import { useEditingStore } from "../../store/editing-store";
 import NumberField from "../mui/NumberField";
-import { selectCurrentPage, useLayoutStore } from "../../store/layout/grid";
+import { selectCurrentPage, useLayoutStore } from "../../store/layout-store";
 
 export function GridSize() {
   const isEditing = useEditingStore(s => s.isEditing);

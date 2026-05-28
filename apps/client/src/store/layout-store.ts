@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { zustandStorage } from "../../util/indexeddb";
+import { zustandStorage } from "../lib/indexeddb-storage";
 import type { LayoutItem } from "react-grid-layout";
 import { createContext } from "react";
 import {
@@ -10,8 +10,8 @@ import {
   type MicropadLayout,
   type WidgetInstance
 } from "micropad-protocol";
-import { createIdStore } from "../../util/id";
-import { applyLayoutItemsToWidgets, getCurrentPage } from "./types";
+import { createIdStore } from "../lib/id-store";
+import { applyLayoutItemsToWidgets, getCurrentPage } from "./layout-model";
 
 export interface LayoutStoreState {
   layout: MicropadLayout;
