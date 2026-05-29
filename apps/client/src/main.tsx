@@ -11,7 +11,7 @@ applyBrowserPolyfills();
 document.addEventListener('DOMContentLoaded', async () => {
   createRoot(document.getElementById('app')!).render(
     <StrictMode>
-      <SocketProvider socket={io()}>
+      <SocketProvider socket={io({ autoConnect: false })}>
         <App />
       </SocketProvider>
     </StrictMode>

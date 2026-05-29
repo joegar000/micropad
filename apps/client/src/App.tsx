@@ -48,6 +48,7 @@ export default function App() {
     socket.on(SocketEvent.AppSnapshot, applySnapshot);
     socket.on('app', applySnapshot);
     socket.on('connect', requestSnapshot);
+    socket.connect();
     requestSnapshot();
     return () => {
       socket.off(SocketEvent.AppSnapshot, applySnapshot);

@@ -47,8 +47,6 @@ const { app: electron } = Electron;
         });
     });
 
-    io.listen(server);
-
     const frontendBase = `http://${network.mdnsHost}:3000`;
     const frontendUrl = new URL(frontendBase);
     const fallbackUrl = new URL(`http://${network.localIp}:3000`);
