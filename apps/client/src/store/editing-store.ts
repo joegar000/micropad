@@ -6,6 +6,8 @@ interface EditingState {
   setIsEditing: ValueOrCallback<boolean>;
   sidebarOpen: boolean;
   setSidebarOpen: ValueOrCallback<boolean>;
+  draggedWidgetType: string | null;
+  setDraggedWidgetType: ValueOrCallback<string | null>;
 }
 
 export const useEditingStore = create<EditingState>()((set) => ({
@@ -16,5 +18,9 @@ export const useEditingStore = create<EditingState>()((set) => ({
   sidebarOpen: false,
   setSidebarOpen: (sidebarOpen) => set(state => ({
     sidebarOpen: valueOrCallback(sidebarOpen, state.sidebarOpen)
+  })),
+  draggedWidgetType: null,
+  setDraggedWidgetType: (draggedWidgetType) => set(state => ({
+    draggedWidgetType: valueOrCallback(draggedWidgetType, state.draggedWidgetType)
   }))
 }));

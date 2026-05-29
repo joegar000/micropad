@@ -10,6 +10,7 @@ import "./widgets";
 export function GridPanel() {
   const [query, setQuery] = useState("");
   const setSidebarOpen = useEditingStore(s => s.setSidebarOpen);
+  const setDraggedWidgetType = useEditingStore(s => s.setDraggedWidgetType);
   const [dragging, setDragging] = useState(false);
   const specs = use(WidgetSpecContext);
 
@@ -27,17 +28,18 @@ export function GridPanel() {
   useEffect(() => {
     const dragEnd = () => {
       if (dragging) {
-        setTimeout(() => {
-          setSidebarOpen(true);
-          setDragging(false);
-        }, 0);
-      }
+          setTimeout(() => {
+            setSidebarOpen(true);
+            setDraggedWidgetType(null);
+            setDragging(false);
+          }, 0);
+        }
     };
     document.addEventListener('dragend', dragEnd);
     return () => {
       document.removeEventListener('dragend', dragEnd);
     }
-  }, [dragging, setSidebarOpen]);
+  }, [dragging, setDraggedWidgetType, setSidebarOpen]);
 
   return (
     <div className="flex flex-col" style={{ maxHeight: '100vh', zIndex: 100 }} onDragEnter={(e) => e.preventDefault()} onDragOver={(e) => e.preventDefault()}>
@@ -77,6 +79,8 @@ export function GridPanel() {
                     // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
                     e.dataTransfer.setData("text/plain", "");
                     e.dataTransfer.setData("micropad/widget-type", it.type);
+                    e.dataTransfer.effectAllowed = "copy";
+                    setDraggedWidgetType(it.type);
                     setDragging(true);
                     setSidebarOpen(false);
                   }}

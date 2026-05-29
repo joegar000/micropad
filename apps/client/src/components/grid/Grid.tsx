@@ -17,6 +17,8 @@ export function Grid({ children }: { children: ReactNode }) {
   const columns = page.columns;
   const layout = page.widgets.map(widgetToLayoutItem);
   const isEditing = useEditingStore(s => s.isEditing);
+  const draggedWidgetType = useEditingStore(s => s.draggedWidgetType);
+  const setDraggedWidgetType = useEditingStore(s => s.setDraggedWidgetType);
   const setWidgetPlacements = useLayoutStore(s => s.setWidgetPlacements);
   const addWidget = useLayoutStore(s => s.addWidget);
   const [justDropped, setJustDropped] = useState(false);
@@ -72,7 +74,11 @@ export function Grid({ children }: { children: ReactNode }) {
           }}
           dropConfig={{
             enabled: isEditing,
-            defaultItem: { w: 1, h: 1 }
+            defaultItem: { w: 1, h: 1 },
+            onDragOver: e => {
+              const hasWidgetPayload = draggedWidgetType || Array.from(e.dataTransfer?.types ?? []).includes("micropad/widget-type");
+              return hasWidgetPayload ? { w: 1, h: 1 } : false;
+            }
           }}
           resizeConfig={{
             enabled: isEditing
@@ -92,9 +98,9 @@ export function Grid({ children }: { children: ReactNode }) {
             }
           }}
           onDrop={(_layout, item, e) => {
-            if (!('dataTransfer' in e))
-              return;
-            const droppedType = (e.dataTransfer as DataTransfer).getData("micropad/widget-type");
+            const droppedType = 'dataTransfer' in e
+              ? (e.dataTransfer as DataTransfer).getData("micropad/widget-type") || draggedWidgetType
+              : draggedWidgetType;
             if (droppedType && item) {
               const newId = widgetIdStore.generate();
 
@@ -109,6 +115,7 @@ export function Grid({ children }: { children: ReactNode }) {
                 config: {}
               });
             }
+            setDraggedWidgetType(null);
           }}
         >
           {children}
