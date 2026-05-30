@@ -87,6 +87,17 @@ test("app snapshot schema accepts widget catalog metadata and optional layout", 
         title: "Volume",
         min: 0,
         max: 100
+      },
+      {
+        id: "button",
+        type: "media.playPause",
+        title: "Play / Pause",
+        text: "Play / Pause",
+        icon: {
+          type: "image",
+          src: "data:image/svg+xml;utf8,%3Csvg%2F%3E",
+          alt: "Play pause"
+        }
       }
     ],
     layout
@@ -94,5 +105,6 @@ test("app snapshot schema accepts widget catalog metadata and optional layout", 
 
   assert.equal(snapshot.widgets[0].type, "volume.masterVolume");
   assert.equal(snapshot.widgets[0].max, 100);
+  assert.equal(snapshot.widgets[1].icon.type, "image");
   assert.equal(snapshot.layout.id, layout.id);
 });

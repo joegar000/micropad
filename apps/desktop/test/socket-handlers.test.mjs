@@ -38,9 +38,14 @@ test("connectApp sends an initial widget snapshot to newly connected sockets", a
 
   const snapshot = socket.emitted.find(entry => entry.event === SocketEvent.AppSnapshot);
   assert.ok(snapshot);
-  assert.equal(snapshot.args[0].widgets.length, 1);
-  assert.equal(snapshot.args[0].widgets[0].id, "slider");
-  assert.equal(snapshot.args[0].widgets[0].type, "volume.masterVolume");
-  assert.equal(snapshot.args[0].widgets[0].title, "Volume");
+  const widgetsByType = new Map(snapshot.args[0].widgets.map(widget => [widget.type, widget]));
+  assert.ok(widgetsByType.has("volume.masterVolume"));
+  assert.ok(widgetsByType.has("media.playPause"));
+  assert.ok(widgetsByType.has("media.next"));
+  assert.ok(widgetsByType.has("media.previous"));
+  assert.equal(widgetsByType.get("volume.masterVolume").id, "slider");
+  assert.equal(widgetsByType.get("volume.masterVolume").title, "Volume");
+  assert.equal(widgetsByType.get("media.playPause").id, "button");
+  assert.equal(widgetsByType.get("media.playPause").icon.type, "image");
   assert.equal(snapshot.args[0].layout.id, layout.id);
 });

@@ -49,11 +49,11 @@ export class SliderViewModel extends BaseWidgetViewModel {
         socket.emit(`${this.spec.type}.change`, data);
     }
 
-    onChange(socket: SocketLike, cb: (data: { value: number }) => void) {
+    onChange(socket: SocketLike, cb: (data: { value: number }, context?: WidgetEventContext) => void) {
         const widgetEventCb = (data: unknown) => {
             const event = WidgetEventSchema.safeParse(data);
             if (event.success && event.data.widgetType === this.spec.type && event.data.action === 'change') {
-                cb(event.data.payload as { value: number });
+                cb(event.data.payload as { value: number }, event.data);
             }
         };
 
