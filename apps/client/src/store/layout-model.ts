@@ -3,10 +3,6 @@ import type { LayoutItem } from "react-grid-layout";
 
 export type { LayoutPage, MicropadLayout, WidgetInstance };
 
-export function getCurrentPage(layout: MicropadLayout): LayoutPage {
-  return layout.pages.find(page => page.id === layout.currentPageId) ?? layout.pages[0]!;
-}
-
 export function widgetToLayoutItem(widget: WidgetInstance): LayoutItem {
   return {
     i: widget.id,

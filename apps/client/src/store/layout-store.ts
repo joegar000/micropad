@@ -11,11 +11,12 @@ import {
   type WidgetInstance
 } from "micropad-protocol";
 import { createIdStore } from "../lib/id-store";
-import { applyLayoutItemsToWidgets, getCurrentPage } from "./layout-model";
+import { applyLayoutItemsToWidgets } from "./layout-model";
 
 export interface LayoutStoreState {
   layout: MicropadLayout;
   bridgeReady: boolean;
+  currentPage: MicropadLayout['pages'][number];
   setLayoutFromBridge: (layout: MicropadLayout) => void;
   markBridgeReady: () => void;
   setCurrentPage: (pageId: string) => void;
@@ -56,9 +57,10 @@ function markWidgetIds(layout: MicropadLayout) {
 export const useLayoutStore = create<LayoutStoreState>()(
   persist(
     immer(
-      set => ({
+      (set, get) => ({
         layout: defaultLayout,
         bridgeReady: false,
+        currentPage: get().layout.pages.find(page => page.id === get().layout.currentPageId)!,
         setLayoutFromBridge: layout => {
           markWidgetIds(layout);
           set(s => {
@@ -81,41 +83,38 @@ export const useLayoutStore = create<LayoutStoreState>()(
         },
         setRows: rows => {
           set(s => {
-            getCurrentPage(s.layout).rows = rows;
+            s.currentPage.rows = rows;
             touch(s.layout);
           });
         },
         setColumns: cols => {
           set(s => {
-            getCurrentPage(s.layout).columns = cols;
+            s.currentPage.columns = cols;
             touch(s.layout);
           });
         },
         setWidgetPlacements: widgets => {
           set(s => {
-            const page = getCurrentPage(s.layout);
-            page.widgets = applyLayoutItemsToWidgets(page.widgets, widgets);
+            s.currentPage.widgets = applyLayoutItemsToWidgets(s.currentPage.widgets, widgets);
             touch(s.layout);
           });
         },
         addWidget: widget => {
           widgetIdStore.mark(widget.id);
           set(s => {
-            getCurrentPage(s.layout).widgets.push(widget);
+            s.currentPage.widgets.push(widget);
             touch(s.layout);
           });
         },
         removeWidget: widgetId => {
           set(s => {
-            const page = getCurrentPage(s.layout);
-            page.widgets = page.widgets.filter(widget => widget.id !== widgetId);
+            s.currentPage.widgets = s.currentPage.widgets.filter(widget => widget.id !== widgetId);
             touch(s.layout);
           });
         },
         setWidgetConfig: (widgetId, config) => {
           set(s => {
-            const page = getCurrentPage(s.layout);
-            const widget = page.widgets.find(candidate => candidate.id === widgetId);
+            const widget = s.currentPage.widgets.find(candidate => candidate.id === widgetId);
             if (widget) {
               widget.config = config;
               touch(s.layout);
@@ -136,8 +135,6 @@ export const useLayoutStore = create<LayoutStoreState>()(
     }
   )
 );
-
-export const selectCurrentPage = (state: LayoutStoreState) => getCurrentPage(state.layout);
 
 export const GridsContext = createContext<LayoutStoreState | null>(null);
 

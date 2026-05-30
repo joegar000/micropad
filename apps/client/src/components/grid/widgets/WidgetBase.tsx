@@ -20,7 +20,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
 import type { IWidgetModel, BaseWidgetViewModel, WidgetMenuModalAction } from "micropad-widgets";
-import { selectCurrentPage, useLayoutStore } from "../../../store/layout-store";
+import { useLayoutStore } from "../../../store/layout-store";
 import { SocketEvent, type WidgetEvent } from "micropad-protocol";
 import { useSocket } from "../../../socket";
 
@@ -91,7 +91,7 @@ export function BaseWidget(props: {
 
   const isEditing = useEditingStore(s => s.isEditing);
   const removeWidget = useLayoutStore(s => s.removeWidget);
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const widget = page.widgets.find(candidate => candidate.id === id);
   const setWidgetConfig = useLayoutStore(s => s.setWidgetConfig);
   const [pending, setPending] = useState(false);
@@ -345,7 +345,7 @@ export function BaseWidget(props: {
 }
 
 export function Widget(props: { id: string }) {
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const widget = page.widgets.find(candidate => candidate.id === props.id);
   const specLookup = use(WidgetSpecContext);
   if (!widget) {

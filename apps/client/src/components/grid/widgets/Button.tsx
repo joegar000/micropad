@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ButtonViewModel, type IButtonIconModel, type IButtonModel } from "micropad-widgets";
 import { useSocket } from "../../../socket";
 import { CircularProgress } from "@mui/material";
-import { selectCurrentPage, useLayoutStore } from "../../../store/layout-store";
+import { useLayoutStore } from "../../../store/layout-store";
 
 type AppLauncherOption = {
   id: string;
@@ -55,7 +55,7 @@ function ButtonWidgetContent(props: IButtonModel) {
   const eventContext = widgetInstanceId ? { widgetInstanceId } : {};
   const { pending, beginRequest, completeRequest } = useWidgetRequestStatus();
   const { openMenuItem } = useWidgetMenuActions();
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const widget = page.widgets.find(candidate => candidate.id === widgetInstanceId);
   const selectedApp = widget?.config?.app as AppLauncherOption | undefined;
   const displayText = isAppLauncher(props) ? selectedApp?.title ?? props.text : props.text;

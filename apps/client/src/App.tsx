@@ -11,7 +11,7 @@ import { WidgetSpecContext } from "./components/grid/widgets/speclookup";
 import { Widget } from "./components/grid";
 import { useSocket } from "./socket";
 import { useEffect, useState } from "react";
-import { selectCurrentPage, useLayoutStore } from "./store/layout-store";
+import { useLayoutStore } from "./store/layout-store";
 import type { IWidgetModel } from "micropad-widgets";
 import { AppSnapshotSchema, SocketEvent, type AppSnapshot } from "micropad-protocol";
 
@@ -98,7 +98,7 @@ function LayoutBridgeSync() {
 
 function AppGrid() {
   const isEditing = useEditingStore(s => s.isEditing);
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const [loaded, setLoaded] = useState(useLayoutStore.persist.hasHydrated());
   useEffect(() => {
     const unsub = useLayoutStore.persist.onFinishHydration(() => {

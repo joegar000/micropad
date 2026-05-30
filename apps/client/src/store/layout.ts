@@ -1,6 +1,5 @@
 export {
   layoutLoad,
-  selectCurrentPage,
   useLayoutStore,
   widgetIdStore
 } from "./layout-store";

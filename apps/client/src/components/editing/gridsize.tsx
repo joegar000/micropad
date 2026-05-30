@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import { useEditingStore } from "../../store/editing-store";
 import NumberField from "../mui/NumberField";
-import { selectCurrentPage, useLayoutStore } from "../../store/layout-store";
+import { useLayoutStore } from "../../store/layout-store";
 
 export function GridSize() {
   const isEditing = useEditingStore(s => s.isEditing);
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const setRows = useLayoutStore(s => s.setRows);
   const setColumns = useLayoutStore(s => s.setColumns);
   const rows = page.rows;

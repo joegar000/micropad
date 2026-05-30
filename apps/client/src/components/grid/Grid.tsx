@@ -7,12 +7,12 @@ import { useCallback, useState, type CSSProperties, type ReactNode } from 'react
 import { useEditingStore } from '../../store/editing-store';
 import "./grid.css";
 import "./widgets";
-import { selectCurrentPage, useLayoutStore, widgetIdStore } from '../../store/layout-store';
+import { useLayoutStore, widgetIdStore } from '../../store/layout-store';
 import { widgetToLayoutItem } from '../../store/layout-model';
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();
-  const page = useLayoutStore(selectCurrentPage);
+  const page = useLayoutStore(s => s.currentPage);
   const rows = page.rows;
   const columns = page.columns;
   const layout = page.widgets.map(widgetToLayoutItem);
