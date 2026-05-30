@@ -3,6 +3,8 @@ import test from "node:test";
 import { createDefaultLayout, SocketEvent } from "../../../packages/protocol/dist/index.js";
 import { connectApp } from "../dist/src/bridge/socket-handlers.js";
 
+process.env.MICROPAD_DISABLE_SYSTEM_SYNC = "1";
+
 class FakeSocket {
   listeners = new Map();
   emitted = [];
@@ -12,6 +14,14 @@ class FakeSocket {
     listeners.push(listener);
     this.listeners.set(event, listeners);
     return this;
+  }
+
+  once(event, listener) {
+    const wrapped = (...args) => {
+      this.off(event, wrapped);
+      listener(...args);
+    };
+    return this.on(event, wrapped);
   }
 
   off(event, listener) {

@@ -35,6 +35,24 @@ const controls: Array<{
 
 export default function mediaControls(api: PluginAPI) {
     api.createPlugin('media', packet => {
+        let playPauseButton: ButtonViewModel | undefined;
+        let lastPlayPauseActive: boolean | undefined;
+
+        const publishPlaybackState = async () => {
+            if (!playPauseButton) {
+                return;
+            }
+
+            const state = await getMediaPlaybackState();
+            const isActive = state === 'paused' || state === 'stopped';
+            if (isActive === lastPlayPauseActive) {
+                return;
+            }
+
+            lastPlayPauseActive = isActive;
+            playPauseButton.emitActiveChange(api.ws, { isActive });
+        };
+
         for (const control of controls) {
             const button = ButtonViewModel.fromConfig({
                 pluginName: 'media',
@@ -45,15 +63,19 @@ export default function mediaControls(api: PluginAPI) {
                 canToggle: control.action === 'playPause'
             });
 
+            if (control.action === 'playPause') {
+                playPauseButton = button;
+            }
+
             button.onClick(api.ws, (_data, context) => {
                 void (async () => {
                     await runMediaAction(control.action);
                     if (control.action === 'playPause') {
                         await new Promise(resolve => setTimeout(resolve, 200));
                         const state = await getMediaPlaybackState();
-                        button.emitActiveChange(api.ws, {
-                            isActive: state === 'paused' || state === 'stopped'
-                        }, context);
+                        const isActive = state === 'paused' || state === 'stopped';
+                        lastPlayPauseActive = isActive;
+                        button.emitActiveChange(api.ws, { isActive }, context);
                     } else {
                         button.emitConfirm(api.ws, { ok: true }, context);
                     }
@@ -68,6 +90,19 @@ export default function mediaControls(api: PluginAPI) {
             });
 
             packet.addWidgets(button);
+        }
+
+        if (process.env.MICROPAD_DISABLE_SYSTEM_SYNC !== '1') {
+            void publishPlaybackState().catch(error => {
+                console.error('Failed to publish initial media state:', error);
+            });
+            const interval = setInterval(() => {
+                void publishPlaybackState().catch(error => {
+                    console.error('Failed to sync media state:', error);
+                });
+            }, 1000);
+            interval.unref();
+            api.ws.once('disconnect', () => clearInterval(interval));
         }
     });
 }
