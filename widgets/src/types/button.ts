@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createWidgetEvent, SocketEvent, WidgetEventSchema } from "micropad-protocol";
-import { BaseWidgetModel, BaseWidgetViewModel, type WidgetEventContext } from "./base.js";
+import { BaseWidgetModel, BaseWidgetViewModel, type WidgetEventContext, type WidgetMenuItem } from "./base.js";
 import type { Socket as ServerSocket } from "socket.io";
 import type { Socket as ClientSocket } from "socket.io-client";
 
@@ -41,6 +41,7 @@ export class ButtonViewModel extends BaseWidgetViewModel {
         title: string,
         text: string,
         icon?: IButtonIconModel,
+        menuItems?: WidgetMenuItem[],
         canToggle?: boolean
     }) {
         return new this({
@@ -48,6 +49,7 @@ export class ButtonViewModel extends BaseWidgetViewModel {
             title: config.title,
             text: config.text,
             icon: config.icon,
+            menuItems: config.menuItems,
             canToggle: config.canToggle,
             id: 'button'
         })

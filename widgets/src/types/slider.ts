@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createWidgetEvent, SocketEvent, WidgetEventSchema } from "micropad-protocol";
-import { BaseWidgetModel, BaseWidgetViewModel, type SocketLike, type WidgetEventContext } from "./base.js";
+import { BaseWidgetModel, BaseWidgetViewModel, type SocketLike, type WidgetEventContext, type WidgetMenuItem } from "./base.js";
 
 export const SliderModel = BaseWidgetModel.extend({
     step: z.optional(z.number()),
@@ -23,7 +23,8 @@ export class SliderViewModel extends BaseWidgetViewModel {
         title: string,
         step?: number,
         min?: number,
-        max?: number
+        max?: number,
+        menuItems?: WidgetMenuItem[]
     }) {
         return new this({
             type: `${config.pluginName}.${config.widgetName}`,
@@ -31,6 +32,7 @@ export class SliderViewModel extends BaseWidgetViewModel {
             step: config.step,
             min: config.min,
             max: config.max,
+            menuItems: config.menuItems,
             id: 'slider'
         });
     }

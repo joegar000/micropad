@@ -1,9 +1,20 @@
 import clsx from "clsx";
-import { BaseWidget, useWidgetInstanceId, useWidgetRequestStatus } from "./WidgetBase";
+import { BaseWidget, useWidgetInstanceId, useWidgetMenuActions, useWidgetRequestStatus } from "./WidgetBase";
 import { useEffect, useMemo, useState } from "react";
 import { ButtonViewModel, type IButtonIconModel, type IButtonModel } from "micropad-widgets";
 import { useSocket } from "../../../socket";
 import { CircularProgress } from "@mui/material";
+import { selectCurrentPage, useLayoutStore } from "../../../store/layout-store";
+
+type AppLauncherOption = {
+  id: string;
+  title: string;
+  target: string;
+};
+
+function isAppLauncher(spec: IButtonModel) {
+  return spec.type === "appLauncher.launcher";
+}
 
 function ButtonIcon(props: { icon: IButtonIconModel }) {
   if (props.icon.type === "emoji") {
@@ -43,6 +54,11 @@ function ButtonWidgetContent(props: IButtonModel) {
   const widgetInstanceId = useWidgetInstanceId();
   const eventContext = widgetInstanceId ? { widgetInstanceId } : {};
   const { pending, beginRequest, completeRequest } = useWidgetRequestStatus();
+  const { openMenuItem } = useWidgetMenuActions();
+  const page = useLayoutStore(selectCurrentPage);
+  const widget = page.widgets.find(candidate => candidate.id === widgetInstanceId);
+  const selectedApp = widget?.config?.app as AppLauncherOption | undefined;
+  const displayText = isAppLauncher(props) ? selectedApp?.title ?? props.text : props.text;
 
   useEffect(() => {
     return buttonViewModel.onActiveChange(socket, (data) => {
@@ -63,7 +79,15 @@ function ButtonWidgetContent(props: IButtonModel) {
     <div className="px-4 py-2 flex h-full w-full">
       <button
         onClick={async () => {
-          buttonViewModel.emitClick(socket, { active: !toggled }, eventContext);
+          if (isAppLauncher(props) && !selectedApp) {
+            openMenuItem("set-app");
+            return;
+          }
+
+          buttonViewModel.emitClick(socket, {
+            active: !toggled,
+            ...(selectedApp ? { app: selectedApp } : {})
+          }, eventContext);
           beginRequest();
           if (props.canToggle) {
             setToggled(t => !t);
@@ -86,7 +110,7 @@ function ButtonWidgetContent(props: IButtonModel) {
         )}
       >
         {props.icon && <ButtonIcon icon={props.icon} />}
-        <span className="truncate">{props.text}</span>
+        <span className="truncate">{displayText}</span>
         {pending && <CircularProgress size={14} thickness={5} />}
       </button>
     </div>

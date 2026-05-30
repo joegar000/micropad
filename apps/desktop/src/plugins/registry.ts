@@ -1,5 +1,6 @@
 import { type BaseWidgetViewModel } from "micropad-widgets";
 import { Socket } from "socket.io";
+import appLauncher from "./app-launcher/index.js";
 import mediaControls from "./media-controls/index.js";
 import volume from "./volume/index.js";
 
@@ -30,6 +31,7 @@ export class PluginAPI {
 export async function loadPlugins(socket: Socket) {
     const api = new PluginAPI(socket);
     volume(api);
+    appLauncher(api);
     mediaControls(api);
     return api;
 }

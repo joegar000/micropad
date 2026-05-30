@@ -3,12 +3,26 @@ import clsx from "clsx";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from "react";
 import { useEditingStore } from "../../../store/editing-store";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { CircularProgress, IconButton, Menu, MenuItem } from "@mui/material";
+import {
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  Menu,
+  MenuItem,
+  TextField
+} from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { WidgetSpecContext } from "./speclookup";
 import "./widgetbase.css";
-import type { IWidgetModel, BaseWidgetViewModel } from "micropad-widgets";
+import type { IWidgetModel, BaseWidgetViewModel, WidgetMenuModalAction } from "micropad-widgets";
 import { selectCurrentPage, useLayoutStore } from "../../../store/layout-store";
+import { SocketEvent, type WidgetEvent } from "micropad-protocol";
+import { useSocket } from "../../../socket";
 
 export class WidgetRegistry {
   static baseWidgetRegistry: Map<string, FC<IWidgetModel>> = new Map();
@@ -36,6 +50,16 @@ type WidgetRequestContextValue = {
 };
 
 const WidgetRequestContext = createContext<WidgetRequestContextValue | null>(null);
+const WidgetMenuContext = createContext<{ openMenuItem: (id: string) => void } | null>(null);
+
+type ModalItem = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  value?: unknown;
+  config?: Record<string, unknown>;
+  specPatch?: Record<string, unknown>;
+};
 
 export function useWidgetInstanceId() {
   return use(WidgetIdContext);
@@ -49,17 +73,33 @@ export function useWidgetRequestStatus() {
   return context;
 }
 
+export function useWidgetMenuActions() {
+  const context = use(WidgetMenuContext);
+  if (!context) {
+    throw new Error("useWidgetMenuActions must be used within BaseWidget");
+  }
+  return context;
+}
+
 export function BaseWidget(props: {
   children: ReactNode,
   extraOptions?: { icon: ReactNode, onClick: () => void, title?: string }[]
 }) {
   const id = use(WidgetIdContext);
   const spec = use(SpecContext)!;
+  const socket = useSocket();
 
   const isEditing = useEditingStore(s => s.isEditing);
   const removeWidget = useLayoutStore(s => s.removeWidget);
+  const page = useLayoutStore(selectCurrentPage);
+  const widget = page.widgets.find(candidate => candidate.id === id);
+  const setWidgetConfig = useLayoutStore(s => s.setWidgetConfig);
   const [pending, setPending] = useState(false);
   const [open, setOpen] = useState(false);
+  const [modalAction, setModalAction] = useState<WidgetMenuModalAction | null>(null);
+  const [modalItems, setModalItems] = useState<ModalItem[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalQuery, setModalQuery] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const pendingTimeoutRef = useRef<number | undefined>(undefined);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -92,11 +132,93 @@ export function BaseWidget(props: {
 
   useEffect(() => completeRequest, [completeRequest]);
 
+  useEffect(() => {
+    if (!modalAction) {
+      return;
+    }
+
+    const applyItems = (data: WidgetEvent) => {
+      if (data.widgetType !== spec.type || data.action !== modalAction.responseAction) {
+        return;
+      }
+
+      const payload = data.payload as { items?: ModalItem[] };
+      setModalItems(payload.items ?? []);
+      setModalLoading(false);
+    };
+
+    socket.on(SocketEvent.WidgetEvent, applyItems);
+    socket.emit(SocketEvent.WidgetEvent, {
+      widgetType: spec.type,
+      action: modalAction.requestAction,
+      payload: {
+        ...(modalAction.requestPayload ?? {}),
+        config: widget?.config ?? {}
+      },
+      createdAt: new Date().toISOString()
+    });
+
+    return () => {
+      socket.off(SocketEvent.WidgetEvent, applyItems);
+    };
+  }, [modalAction, socket, spec.type, widget?.config]);
+
   const requestStatus = useMemo(() => ({
     pending,
     beginRequest,
     completeRequest
   }), [beginRequest, completeRequest, pending]);
+
+  const filteredModalItems = useMemo(() => {
+    const query = modalQuery.trim().toLowerCase();
+    if (!query) {
+      return modalItems;
+    }
+
+    return modalItems.filter(item => (
+      item.title.toLowerCase().includes(query) ||
+      (item.subtitle ?? "").toLowerCase().includes(query)
+    ));
+  }, [modalItems, modalQuery]);
+
+  const openModalAction = (action: WidgetMenuModalAction) => {
+    setModalItems([]);
+    setModalQuery("");
+    setModalLoading(true);
+    setModalAction(action);
+  };
+
+  const openMenuItem = (menuItemId: string) => {
+    const menuItem = spec.menuItems?.find(candidate => candidate.id === menuItemId);
+    if (menuItem?.action.type === "modal") {
+      openModalAction(menuItem.action);
+    }
+  };
+
+  const selectModalItem = (item: ModalItem) => {
+    if (!id) {
+      return;
+    }
+
+    const nextConfig = {
+      ...(widget?.config ?? {}),
+      ...(item.config ?? {})
+    };
+
+    if (modalAction?.configKey) {
+      nextConfig[modalAction.configKey] = item.value ?? item;
+    }
+
+    if (item.specPatch) {
+      nextConfig.specPatch = {
+        ...((widget?.config?.specPatch as Record<string, unknown> | undefined) ?? {}),
+        ...item.specPatch
+      };
+    }
+
+    setWidgetConfig(id, nextConfig);
+    setModalAction(null);
+  };
 
   return (
     <WidgetRequestContext.Provider value={requestStatus}>
@@ -146,6 +268,19 @@ export function BaseWidget(props: {
                   horizontal: 'left'
                 }}
               >
+                {spec.menuItems?.map(item => (
+                  <MenuItem
+                    key={item.id}
+                    onClick={() => {
+                      handleClose();
+                      if (item.action.type === "modal") {
+                        openModalAction(item.action);
+                      }
+                    }}
+                  >
+                    {item.title}
+                  </MenuItem>
+                ))}
                 {props.extraOptions?.map(opt => (
                   <MenuItem key={opt.title} onClick={handleClose}>
                     <div title={opt.title} onClick={opt.onClick}>
@@ -167,10 +302,44 @@ export function BaseWidget(props: {
             </div>}
           </div>
         )}
-        <div className={clsx("flex-grow-1 overflow-hidden", { "pointer-events-none": isEditing })}>
-          {props.children}
-        </div>
+        <WidgetMenuContext.Provider value={{ openMenuItem }}>
+          <div className={clsx("flex-grow-1 overflow-hidden", { "pointer-events-none": isEditing })}>
+            {props.children}
+          </div>
+        </WidgetMenuContext.Provider>
       </div>
+      <Dialog open={!!modalAction} onClose={() => setModalAction(null)} fullWidth maxWidth="xs">
+        <DialogTitle>{modalAction?.title}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            margin="dense"
+            placeholder={modalAction?.searchPlaceholder ?? "Search..."}
+            value={modalQuery}
+            onChange={event => setModalQuery(event.target.value)}
+          />
+          {modalLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <CircularProgress size={24} />
+            </div>
+          ) : (
+            <List dense>
+              {filteredModalItems.map(item => (
+                <ListItemButton
+                  key={item.id}
+                  onClick={() => selectModalItem(item)}
+                >
+                  <ListItemText primary={item.title} secondary={item.subtitle} />
+                </ListItemButton>
+              ))}
+              {filteredModalItems.length === 0 && (
+                <div className="p-4 text-sm text-neutral-400">No items found.</div>
+              )}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
     </WidgetRequestContext.Provider>
   );
 }
