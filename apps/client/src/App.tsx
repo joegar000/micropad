@@ -1,5 +1,4 @@
 import { Grid } from "./components/grid/Grid";
-import "./components/grid/widgets";
 import { Lock } from "./components/editing/lock";
 import { GridSize } from "./components/editing/gridsize";
 import { ThemeProvider, createTheme } from '@mui/material/styles';

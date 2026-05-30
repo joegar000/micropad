@@ -4,8 +4,21 @@ import { VitePWA } from "vite-plugin-pwa";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
+const useSelfDestroyingServiceWorker = process.env.MICROPAD_CLIENT_SELF_DESTROYING_SW === "1";
+
 export default defineConfig({
-  plugins: [react(), VitePWA(), tailwindcss()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "autoUpdate",
+      selfDestroying: useSelfDestroyingServiceWorker,
+      workbox: {
+        cleanupOutdatedCaches: true,
+        navigateFallbackDenylist: [/^\/socket\.io\//],
+      },
+    }),
+    tailwindcss()
+  ],
   build: {
     outDir: "dist",
     emptyOutDir: true,

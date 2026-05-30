@@ -7,7 +7,7 @@
   "author": "David Garcia",
   "type": "module",
   "sideEffects": [
-    "./src/components/widgets/*"
+    "./src/components/grid/widgets/*"
   ],
   "scripts": {
     "dev": "vite serve .",
