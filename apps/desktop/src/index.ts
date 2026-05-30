@@ -32,10 +32,26 @@ const { app: electron } = Electron;
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
     const client = path.join(__dirname, "../../../client/dist");
+    const disableClientCache = !electron.isPackaged || process.env.MICROPAD_DISABLE_CLIENT_CACHE === '1';
 
-    app.use(express.static(client));
+    app.use(express.static(client, {
+        setHeaders(res, filePath) {
+            if (!disableClientCache) {
+                return;
+            }
+
+            const fileName = path.basename(filePath);
+            if (['index.html', 'registerSW.js', 'sw.js', 'manifest.webmanifest'].includes(fileName)) {
+                res.setHeader('Cache-Control', 'no-store');
+            }
+        }
+    }));
 
     app.get("/{*any}", (req, res) => {
+        if (disableClientCache) {
+            res.setHeader('Cache-Control', 'no-store');
+        }
+
         res.sendFile(path.join(client, "index.html"));
     });
 
