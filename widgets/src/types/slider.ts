@@ -47,10 +47,10 @@ export class SliderViewModel<TMenuItems extends WidgetMenuItemMap = WidgetMenuIt
     }
 
     emitChange(socket: SocketLike, data: { value: number }, context: WidgetEventContext = {}) {
-        this.emitAction(socket, 'change', data, context);
+        this.runtime.emit('change', socket, data, context);
     }
 
     onChange(socket: SocketLike, cb: (data: { value: number }, context?: WidgetEventContext) => void) {
-        return this.onAction<{ value: number }>(socket, 'change', cb);
+        return this.runtime.on<{ value: number }>('change', socket, cb);
     }
 }

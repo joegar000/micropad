@@ -75,29 +75,29 @@ export class ButtonViewModel<TMenuItems extends WidgetMenuItemMap = WidgetMenuIt
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
     emitClick(socket: ClientSocket | ServerSocket, data: ButtonClickPayload, context: WidgetEventContext = {}) {
-        this.emitAction(socket, 'click', data, context);
+        this.runtime.emit('click', socket, data, context);
     }
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
     onClick(socket: ClientSocket | ServerSocket, cb: (data: ButtonClickPayload, context?: WidgetEventContext) => void) {
-        return this.onAction<ButtonClickPayload>(socket, 'click', cb);
+        return this.runtime.on<ButtonClickPayload>('click', socket, cb);
     }
     
     emitActiveChange(socket: ClientSocket | ServerSocket, data: { isActive: boolean }, context: WidgetEventContext = {}) {
-        this.emitResponse(socket, 'activeChange', data, context);
+        this.runtime.emit('activeChange', socket, data, context);
     }
 
     emitConfirm(socket: ClientSocket | ServerSocket, data: Record<string, unknown> = {}, context: WidgetEventContext = {}) {
-        this.emitResponse(socket, 'confirm', data, context);
+        this.runtime.emit('confirm', socket, data, context);
     }
 
     onConfirm(socket: ClientSocket | ServerSocket, cb: (data: Record<string, unknown>) => void) {
-        return this.onAction<Record<string, unknown>>(socket, 'confirm', cb);
+        return this.runtime.on<Record<string, unknown>>('confirm', socket, cb);
     }
 
     onActiveChange(socket: ClientSocket | ServerSocket, cb: (data: { isActive: boolean }) => void) {
         if (this.spec.canToggle) {
-            return this.onAction<{ isActive: boolean }>(socket, 'activeChange', cb);
+            return this.runtime.on<{ isActive: boolean }>('activeChange', socket, cb);
         }
         return () => {};
     }

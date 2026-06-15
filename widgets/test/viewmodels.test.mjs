@@ -52,7 +52,7 @@ test("button viewmodels route actions over typed widget events", () => {
 
   button.emitClick(socket, { active: true }, { widgetInstanceId: "widget-play" });
 
-  assert.equal(button.eventName("click"), "widget:media.playPause:click");
+  assert.equal(button.runtime.eventName("click"), "widget:media.playPause:click");
   assert.equal(socket.emitted[0].event, "widget:media.playPause:click");
   assert.equal(socket.emitted[1].event, "widget:media.playPause:confirm");
   assert.deepEqual(clickPayload, { active: true });
@@ -74,7 +74,7 @@ test("slider viewmodels broadcast changes over typed widget events", () => {
   });
   slider.emitChange(socket, { value: 42 });
 
-  assert.equal(slider.eventName("change"), "widget:volume.masterVolume:change");
+  assert.equal(slider.runtime.eventName("change"), "widget:volume.masterVolume:change");
   assert.equal(socket.emitted[0].event, "widget:volume.masterVolume:change");
   assert.deepEqual(received, { value: 42 });
 });
@@ -125,7 +125,6 @@ test("menu item viewmodels use socket acknowledgements for action responses", as
   );
   await new Promise(resolve => setTimeout(resolve, 0));
 
-  assert.equal(menuItem.eventName(), "widget:appLauncher.launcher:menu:setApp:modal:listApps");
   assert.equal(socket.emitted[0].event, "widget:appLauncher.launcher:menu:setApp:modal:listApps");
   assert.equal(requestContext.widgetInstanceId, "widget-launcher");
   assert.equal(response.items[0].title, "Safari");

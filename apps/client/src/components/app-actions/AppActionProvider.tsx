@@ -49,7 +49,7 @@ export function AppActionProvider(props: { children: ReactNode }) {
     }
 
     const runtime = new WidgetRuntime(input.spec);
-    const menuItem = runtime.menuItem(input.menuItemId);
+    const menuItem = runtime.menuItems[input.menuItemId];
     if (!menuItem) {
       return;
     }

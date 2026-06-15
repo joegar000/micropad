@@ -56,24 +56,20 @@ export class WidgetMenuItemRuntime {
         public readonly spec: WidgetMenuItem
     ) {}
 
-    eventName() {
-        return this.owner.menuEventName(this.spec.id, menuActionName(this.spec));
-    }
-
     emit<TPayload, TResponse = void>(
         socket: SocketLike,
         payload: TPayload,
         context: WidgetEventContext = {},
         ack?: WidgetAck<TResponse>
     ) {
-        this.owner.emit(this.eventName(), socket, payload, context, ack);
+        this.owner.emit(`menu:${this.spec.id}:${menuActionName(this.spec)}`, socket, payload, context, ack);
     }
 
     on<TPayload, TResponse = void>(
         socket: SocketLike,
         cb: (data: TPayload, context: WidgetEventContext) => TResponse | Promise<TResponse> | void
     ) {
-        return this.owner.on<TPayload, TResponse>(this.eventName(), socket, cb);
+        return this.owner.on<TPayload, TResponse>(`menu:${this.spec.id}:${menuActionName(this.spec)}`, socket, cb);
     }
 }
 
@@ -96,14 +92,6 @@ export class WidgetRuntime<TMenuItems extends WidgetMenuItemMap = WidgetMenuItem
             : `widget:${this.spec.type}:${action}`;
     }
 
-    menuEventName(menuItemId: string, action: string) {
-        return this.eventName(`menu:${menuItemId}:${action}`);
-    }
-
-    menuItem(id: string) {
-        return this.menuItems[id];
-    }
-
     emit<TPayload, TResponse = void>(
         action: string,
         socket: SocketLike,
@@ -122,15 +110,6 @@ export class WidgetRuntime<TMenuItems extends WidgetMenuItemMap = WidgetMenuItem
         }
 
         socket.emit(this.eventName(action), envelope);
-    }
-
-    emitResponse<TPayload>(
-        action: string,
-        socket: SocketLike,
-        payload: TPayload,
-        context: WidgetEventContext = {}
-    ) {
-        this.emit(action, socket, payload, context);
     }
 
     on<TPayload, TResponse = void>(
