@@ -60,7 +60,7 @@ export const useLayoutStore = create<LayoutStoreState>()(
       (set, get) => ({
         layout: defaultLayout,
         bridgeReady: false,
-        currentPage: get().layout.pages.find(page => page.id === get().layout.currentPageId)!,
+        currentPage: get()?.layout.pages.find(page => page.id === get().layout.currentPageId) ?? defaultLayout.pages[0],
         setLayoutFromBridge: layout => {
           markWidgetIds(layout);
           set(s => {
