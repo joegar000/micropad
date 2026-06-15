@@ -8,7 +8,6 @@ WidgetRegistry.bindViewModel(ButtonViewModel, Button);
 WidgetRegistry.bindViewModel(SliderViewModel, Slider);
 export {
   BaseWidget,
-  SpecContext,
   Widget,
   WidgetRegistry,
   useWidgetInstanceId

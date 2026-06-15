@@ -1,6 +1,13 @@
 import { z } from "zod";
-import { createWidgetEvent, SocketEvent, WidgetEventSchema } from "micropad-protocol";
-import { BaseWidgetModel, BaseWidgetViewModel, type SocketLike, type WidgetEventContext, type WidgetMenuItem } from "./base.js";
+import {
+    BaseWidgetModel,
+    BaseWidgetViewModel,
+    normalizeWidgetMenuItems,
+    type SocketLike,
+    type WidgetEventContext,
+    type WidgetMenuItemMap,
+    type WidgetMenuItemsInput
+} from "./base.js";
 
 export const SliderModel = BaseWidgetModel.extend({
     step: z.optional(z.number()),
@@ -11,61 +18,39 @@ export const SliderModel = BaseWidgetModel.extend({
 
 export type ISliderModel = z.infer<typeof SliderModel>;
 
-export class SliderViewModel extends BaseWidgetViewModel {
+export class SliderViewModel<TMenuItems extends WidgetMenuItemMap = WidgetMenuItemMap> extends BaseWidgetViewModel<TMenuItems> {
     static id = 'slider';
-    constructor(public spec: ISliderModel) {
-        super();
+    declare readonly spec: ISliderModel;
+
+    constructor(spec: ISliderModel) {
+        super(spec);
     }
 
-    static fromConfig(config: {
+    static fromConfig<TMenuItems extends WidgetMenuItemMap = WidgetMenuItemMap>(config: {
         pluginName: string,
         widgetName: string,
         title: string,
         step?: number,
         min?: number,
         max?: number,
-        menuItems?: WidgetMenuItem[]
+        menuItems?: TMenuItems | WidgetMenuItemsInput
     }) {
-        return new this({
+        return new SliderViewModel<TMenuItems>({
             type: `${config.pluginName}.${config.widgetName}`,
             title: config.title,
             step: config.step,
             min: config.min,
             max: config.max,
-            menuItems: config.menuItems,
+            menuItems: normalizeWidgetMenuItems(config.menuItems),
             id: 'slider'
         });
     }
 
     emitChange(socket: SocketLike, data: { value: number }, context: WidgetEventContext = {}) {
-        if (context.widgetInstanceId) {
-            socket.emit(SocketEvent.WidgetEvent, createWidgetEvent({
-                ...context,
-                widgetType: this.spec.type,
-                action: 'change',
-                payload: data
-            }));
-            return;
-        }
-
-        socket.emit(`${this.spec.type}.change`, data);
+        this.emitAction(socket, 'change', data, context);
     }
 
     onChange(socket: SocketLike, cb: (data: { value: number }, context?: WidgetEventContext) => void) {
-        const widgetEventCb = (data: unknown) => {
-            const event = WidgetEventSchema.safeParse(data);
-            if (event.success && event.data.widgetType === this.spec.type && event.data.action === 'change') {
-                cb(event.data.payload as { value: number }, event.data);
-            }
-        };
-
-        socket.on(`${this.spec.type}.change`, cb);
-        socket.on(SocketEvent.WidgetEvent, widgetEventCb);
-        return () => {
-            // @ts-ignore
-            socket.off(`${this.spec.type}.change`, cb);
-            // @ts-ignore
-            socket.off(SocketEvent.WidgetEvent, widgetEventCb);
-        }
+        return this.onAction<{ value: number }>(socket, 'change', cb);
     }
 }

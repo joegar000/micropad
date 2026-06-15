@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { createWidgetEvent, SocketEvent, WidgetEventSchema } from "micropad-protocol";
-import { BaseWidgetModel, BaseWidgetViewModel, type WidgetEventContext, type WidgetMenuItem } from "./base.js";
+import {
+    BaseWidgetModel,
+    BaseWidgetViewModel,
+    normalizeWidgetMenuItems,
+    type WidgetEventContext,
+    type WidgetMenuItemMap,
+    type WidgetMenuItemsInput
+} from "./base.js";
 import type { Socket as ServerSocket } from "socket.io";
 import type { Socket as ClientSocket } from "socket.io-client";
 
@@ -19,37 +25,49 @@ export const ButtonIconModel = z.discriminatedUnion("type", [
 
 export type IButtonIconModel = z.infer<typeof ButtonIconModel>;
 
+export const ButtonPrimaryActionModel = z.object({
+    requires: z.optional(z.array(z.object({
+        configKey: z.string(),
+        fallbackActionId: z.string()
+    })))
+});
+
 export const ButtonModel = BaseWidgetModel.extend({
     text: z.string(),
     icon: z.optional(ButtonIconModel),
     canToggle: z.optional(z.boolean()),
+    primaryAction: z.optional(ButtonPrimaryActionModel),
     id: z.literal('button')
 });
 
 export type IButtonModel = z.infer<typeof ButtonModel>;
 export type ButtonClickPayload = { active: boolean } & Record<string, unknown>;
 
-export class ButtonViewModel extends BaseWidgetViewModel {
+export class ButtonViewModel<TMenuItems extends WidgetMenuItemMap = WidgetMenuItemMap> extends BaseWidgetViewModel<TMenuItems> {
     static id = 'button';
-    constructor(public spec: IButtonModel) {
-        super();
+    declare readonly spec: IButtonModel;
+
+    constructor(spec: IButtonModel) {
+        super(spec);
     }
 
-    static fromConfig(config: {
+    static fromConfig<TMenuItems extends WidgetMenuItemMap = WidgetMenuItemMap>(config: {
         pluginName: string,
         widgetName: string,
         title: string,
         text: string,
         icon?: IButtonIconModel,
-        menuItems?: WidgetMenuItem[],
+        menuItems?: TMenuItems | WidgetMenuItemsInput,
+        primaryAction?: z.infer<typeof ButtonPrimaryActionModel>,
         canToggle?: boolean
     }) {
-        return new this({
+        return new ButtonViewModel<TMenuItems>({
             type: `${config.pluginName}.${config.widgetName}`,
             title: config.title,
             text: config.text,
             icon: config.icon,
-            menuItems: config.menuItems,
+            menuItems: normalizeWidgetMenuItems(config.menuItems),
+            primaryAction: config.primaryAction,
             canToggle: config.canToggle,
             id: 'button'
         })
@@ -57,101 +75,29 @@ export class ButtonViewModel extends BaseWidgetViewModel {
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
     emitClick(socket: ClientSocket | ServerSocket, data: ButtonClickPayload, context: WidgetEventContext = {}) {
-        if (context.widgetInstanceId) {
-            socket.emit(SocketEvent.WidgetEvent, createWidgetEvent({
-                ...context,
-                widgetType: this.spec.type,
-                action: 'click',
-                payload: data
-            }));
-            return;
-        }
-
-        socket.emit(`${this.spec.type}.click`, data);
+        this.emitAction(socket, 'click', data, context);
     }
 
     /** `data.active` should always be false for models where `canToggle` !== `true` */
     onClick(socket: ClientSocket | ServerSocket, cb: (data: ButtonClickPayload, context?: WidgetEventContext) => void) {
-        const widgetEventCb = (data: unknown) => {
-            const event = WidgetEventSchema.safeParse(data);
-            if (event.success && event.data.widgetType === this.spec.type && event.data.action === 'click') {
-                cb(event.data.payload as ButtonClickPayload, event.data);
-            }
-        };
-
-        socket.on(`${this.spec.type}.click`, cb);
-        socket.on(SocketEvent.WidgetEvent, widgetEventCb);
-        return () => {
-            // @ts-ignore
-            socket.off(`${this.spec.type}.click`, cb);
-            // @ts-ignore
-            socket.off(SocketEvent.WidgetEvent, widgetEventCb);
-        }
+        return this.onAction<ButtonClickPayload>(socket, 'click', cb);
     }
     
     emitActiveChange(socket: ClientSocket | ServerSocket, data: { isActive: boolean }, context: WidgetEventContext = {}) {
-        if (context.widgetInstanceId) {
-            socket.emit(SocketEvent.WidgetEvent, createWidgetEvent({
-                ...context,
-                widgetType: this.spec.type,
-                action: 'activeChange',
-                payload: data
-            }));
-            return;
-        }
-
-        socket.emit(`${this.spec.type}.activeChange`, data);
+        this.emitResponse(socket, 'activeChange', data, context);
     }
 
     emitConfirm(socket: ClientSocket | ServerSocket, data: Record<string, unknown> = {}, context: WidgetEventContext = {}) {
-        if (context.widgetInstanceId) {
-            socket.emit(SocketEvent.WidgetEvent, createWidgetEvent({
-                ...context,
-                widgetType: this.spec.type,
-                action: 'confirm',
-                payload: data
-            }));
-            return;
-        }
-
-        socket.emit(`${this.spec.type}.confirm`, data);
+        this.emitResponse(socket, 'confirm', data, context);
     }
 
     onConfirm(socket: ClientSocket | ServerSocket, cb: (data: Record<string, unknown>) => void) {
-        const widgetEventCb = (data: unknown) => {
-            const event = WidgetEventSchema.safeParse(data);
-            if (event.success && event.data.widgetType === this.spec.type && event.data.action === 'confirm') {
-                cb(event.data.payload as Record<string, unknown>);
-            }
-        };
-
-        socket.on(`${this.spec.type}.confirm`, cb);
-        socket.on(SocketEvent.WidgetEvent, widgetEventCb);
-        return () => {
-            // @ts-ignore
-            socket.off(`${this.spec.type}.confirm`, cb);
-            // @ts-ignore
-            socket.off(SocketEvent.WidgetEvent, widgetEventCb);
-        }
+        return this.onAction<Record<string, unknown>>(socket, 'confirm', cb);
     }
 
     onActiveChange(socket: ClientSocket | ServerSocket, cb: (data: { isActive: boolean }) => void) {
         if (this.spec.canToggle) {
-            const widgetEventCb = (data: unknown) => {
-                const event = WidgetEventSchema.safeParse(data);
-                if (event.success && event.data.widgetType === this.spec.type && event.data.action === 'activeChange') {
-                    cb(event.data.payload as { isActive: boolean });
-                }
-            };
-
-            socket.on(`${this.spec.type}.activeChange`, cb);
-            socket.on(SocketEvent.WidgetEvent, widgetEventCb);
-            return () => {
-                // @ts-ignore
-                socket.off(`${this.spec.type}.activeChange`, cb);
-                // @ts-ignore
-                socket.off(SocketEvent.WidgetEvent, widgetEventCb);
-            }
+            return this.onAction<{ isActive: boolean }>(socket, 'activeChange', cb);
         }
         return () => {};
     }

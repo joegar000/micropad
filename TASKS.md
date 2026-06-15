@@ -9,13 +9,14 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 - [x] Add shared `micropad-protocol` workspace with versioned layout, page, widget instance, device profile, app snapshot, and socket event schemas.
 - [x] Refactor the client layout store toward Micropad domain layout data instead of raw `react-grid-layout` persistence.
 - [x] Add bridge-owned file layout persistence as an interim step before SQLite.
-- [x] Add `app:snapshot`, `layout:update`, `layout:saved`, and `widget:event` protocol events while keeping legacy widget event compatibility.
+- [x] Add `app:snapshot`, `layout:update`, and `layout:saved` protocol events for bridge/client coordination.
 - [x] Add basic mDNS/DNS-SD service publishing for the bridge.
 - [x] Make `npm run build` cover protocol, widgets, client, and desktop bridge.
 - [x] Refactor source organization: bridge/desktop/network/storage folders, client lib/store/hook filenames, and split protocol schema modules.
 - [x] Rename top-level `apps/server` workspace to `apps/desktop` and decide to defer a separate bridge package until persistence/pairing boundaries stabilize.
 - [x] Add basic unit tests for protocol schemas/helpers and file-backed bridge layout storage.
 - [x] Make desktop QR/runtime URLs use the advertised `.local` mDNS host with a LAN IP fallback.
+- [x] Move widget action routing into viewmodels with typed Socket.IO event names and modal acknowledgements.
 
 ## Next
 
@@ -70,7 +71,7 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 ## Tests And QA
 
 - [ ] Add layout store migration tests.
-- [ ] Add socket contract tests for app snapshot, layout update, and widget events.
+- [ ] Add socket contract tests for app snapshot, layout update, typed widget actions, modal acknowledgements, and widget state broadcasts.
 - [ ] Add client editor interaction tests for drag, drop, resize, and delete.
 - [ ] Add bridge integration tests for pairing and layout assignment.
 - [ ] Add manual QA checklist for phone/tablet connection and PWA installation.

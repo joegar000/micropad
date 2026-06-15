@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useLayoutStore } from "./store/layout-store";
 import type { IWidgetModel } from "micropad-widgets";
 import { AppSnapshotSchema, SocketEvent, type AppSnapshot } from "micropad-protocol";
+import { AppActionProvider } from "./components/app-actions/AppActionProvider";
 
 const darkTheme = createTheme({
   palette: {
@@ -59,18 +60,20 @@ export default function App() {
   return (
     <WidgetSpecContext.Provider value={specs.reduce<Record<string, IWidgetModel>>((acc, spec) => { acc[spec.type] = spec; return acc; }, {})}>
       <ThemeProvider theme={darkTheme}>
-        <LayoutBridgeSync />
-        <CssBaseline />
-        <div className="p-1 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Lock />
+        <AppActionProvider>
+          <LayoutBridgeSync />
+          <CssBaseline />
+          <div className="p-1 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Lock />
+            </div>
+            <Activity mode={isEditing ? 'visible' : 'hidden'}>
+              <SidebarButton />
+            </Activity>
           </div>
-          <Activity mode={isEditing ? 'visible' : 'hidden'}>
-            <SidebarButton />
-          </Activity>
-        </div>
-        <AppGrid />
-        <Sidebar />
+          <AppGrid />
+          <Sidebar />
+        </AppActionProvider>
       </ThemeProvider>
     </WidgetSpecContext.Provider>
   );

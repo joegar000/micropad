@@ -11,6 +11,7 @@ export default function SliderWiget(props: ISliderModel) {
 
   return (
     <BaseWidget
+      spec={props}
       extraOptions={[
         {
           icon: <RotateRightIcon />,

@@ -3,7 +3,7 @@ import { useEditingStore } from "../../store/editing-store";
 import { Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { WidgetSpecContext } from "./widgets/speclookup";
-import { SpecContext, WidgetRegistry } from "./widgets";
+import { WidgetRegistry } from "./widgets";
 import { type IWidgetModel } from "micropad-widgets";
 import "./widgets";
 
@@ -82,9 +82,7 @@ export function GridPanel() {
                   }}
                 >
                   {Widget ? (
-                    <SpecContext value={it}>
-                      <Widget {...it} />
-                    </SpecContext>
+                    <Widget {...it} />
                   ) : (
                     <div className="m-2 flex flex-grow-1 flex-col justify-center rounded-2xl border border-neutral-700 bg-neutral-800/80 p-4 text-neutral-100 shadow-xl">
                       <div className="text-sm font-medium text-neutral-300">{it.title}</div>

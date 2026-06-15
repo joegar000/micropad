@@ -3,7 +3,6 @@ export const SocketEvent = {
   AppSnapshot: "app:snapshot",
   LayoutUpdate: "layout:update",
   LayoutSaved: "layout:saved",
-  WidgetEvent: "widget:event",
   PairingStart: "pairing:start",
   PairingComplete: "pairing:complete"
 } as const;
