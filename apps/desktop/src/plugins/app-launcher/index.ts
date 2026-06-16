@@ -1,7 +1,7 @@
 import { ButtonViewModel, type WidgetModalResponse } from "micropad-widgets";
 import { PluginAPI } from "../registry.js";
 import { initialIcon } from "../icon-specs.js";
-import { launchApp, listInstalledApps, type InstalledApp } from "../system-actions.js";
+import { launchApp, listInstalledApps, type InstalledApp } from "./list-apps.js";
 
 type AppLauncherClickPayload = {
     config?: {
