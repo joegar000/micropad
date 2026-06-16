@@ -44,6 +44,7 @@ This file tracks the work needed to evolve Micropad into the local-first desktop
 - [ ] Separate widget definitions from desktop actions.
 - [ ] Define action schemas in `packages/protocol`.
 - [ ] Implement media controls.
+- [ ] Add macOS Accessibility permission preflight, prompt, and user-facing onboarding for RobotJS media/hotkey actions.
 - [ ] Implement hotkey execution.
 - [ ] Implement app launch.
 - [ ] Implement Discord integration.
