@@ -11,7 +11,6 @@ import {
   type WidgetInstance
 } from "micropad-protocol";
 import { createIdStore } from "../lib/id-store";
-import { applyLayoutItemsToWidgets } from "./layout-model";
 
 export interface LayoutStoreState {
   layout: MicropadLayout;
@@ -135,6 +134,27 @@ export const useLayoutStore = create<LayoutStoreState>()(
     }
   )
 );
+
+function applyLayoutItemsToWidgets(
+  widgets: WidgetInstance[],
+  items: LayoutItem[]
+): WidgetInstance[] {
+  const placementById = new Map(items.map(item => [item.i, item]));
+  return widgets.map(widget => {
+    const placement = placementById.get(widget.id);
+    if (!placement) {
+      return widget;
+    }
+
+    return {
+      ...widget,
+      x: placement.x,
+      y: placement.y,
+      w: placement.w,
+      h: placement.h
+    };
+  });
+}
 
 export const GridsContext = createContext<LayoutStoreState | null>(null);
 

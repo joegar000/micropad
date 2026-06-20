@@ -8,14 +8,19 @@ import { useEditingStore } from '../../store/editing-store';
 import "./grid.css";
 import "./widgets";
 import { useLayoutStore, widgetIdStore } from '../../store/layout-store';
-import { widgetToLayoutItem } from '../../store/layout-model';
 
 export function Grid({ children }: { children: ReactNode }) {
   const { width, containerRef, mounted } = useContainerWidth();
   const page = useLayoutStore(s => s.currentPage);
   const rows = page.rows;
   const columns = page.columns;
-  const layout = page.widgets.map(widgetToLayoutItem);
+  const layout = page.widgets.map(w => ({
+    i: w.id,
+    x: w.x,
+    y: w.y,
+    w: w.w,
+    h: w.h
+  }));
   const isEditing = useEditingStore(s => s.isEditing);
   const setWidgetPlacements = useLayoutStore(s => s.setWidgetPlacements);
   const addWidget = useLayoutStore(s => s.addWidget);
