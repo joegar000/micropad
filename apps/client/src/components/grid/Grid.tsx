@@ -44,7 +44,7 @@ export function Grid({ children }: { children: ReactNode }) {
   }, [columns, containerRef, rows]), { waitUntilMounted: true });
 
   return (
-    <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
+    <div className="h-[100%] p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
       <div
         ref={containerRef}
         className={clsx("flex grid-container", { "grid-container-editing": isEditing })}

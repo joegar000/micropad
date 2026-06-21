@@ -18,6 +18,8 @@ export interface LayoutStoreState {
   currentPage: MicropadLayout['pages'][number];
   setLayoutFromBridge: (layout: MicropadLayout) => void;
   markBridgeReady: () => void;
+  addPage: (index?: number) => void;
+  removePage: (pageId?: string) => void;
   setCurrentPage: (pageId: string) => void;
   setRows: (rows: number) => void;
   setColumns: (cols: number) => void;
@@ -70,6 +72,41 @@ export const useLayoutStore = create<LayoutStoreState>()(
         markBridgeReady: () => {
           set(s => {
             s.bridgeReady = true;
+          });
+        },
+        addPage: (index?: number) => {
+          const newPageId = `page-${Date.now()}`;
+          set(s => {
+            s.layout.pages.splice(index ?? s.layout.pages.length, 0, {
+              id: newPageId,
+              name: `Page ${s.layout.pages.length + 1}`,
+              rows: 3,
+              columns: 5,
+              widgets: []
+            });
+            s.layout.currentPageId = newPageId;
+            touch(s.layout);
+          });
+        },
+        removePage: (pageId) => {
+          set(s => {
+            const idToRemove = pageId ?? s.layout.currentPageId;
+            s.layout.pages = s.layout.pages.filter(page => page.id !== idToRemove);
+            if (s.layout.currentPageId === idToRemove) {
+              s.layout.currentPageId = s.layout.pages[0]?.id ?? "";
+            }
+            if (s.layout.pages.length === 0) {
+              const newPageId = `page-${Date.now()}`;
+              s.layout.pages.push({
+                id: newPageId,
+                name: `Page 1`,
+                rows: 3,
+                columns: 5,
+                widgets: []
+              });
+              s.layout.currentPageId = newPageId;
+            }
+            touch(s.layout);
           });
         },
         setCurrentPage: pageId => {

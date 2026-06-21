@@ -15,6 +15,11 @@ import { useLayoutStore } from "./store/layout-store";
 import type { IWidgetModel } from "micropad-widgets";
 import { AppSnapshotSchema, SocketEvent, type AppSnapshot } from "micropad-protocol";
 import { AppActionProvider } from "./components/app-actions/AppActionProvider";
+import Slide from "@mui/material/Slide";
+import Box from "@mui/material/Box";
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+
 
 const darkTheme = createTheme({
   palette: {
@@ -101,7 +106,9 @@ function LayoutBridgeSync() {
 
 function AppGrid() {
   const isEditing = useEditingStore(s => s.isEditing);
-  const page = useLayoutStore(s => s.currentPage);
+  const layout = useLayoutStore(s => s.layout);
+  const addPage = useLayoutStore(s => s.addPage);
+  const removePage = useLayoutStore(s => s.removePage);
   const [loaded, setLoaded] = useState(useLayoutStore.persist.hasHydrated());
   useEffect(() => {
     const unsub = useLayoutStore.persist.onFinishHydration(() => {
@@ -113,21 +120,47 @@ function AppGrid() {
     return <div>Loading...</div>;
   }
 
-  const widgets = page.widgets;
   return (
     <>
-      <Grid>
-        {widgets.map((w) => {
-          return (
-            <div className="flex" key={w.id}>
-              <Widget id={w.id} />
+      <Box sx={{ width: '100%', height: '100%', flexGrow: 1 }}>
+        {layout.pages.map((p, i) => (
+          <Slide key={p.id} direction={layout.currentPageId === p.id ? 'left' : 'right'} in={layout.currentPageId === p.id} mountOnEnter unmountOnExit>
+            <div className="flex h-[100%] w-[100%]">
+              <div className="flex items-center">something</div>
+              <div className="flex-grow-1">
+                <Grid>
+                  {p.widgets.map((w) => {
+                    return (
+                      <div className="flex" key={w.id}>
+                        <Widget id={w.id} />
+                      </div>
+                    );
+                  })}
+                </Grid>
+              </div>
+              <div className="flex items-center">
+                <button className="" onClick={() => {
+                  addPage(i + 1);
+                }}>
+                  Add Page
+                </button>
+              </div>
             </div>
-          );
-        })}
-      </Grid>
+          </Slide>
+        ))}
+      </Box>
       <Activity mode={isEditing ? 'visible' : 'hidden'}>
-        <div className="p-1">
-          <GridSize />
+        <div className="flex">
+          <div className="p-1">
+            <GridSize />
+          </div>
+          <div className="p-1">
+            <IconButton onClick={() => {
+              removePage();
+            }}>
+              <DeleteIcon />
+            </IconButton>
+          </div>
         </div>
       </Activity>
     </>
