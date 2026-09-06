@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import AppView from '../view/app.tsx';
-import AppModel from './model/app.tsx';
+import AppModel, { AppModelContext } from '../model/app.tsx';
 import { io } from 'socket.io-client';
 
 document.addEventListener('DOMContentLoaded', () => {

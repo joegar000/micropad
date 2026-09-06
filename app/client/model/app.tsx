@@ -1,11 +1,12 @@
 import { Socket } from "socket.io-client";
-import { useContext } from 'react';
+import { useContext, createContext } from 'react';
 
 export default class AppModel {
   socket: Socket;
 
   constructor(params: { socket: Socket }) {
     this.socket = params.socket;
+    this.socket.emitWithAck('get:plugins');
   }
 }
 

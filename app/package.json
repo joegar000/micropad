@@ -1,0 +1,36 @@
+{
+  "name": "micropad",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/joegar000/micropad#readme",
+  "bugs": {
+    "url": "https://github.com/joegar000/micropad/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joegar000/micropad.git"
+  },
+  "license": "ISC",
+  "author": "David Garcia",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "(cd client && npm run build && cd .. && node server/index.ts)",
+    "build": "(cd client && npm run build)"
+  },
+  "dependencies": {
+    "es-toolkit": "^1.52.0",
+    "express": "^5.2.1",
+    "lowdb": "^7.0.1",
+    "mobx": "^7.0.3",
+    "socket.io": "^4.8.3",
+    "micropad-sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/lowdb": "^1.0.15",
+    "@types/node": "^26.4.1",
+    "typescript": "^7.0.2"
+  }
+}
