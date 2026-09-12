@@ -2,134 +2,112 @@ import { observable, reaction, runInAction, toJS } from "mobx";
 import { Socket } from "socket.io-client";
 import * as jsonpatch from "fast-json-patch";
 import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
-import { v4 as uuid } from "uuid";
 import { Mutex } from "es-toolkit";
 import { memoize } from "es-toolkit/function";
 
+export const createBridgeGenerator = memoize(async (namespace: string) => {
+  const socketFnCache = new Map<Socket, any>();
+  return memoize(async function (socket: Socket) {
+    socket = socket.timeout(5000);
 
-const observableCache = new Map<string, Record<string, any>>();
-const _createBridgeGenerator = memoize(function _createBridgeGenerator(socket: Socket) {
-  class Bridge {
-    static cache = new Map<string, Bridge>();
-    readonly writeQueue: Write[] = [];
-    readonly namespace: string;
-    private revision: number = 0;
-    private applyingPatches: number = 0;
-    private resyncMutex: Mutex = new Mutex();
+    const obs = observable({});
+    let applyingPatches = 0;
 
-    private constructor(namespace: string) {
-      this.namespace = namespace;
-
-      socket.on('connect', () => this.resync());
-
-      socket.on(`bridge:${namespace}:write`, (payload: Write) => {
-        if (this.revision === payload.baseRevision) {
-          this.applyingPatches++;
-          try {
-            runInAction(() => {
-              jsonpatch.applyPatch(this.observable, payload.patches);
-            });
-            this.revision = payload.baseRevision + 1;
-          } finally {
-            this.applyingPatches--;
-          }
-        } else {
-          this.resync();
-        }
-      });
-
-      reaction(
-        () => toJS(this.observable),
-        (current, previous) => {
-          if (!this.applyingPatches)
-            this.write(jsonpatch.compare(previous, current));
-        }
-      );
-
-      this.resync();
-    }
-
-    get observable() {
-      if (!observableCache.has(this.namespace))
-        observableCache.set(this.namespace, observable({}));
-      return observableCache.get(this.namespace)!;
-    }
-
-    async resync() {
-      if (this.resyncMutex.isLocked) return;
-      await this.resyncMutex.acquire();
+    function overwriteObs(newObs: Record<string, any>) {
+      applyingPatches++;
       try {
-        const snapshot: Snapshot = await new Promise((resolve, reject) => {
-          socket.timeout(10000).emit(`bridge:${this.namespace}:snapshot`, (err, snapshot: Snapshot) => {
-            if (err) {
-              reject(`Failed to get snapshot for namespace ${this.namespace}`);
-            } else if (snapshot.status === 'ok') {
-              resolve(snapshot);
-            }
-          });
-        });
-        this.applyingPatches++;
         runInAction(() => {
-          for (const key of Object.keys(this.observable)) {
-            delete this.observable[key];
+          for (const key of Object.keys(obs)) {
+            delete obs[key];
           }
-          for (const [key, value] of Object.entries(snapshot.body)) {
-            this.observable[key] = value;
+          for (const [key, value] of Object.entries(newObs)) {
+            obs[key] = value;
           }
         });
-        this.applyingPatches--;
-        this.revision = snapshot.revision;
-        while (this.writeQueue.length) this.writeQueue.pop();
-      } catch(e) {
-        this.resync();
       } finally {
-        this.resyncMutex.release();
+        applyingPatches--;
       }
     }
 
-    write(patches: jsonpatch.Operation[]) {
-      if (!patches.length) return;
-      const id = uuid();
-      this.writeQueue.push({
-        id,
-        patches,
-        baseRevision: (
-          this.writeQueue.length ?
-            this.writeQueue.at(-1)!.baseRevision + 1 :
-            this.revision
-        )
-      });
-      socket.timeout(10000).emit(
-        `bridge:${this.namespace}:write`,
-        this.writeQueue.at(-1),
-        (err: boolean, ack: WriteResult) => {
-          if (err || ack.status === 'conflict' || ack.status === 'invalid') {
-            this.resync();
-          } else if (ack.status === 'ok' && ack.revision === this.revision + 1) {
-            this.revision = ack.revision;
-            this.writeQueue.splice(
-              this.writeQueue.findIndex(w => w.id === id),
-              1
-            );
-          }
+    const syncMutex = new Mutex();
+    async function sync() {
+      if (syncMutex.isLocked) {
+        await syncMutex.acquire();
+        syncMutex.release();
+        return;
+      }
+      let retry = false;
+      await syncMutex.acquire();
+      try {
+        const snapshot: Snapshot = await new Promise((resolve, reject) => {
+          socket.emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
+            if (err) {
+              reject(`Failed to get snapshot for namespace ${namespace}`);
+            } else if (snapshot.status === 'ok') {
+              resolve(snapshot);
+            } else {
+              reject('Invalid snapshot status');
+            }
+          });
+        });
+        overwriteObs(snapshot.body);
+      } catch(e) {
+        retry = true;
+      } finally {
+        syncMutex.release();
+      }
+      if (retry) {
+        sync();
+      }
+    }
+
+    socket.on(`bridge:${namespace}:write`, (payload: Write) => {
+      applyingPatches++;
+      try {
+        runInAction(() => {
+          jsonpatch.applyPatch(obs, payload.patches);
+        });
+      } catch (e) {
+        sync();
+      } finally {
+        applyingPatches--;
+      }
+    });
+
+    const disposer = reaction(
+      () => toJS(obs),
+      (current, previous) => {
+        if (!applyingPatches) {
+          const patches = jsonpatch.compare(previous, current);
+          if (!patches.length) return;
+          socket.emit(
+            `bridge:${namespace}:write`,
+            { patches } as Write,
+            (err: boolean, ack: WriteResult) => {
+              if (err) {
+                sync();
+              } else if (ack.status === 'invalid') {
+                overwriteObs(ack.body);
+              }
+            }
+          );
         }
-      );
-    }
+      }
+    );
 
-    static get(namespace: string) {
-      if (!this.cache.has(namespace))
-        this.cache.set(namespace, new Bridge(namespace));
-      return this.cache.get(namespace)!;
-    }
-  }
+    const intervalId = setInterval(() => sync(), 30000);
 
-  return function getBridge(namespace: string): Record<string, any> {
-    return Bridge.get(namespace).observable!;
-  }
-}, { getCacheKey: x => x });
+    await sync();
 
-
-export function createBridgeGenerator(socket: Socket) {
-  return _createBridgeGenerator(socket);
-}
+    return {
+      observable: obs,
+      detach: () => {
+        socket.removeAllListeners(`bridge:${namespace}:write`);
+        disposer();
+        clearInterval(intervalId);
+        socketFnCache.delete(socket);
+      }
+    };
+  }, { cache: socketFnCache });
+});
 
