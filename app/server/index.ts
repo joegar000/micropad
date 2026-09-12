@@ -5,7 +5,7 @@ import { Server } from 'socket.io';
 
 const app: Express = express();
 
-app.use(express.static(path.join(import.meta.dirname, 'client', 'dist')));
+app.use(express.static(path.join(import.meta.dirname, '..', 'client', 'dist')));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer);
