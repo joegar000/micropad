@@ -17,22 +17,3 @@ export type WriteResult =
   | { status: "conflict"; revision: number; body: Record<string, unknown> }
   | { status: "invalid"; reason: string };
 
-
-function snapshot(payload: Snapshot): void {
-  return (callback: (payload: Snapshot) => void) => {
-    callback(payload);
-  }
-}
-
-function write(payload: Write): void {
-  return payload;
-}
-
-function writeAck(payload: WriteResult, callback: (payload: WriteResult)): void {
-  callback(payload);
-}
-
-/** Simple object containing utility functions for type assistance. */
-export const Protocol = {
-  snapshot, write, writeAck
-}
