@@ -10,7 +10,7 @@ export const createBridgeGenerator = memoize(async (namespace: string) => {
   return memoize(async function (socket: Socket) {
     socket = socket.timeout(5000);
 
-    const obs = observable({});
+    const obs: Record<string, any> = observable({});
     let applyingPatches = 0;
 
     function overwriteObs(newObs: Record<string, any>) {
