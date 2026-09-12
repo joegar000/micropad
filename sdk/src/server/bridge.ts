@@ -5,7 +5,7 @@ import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/pr
 import { memoize } from "es-toolkit/function";
 
 const getNamespaceDescriptor = memoize((namespace: string) => {
-  const obs = observable({});
+  const obs: Record<string, any> = observable({});
 
   const attach = memoize((socket: Socket) => {
     let applyingPatches = 0;
