@@ -60,11 +60,11 @@ const _createBridgeGenerator = memoize(function _createBridgeGenerator(socket: S
       await this.resyncMutex.acquire();
       try {
         const snapshot: Snapshot = await new Promise((resolve, reject) => {
-          socket.timeout(10000).emit(`bridge:${this.namespace}:snapshot`, (snapshot: Snapshot) => {
-            if (snapshot.status === 'ok') {
-              resolve(snapshot);
-            } else {
+          socket.timeout(10000).emit(`bridge:${this.namespace}:snapshot`, (err, snapshot: Snapshot) => {
+            if (err) {
               reject(`Failed to get snapshot for namespace ${this.namespace}`);
+            } else if (snapshot.status === 'ok') {
+              resolve(snapshot);
             }
           });
         });
