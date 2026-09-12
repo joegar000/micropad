@@ -1,11 +1,10 @@
 import { LowSync } from 'lowdb';
 import { JSONFileSync } from 'lowdb/node';
+import type { IPreservedState } from 'micropad-sdk/shared';
 import { observable, reaction, toJS } from 'mobx';
 
 export type Schema = Partial<{
-  pluginState: Record<string, Partial<{
-    enabled: boolean;
-  }>>
+  pluginState: Record<string, Partial<IPreservedState>>
   layouts: {
 
   }[]
