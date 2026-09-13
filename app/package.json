@@ -23,9 +23,10 @@
     "es-toolkit": "^1.52.0",
     "express": "^5.2.1",
     "lowdb": "^7.0.1",
+    "micropad-sdk": "^1.0.0",
     "mobx": "^7.0.3",
     "socket.io": "^4.8.3",
-    "micropad-sdk": "^1.0.0"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
