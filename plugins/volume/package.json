@@ -1,0 +1,29 @@
+{
+  "name": "micropad-plugin-volume",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/server.js",
+  "exports": {
+    ".": "./dist/server.js",
+    "./client": "./dist/client.js",
+    "./server": "./dist/server.js",
+    "./manifest": "./manifest.json"
+  },
+  "files": [
+    "dist",
+    "manifest.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && vite build"
+  },
+  "dependencies": {
+    "loudness": "^0.4.2",
+    "micropad-sdk": "^1.0.0",
+    "mobx": "^7.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}

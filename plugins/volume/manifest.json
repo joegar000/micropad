@@ -1,0 +1,13 @@
+{
+  "id": "volume",
+  "name": "Volume",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "System volume controls.",
+  "author": "David Garcia",
+  "isDesktopOnly": false,
+  "entrypoints": {
+    "server": "dist/server.js",
+    "client": "dist/client.js"
+  }
+}
