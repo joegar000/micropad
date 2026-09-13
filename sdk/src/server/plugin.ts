@@ -5,7 +5,7 @@ export interface ServerPluginContext {
   preservedState: IPreservedState;
 }
 
-export default abstract class ServerPlugin {
+export abstract class ServerPlugin {
   abstract pluginName: string;
 
   constructor() {}

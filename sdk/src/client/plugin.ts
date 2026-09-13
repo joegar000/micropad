@@ -15,7 +15,7 @@ abstract class Widget {
   }
 }
 
-export default abstract class ClientPlugin {
+export abstract class ClientPlugin {
   abstract pluginName: string;
   abstract widgets: (typeof Widget)[];
 
