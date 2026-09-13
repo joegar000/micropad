@@ -5,7 +5,7 @@ import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/pr
 import { Mutex } from "es-toolkit";
 import { memoize } from "es-toolkit/function";
 
-export const createBridgeGenerator = memoize(async (namespace: string) => {
+export const createBridgeGenerator = memoize((namespace: string) => {
   const socketFnCache = new Map<Socket, any>();
   return memoize(async function (socket: Socket) {
     socket = socket.timeout(5000);
