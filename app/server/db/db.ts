@@ -1,5 +1,6 @@
 import { LowSync } from 'lowdb';
 import { JSONFileSync } from 'lowdb/node';
+import { fileURLToPath } from 'node:url';
 import type { IPreservedState } from 'micropad-sdk/shared';
 import { observable, reaction, toJS } from 'mobx';
 
@@ -17,7 +18,7 @@ export class DB {
 
   private constructor() {
     const lowdb = new LowSync<Schema>(
-      new JSONFileSync(new URL('db.json', import.meta.dirname)),
+      new JSONFileSync(fileURLToPath(new URL('db.json', import.meta.url))),
       {}
     );
 
@@ -38,4 +39,3 @@ export class DB {
     return this.instance.data;
   }
 }
-
