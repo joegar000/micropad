@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import type { IRuntimeState, IPreservedState } from "micropad-sdk/shared";
 import { DB } from "../db/db.ts";
-import { reaction } from "mobx";
+import { reaction, runInAction } from "mobx";
 import { clone } from "es-toolkit/compat";
 import { bridge } from "micropad-sdk/server";
 
@@ -20,18 +20,22 @@ class PreservedState implements IPreservedState {
   [key: string]: any;
 
   constructor(socket: Socket, pluginName: string) {
-    DB.data.pluginState ??= {};
-    DB.data.pluginState[pluginName] ??= {};
+    runInAction(() => {
+      DB.data.pluginState ??= {};
+      DB.data.pluginState[pluginName] ??= {};
+    });
 
-    const pluginState = DB.data.pluginState[pluginName];
+    const pluginState = DB.data.pluginState![pluginName];
     const { data, attach } = bridge(`db:${pluginName}`);
-    for (const key of Object.keys(data)) {
-      delete data[key];
-    }
-    for (const key of Object.keys(pluginState)) {
-      data[key] = pluginState[key];
-    }
-    data.enabled ??= true;
+    runInAction(() => {
+      for (const key of Object.keys(data)) {
+        delete data[key];
+      }
+      for (const key of Object.keys(pluginState)) {
+        data[key] = pluginState[key];
+      }
+      data.enabled ??= true;
+    });
 
     reaction(
       () => JSON.stringify(data),
