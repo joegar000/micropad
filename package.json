@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "workspaces": [
     "app",
-    "sdk"
+    "sdk",
+    "plugins/volume"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
