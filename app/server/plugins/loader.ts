@@ -13,7 +13,6 @@ const pluginManifestSchema = z.object({
   minAppVersion: z.string().min(1),
   description: z.string(),
   author: z.string().min(1),
-  isDesktopOnly: z.boolean(),
   entrypoints: z.object({
     server: z.string().min(1),
     client: z.string().min(1),
