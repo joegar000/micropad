@@ -1,41 +1,65 @@
 import { ServerPlugin, type ServerPluginContext } from "micropad-sdk/server";
 import { autorun, runInAction } from "mobx";
 import loudness from "loudness";
+import { Mutex } from "es-toolkit";
+
+class LoudnessController {
+  private static readonly instance = new LoudnessController();
+  private readonly mutex = new Mutex();
+
+  private constructor() {}
+
+  static getInstance(): LoudnessController {
+    return LoudnessController.instance;
+  }
+
+  async getVolume(): Promise<number> {
+    return this.withLock(() => loudness.getVolume());
+  }
+
+  async setVolume(volume: number): Promise<void> {
+    return this.withLock(() => loudness.setVolume(volume));
+  }
+
+  private async withLock<T>(operation: () => Promise<T>): Promise<T> {
+    await this.mutex.acquire();
+    try {
+      return await operation();
+    } finally {
+      this.mutex.release();
+    }
+  }
+}
+
+const volumeController = LoudnessController.getInstance();
 
 export default class VolumePlugin extends ServerPlugin {
   pluginName = "volume";
 
   async init(ctx: ServerPluginContext): Promise<void> {
-    const v = await loudness.getVolume();
+    const v = await volumeController.getVolume();
     runInAction(() => {
       ctx.runtimeState.volume = v;
     });
 
-    let setPromise = Promise.resolve();
-    let settingVolume = 0;
-    let settingVolume2 = 0;
-    const keepVolumeSynced = async () => {
-      await setPromise;
-      const v = await loudness.getVolume();
-      if (!settingVolume2) {
-        settingVolume++;
+    let revision = 0;
+
+    const syncVolume = async () => {
+      const revisionBefore = revision;
+      const v = await volumeController.getVolume();
+      if (revisionBefore === revision && ctx.runtimeState.volume !== v) {
         runInAction(() => {
-          console.log('syncing to', v)
           ctx.runtimeState.volume = v;
         });
-        settingVolume--;
       }
-      setTimeout(keepVolumeSynced, 1000);
-    }
+      setTimeout(syncVolume, 200);
+    };
 
-    autorun(async () => {
-      if (!settingVolume) {
-        settingVolume2++;
-        await loudness.setVolume(ctx.runtimeState.volume);
-        settingVolume2--;
-      }
+    autorun(() => {
+      revision++;
+      volumeController.setVolume(ctx.runtimeState.volume);
     });
 
-    keepVolumeSynced();
+    syncVolume();
   }
 }
