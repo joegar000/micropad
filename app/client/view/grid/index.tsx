@@ -13,7 +13,7 @@ export default function Grid() {
   const { width, containerRef, mounted } = useContainerWidth();
   const [rows] = useState(3);
   const [columns] = useState(3);
-  const [isEditing] = useState(false);
+  const [isEditing] = useState(true);
 
   const [cellHeight, setCellHeight] = useState(0);
   const [gridWidth, setGridWidth] = useState<number | undefined>();
