@@ -60,7 +60,7 @@ export default function Grid() {
           className='grow'
           style={{ height: undefined }}
           width={width}
-          // layout={layout}
+          layout={[]}
           // compactor={{ ...noCompactor, preventCollision: true }}
           gridConfig={{
             cols: columns,
