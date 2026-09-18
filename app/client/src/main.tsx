@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     transports: ['websocket']
   });
 
-  console.info('rendering...')
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AppModelContext value={new AppModel({ socket })}>
