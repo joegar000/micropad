@@ -57,7 +57,7 @@ export default function Grid() {
         onDragOver={(e) => e.preventDefault()}
       >
         {mounted && <GridLayout
-          className='flex-grow-1'
+          className='grow'
           style={{ height: undefined }}
           width={width}
           // layout={layout}
