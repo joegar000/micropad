@@ -9,7 +9,6 @@ import createClientPluginContext from '../plugins/context.ts';
 import { invariant } from 'es-toolkit';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log(import.meta.url);
   const socket = io({
     transports: ['websocket']
   });
