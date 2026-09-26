@@ -13,7 +13,9 @@ export default defineConfig({
     viteImportMaps({
       imports: [
         "micropad-sdk/client",
-        "mobx"
+        "mobx",
+        "react",
+        "react-dom"
       ]
     })
   ],
