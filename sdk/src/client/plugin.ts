@@ -1,25 +1,36 @@
 import type { IPreservedState, IRuntimeState } from "../shared";
 
-export interface ClientPluginContext {
+export interface IClientPluginContext {
   runtimeState: IRuntimeState;
   preservedState: IPreservedState;
 }
 
 export abstract class Widget {
-  readonly context: ClientPluginContext
+  readonly context: IClientPluginContext
   abstract readonly displayName: string;
   abstract readonly dom: HTMLElement;
 
-  constructor(context: ClientPluginContext) {
+  constructor(context: IClientPluginContext) {
     this.context = context;
   }
 }
 
+type WidgetSubclass<W extends Widget = Widget> = new (context: IClientPluginContext) => W;
+
 export abstract class ClientPlugin {
+  readonly context: IClientPluginContext;
   abstract readonly displayName: string;
-  abstract readonly widgets: { [id: string]: typeof Widget };
+  protected abstract readonly widgets: { [id: string]: typeof Widget };
 
-  constructor() {}
+  constructor(context: IClientPluginContext) {
+    this.context = context;
+  }
 
-  init?(context: ClientPluginContext): void;
+  get widgetIds(): string[] {
+    return Object.keys(this.widgets);
+  }
+
+  createWidget(widgetId: string): Widget {
+    return new (this.widgets[widgetId] as WidgetSubclass)(this.context);
+  }
 }

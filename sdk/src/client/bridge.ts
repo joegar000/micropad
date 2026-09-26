@@ -5,7 +5,7 @@ import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/pr
 import { Mutex } from "es-toolkit";
 import { memoize } from "es-toolkit/function";
 
-export const createBridgeGenerator = memoize((namespace: string) => {
+export const getNamespaceDescriptor = memoize((namespace: string) => {
   const socketFnCache = new Map<Socket, any>();
   return memoize(async function (socket: Socket) {
     socket = socket.timeout(5000);
@@ -110,3 +110,16 @@ export const createBridgeGenerator = memoize((namespace: string) => {
     };
   }, { cache: socketFnCache });
 });
+
+export async function bridge<D extends Record<string, any>>(socket: Socket, namespace: string) {
+  const desc = await getNamespaceDescriptor(namespace)(socket);
+  return {
+    get data(): D {
+      return desc.observable as D;
+    },
+    get detach() {
+      return desc.detach
+    }
+  }
+}
+

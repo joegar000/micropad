@@ -3,7 +3,6 @@ import path from 'node:path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { loadPlugins, pluginFactories } from './plugins/loader.ts';
-import { fileURLToPath } from 'node:url';
 
 const app: Express = express();
 

@@ -55,11 +55,11 @@ const getNamespaceDescriptor = memoize((namespace: string) => {
   }
 });
 
-export function bridge(namespace: string) {
+export function bridge<D extends Record<string, any>>(namespace: string) {
   const desc = getNamespaceDescriptor(namespace);
   return {
-    get data() {
-      return desc.observable;
+    get data(): D {
+      return desc.observable as D;
     },
     get attach() {
       return desc.attach;

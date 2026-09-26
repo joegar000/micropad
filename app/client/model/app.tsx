@@ -1,20 +1,14 @@
 import type { Socket } from "socket.io-client";
 import { useContext, createContext } from 'react';
 import type { ClientPlugin } from "micropad-sdk/client";
-import ClientPluginContext from "../plugins/context.ts";
 
 export default class AppModel {
   socket: Socket;
   plugins: ClientPlugin[];
 
-  constructor(params: { socket: Socket, plugins: (new () => ClientPlugin)[] }) {
+  constructor(params: { socket: Socket, plugins: ClientPlugin[] }) {
     this.socket = params.socket;
-
-    this.plugins = params.plugins.map(Plugin => new Plugin());
-    for (const p of this.plugins) {
-      // TODO: Use manifest id instead of displayName
-      p.init?.(new ClientPluginContext(this.socket, p.displayName));
-    }
+    this.plugins = params.plugins;
   }
 }
 
