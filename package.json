@@ -3,12 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "workspaces": [
-    "app",
     "sdk",
-    "plugins/volume"
+    "plugins/volume",
+    "app"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "start": "(cd app && npm start)"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
   }
 }

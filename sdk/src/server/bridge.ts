@@ -1,5 +1,5 @@
 import { observable, reaction, runInAction, toJS } from "mobx";
-import { Socket } from "socket.io";
+import type { Socket } from "socket.io";
 import * as jsonpatch from "fast-json-patch";
 import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
 import { memoize } from "es-toolkit/function";
@@ -66,4 +66,3 @@ export function bridge(namespace: string) {
     }
   }
 }
-

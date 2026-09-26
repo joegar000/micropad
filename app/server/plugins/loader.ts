@@ -22,6 +22,7 @@ const pluginManifestSchema = z.object({
 type PluginManifest = z.infer<typeof pluginManifestSchema>;
 type PluginFactory = {
   manifest: PluginManifest;
+  clientPluginUrl: string;
   Plugin: new () => ServerPlugin;
 };
 
@@ -59,7 +60,9 @@ async function loadPlugin(pluginDirectory: string): Promise<PluginFactory | unde
       throw new Error(`Plugin name does not match manifest ID "${manifest.id}"`);
     }
 
-    return { manifest, Plugin };
+    const clientPluginUrl = resolve(resolveEntrypoint(pluginDirectory, manifest.entrypoints.client));
+
+    return { manifest, Plugin, clientPluginUrl };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Failed to load plugin at ${pluginDirectory}: ${message}`);
@@ -99,7 +102,7 @@ async function discoverPlugins(pluginDirectory: string): Promise<PluginFactory[]
 }
 
 const pluginDirectory = resolve(import.meta.dirname, "../../../plugins");
-const pluginFactories = await discoverPlugins(pluginDirectory);
+export const pluginFactories = await discoverPlugins(pluginDirectory);
 
 console.info(`Loaded ${pluginFactories.length} plugin(s)`);
 
@@ -113,3 +116,4 @@ export function loadPlugins(socket: Socket): void {
     }
   }
 }
+
