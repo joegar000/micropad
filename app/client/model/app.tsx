@@ -12,7 +12,8 @@ export default class AppModel {
 
     this.plugins = params.plugins.map(Plugin => new Plugin());
     for (const p of this.plugins) {
-      p.init(new ClientPluginContext(this.socket, p.pluginName));
+      // TODO: Use manifest id instead of displayName
+      p.init?.(new ClientPluginContext(this.socket, p.displayName));
     }
   }
 }

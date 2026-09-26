@@ -5,10 +5,10 @@ export interface ClientPluginContext {
   preservedState: IPreservedState;
 }
 
-abstract class Widget {
-  context: ClientPluginContext
-  abstract name: string;
-  abstract dom: HTMLElement;
+export abstract class Widget {
+  readonly context: ClientPluginContext
+  abstract readonly displayName: string;
+  abstract readonly dom: HTMLElement;
 
   constructor(context: ClientPluginContext) {
     this.context = context;
@@ -16,10 +16,10 @@ abstract class Widget {
 }
 
 export abstract class ClientPlugin {
-  abstract pluginName: string;
-  abstract widgets: (typeof Widget)[];
+  abstract readonly displayName: string;
+  abstract readonly widgets: { [id: string]: typeof Widget };
 
   constructor() {}
 
-  abstract init(context: ClientPluginContext): void;
+  init?(context: ClientPluginContext): void;
 }
