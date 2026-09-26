@@ -2,6 +2,7 @@
   "name": "micropad-plugin-volume",
   "version": "1.0.0",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "main": "./dist/server.js",
   "exports": {
@@ -12,7 +13,8 @@
   },
   "files": [
     "dist",
-    "manifest.json"
+    "manifest.json",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && vite build"

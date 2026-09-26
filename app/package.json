@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/joegar000/micropad.git"
   },
-  "license": "ISC",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "David Garcia",
   "type": "module",
   "main": "server/index.js",
