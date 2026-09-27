@@ -1,21 +1,30 @@
-# React + TypeScript + Vite + shadcn/ui
+# MicroPad UI
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+Shared React components and styles for the MicroPad workspace.
+
+## Usage
+
+Components, utilities, and styles are bundled into the consuming Vite application
+from the package entry point:
+
+```tsx
+import { Button, ThemeProvider } from "micropad-ui"
+
+export function App() {
+  return (
+    <ThemeProvider>
+      <Button>Button</Button>
+    </ThemeProvider>
+  )
+}
+```
 
 ## Adding components
 
-To add components to your app, run the following command:
+To add components to the library, run the following command from this directory:
 
 ```bash
 npx shadcn@latest add button
 ```
 
-This will place the ui components in the `src/components` directory.
-
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button"
-```
+Export new public components from `src/index.ts`.
