@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { loadPlugins, pluginFactories } from './plugins/loader.ts';
+import { syncLayout } from './layout.ts';
 
 const app: Express = express();
 
@@ -13,6 +14,7 @@ const io = new Server(httpServer);
 
 io.on("connection", (socket) => {
   console.info("Websockets connected");
+  syncLayout(socket);
   loadPlugins(socket);
 });
 
