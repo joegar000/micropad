@@ -7,7 +7,13 @@ import { observable, reaction, toJS } from 'mobx';
 export type Schema = Partial<{
   pluginState: Record<string, Partial<IPreservedState>>
   layouts: {
-    [name: string]: Record<string, any>
+    [name: string]: {
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      id: string
+    }
   }
 }>
 
