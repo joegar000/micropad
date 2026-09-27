@@ -5,57 +5,48 @@ import { reaction, runInAction } from "mobx";
 import { clone } from "es-toolkit/compat";
 import { bridge } from "micropad-sdk/server";
 
-class RuntimeState implements IRuntimeState {
-  [key: string]: any;
-
-  constructor(socket: Socket, pluginName: string) {
-    const { data, attach } = bridge(`runtime:${pluginName}`);
-    attach(socket);
-    return data;
-  }
+export function runtimeState(socket: Socket, pluginName: string): IRuntimeState {
+  const { data, attach } = bridge<IRuntimeState>(`runtime:${pluginName}`);
+  attach(socket);
+  return data;
 }
 
-class PreservedState implements IPreservedState {
-  enabled: boolean = true;
-  [key: string]: any;
+export function preservedState(socket: Socket, pluginName: string): IPreservedState {
+  runInAction(() => {
+    DB.data.pluginState ??= {};
+    DB.data.pluginState[pluginName] ??= {};
+  });
 
-  constructor(socket: Socket, pluginName: string) {
-    runInAction(() => {
-      DB.data.pluginState ??= {};
-      DB.data.pluginState[pluginName] ??= {};
-    });
+  const pluginState = DB.data.pluginState![pluginName];
+  const { data, attach } = bridge<IPreservedState>(`db:${pluginName}`);
+  runInAction(() => {
+    for (const key of Object.keys(data)) {
+      delete data[key];
+    }
+    for (const key of Object.keys(pluginState)) {
+      data[key] = pluginState[key];
+    }
+    data.enabled ??= true;
+  });
 
-    const pluginState = DB.data.pluginState![pluginName];
-    const { data, attach } = bridge(`db:${pluginName}`);
-    runInAction(() => {
-      for (const key of Object.keys(data)) {
-        delete data[key];
-      }
-      for (const key of Object.keys(pluginState)) {
-        data[key] = pluginState[key];
-      }
-      data.enabled ??= true;
-    });
+  reaction(
+    () => JSON.stringify(data),
+    () => {
+      DB.data.pluginState![pluginName] = clone(data);
+    }
+  );
 
-    reaction(
-      () => JSON.stringify(data),
-      () => {
-        DB.data.pluginState![pluginName] = clone(data);
-      }
-    );
+  attach(socket);
 
-    attach(socket);
-
-    return data as IPreservedState;
-  }
+  return data;
 }
 
 export class ServerPluginContext {
-  runtimeState: RuntimeState;
-  preservedState: PreservedState;
+  runtimeState: IRuntimeState;
+  preservedState: IPreservedState;
 
   constructor(socket: Socket, pluginName: string) {
-    this.runtimeState = new RuntimeState(socket, pluginName);
-    this.preservedState = new PreservedState(socket, pluginName);
+    this.runtimeState = runtimeState(socket, pluginName);
+    this.preservedState = preservedState(socket, pluginName);
   }
 }
