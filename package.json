@@ -6,7 +6,8 @@
   "workspaces": [
     "sdk",
     "plugins/volume",
-    "app"
+    "app",
+    "ui"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
