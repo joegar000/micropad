@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { DragDropProvider } from '@dnd-kit/react';
 import useResizeObserver from '../../hooks/resize-observer.tsx';
 import { useCallback, useRef, useState } from "react";
+import Cell from "./cell.tsx";
+import { range } from "es-toolkit/math";
 
 export default function Grid() {
   const ref = useRef<HTMLDivElement>(null);
@@ -27,23 +29,31 @@ export default function Grid() {
     ref.current.style.setProperty('height', `${cellSide * rows}px`);
   }, [columns, rows]), { waitUntilMounted: true });
 
-return (
-  <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
-    <div
-      ref={ref}
-      className={clsx("flex grid-container", { "grid-container-editing": isEditing })}
-      style={{
-        '--columns': columns,
-        '--cell-height': `${cellHeight}px`,
-        '--grid-color': 'grey',
-        height: gridHeight ?? '100%',
-        width: gridWidth ?? '100%'
-      } as Record<string, any>}
-    >
-      <DragDropProvider>
-
-      </DragDropProvider>
+  return (
+    <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
+      <div
+        ref={ref}
+        className={clsx("flex grid-container", { "grid-container-editing": isEditing })}
+        style={{
+          '--columns': columns,
+          '--cell-height': `${cellHeight}px`,
+          '--grid-color': 'grey',
+          height: gridHeight ?? '100%',
+          width: gridWidth ?? '100%'
+        } as Record<string, any>}
+      >
+        <DragDropProvider>
+          {range(columns).map(x => (
+            <div key={x}>
+              {range(rows).map(y => (
+                <div key={y} style={cellHeight ? { height: cellHeight, aspectRatio: 1 } : {}}>
+                  <Cell x={x} y={y} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </DragDropProvider>
+      </div>
     </div>
-  </div>
-);
+  );
 }
