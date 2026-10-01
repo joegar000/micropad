@@ -6,12 +6,16 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-  Button
+  Button,
+  Carousel,
+  CarouselContent,
+  CarouselItem
 } from "micropad-ui";
 import { WidgetsPreview } from "../plugins/widgets";
 
 export default function App() {
   const app = useApp();
+  const currentLayout = 'Micropad';
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPlugin, _setSelectedPlugin] = useState(app.plugins[0]);
   return (
@@ -39,7 +43,15 @@ export default function App() {
             </div>
           </div>
         </DialogContent>
-        <Grid />
+        <Carousel>
+          <CarouselContent>
+            {app.layout.data[currentLayout].map((page, i) => (
+              <CarouselItem>
+                <Grid key={i} page={page} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       </div>
     </Dialog>
   );

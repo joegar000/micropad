@@ -5,16 +5,14 @@ import { DB } from "./db/db.ts";
 import { clone } from "es-toolkit/compat";
 
 export function syncLayout(socket: Socket) {
-  const { data, attach } = bridge('db:micropad-layout');
+  const { data, attach } = bridge('db:micropad-layouts');
 
   runInAction(() => {
-    DB.data.layouts ??= {};
-
     for (const key of Object.keys(data)) {
       delete data[key];
     }
     for (const key of Object.keys(DB.data.layouts!)) {
-      data[key] = DB.data.layouts![key];
+      data[key] = DB.data.layouts[key];
     }
   });
 

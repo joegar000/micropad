@@ -4,7 +4,7 @@ import type { IPreservedState } from 'micropad-sdk/shared';
 import { observable, reaction, toJS } from 'mobx';
 import path from 'path';
 
-export type Schema = Partial<{
+export type Schema = {
   pluginState: Record<string, Partial<IPreservedState>>
   layouts: {
     [name: string]: {
@@ -18,9 +18,9 @@ export type Schema = Partial<{
         widgetId: string,
         pluginId: string
       }[]
-    }
+    }[]
   }
-}>;
+};
 
 export class DB {
   private static instance: DB;
@@ -33,11 +33,11 @@ export class DB {
       {
         pluginState: {},
         layouts: {
-          ['Micropad']: {
+          ['Micropad']: [{
             columns: 3,
             rows: 3,
             widgets: []
-          }
+          }]
         }
       }
     );

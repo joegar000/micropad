@@ -8,15 +8,16 @@ import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
 import { useApp } from "../../model/app.tsx";
 import { observer } from "mobx-react-lite";
+import type LayoutModel from "../../model/layout.tsx";
 
-const Grid = observer(() => {
+const Grid = observer((props: { page: LayoutModel['data'][string][number] }) => {
   const ref = useRef<HTMLDivElement>(null);
   const app = useApp();
   const cellHeight = app.layout.cellHeight;
   const gridHeight = app.layout.gridHeight;
   const gridWidth = app.layout.gridWidth;
-  const columns = 3;
-  const rows = 3;
+  const columns = props.page.columns
+  const rows = props.page.rows;
   const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
@@ -45,7 +46,11 @@ const Grid = observer(() => {
           width: gridWidth ?? '100%'
         } as Record<string, any>}
       >
-        <DragDropProvider>
+        <DragDropProvider
+          onDragEnd={_event => {
+
+          }}
+        >
           {range(columns).map(x => (
             <div key={x}>
               {range(rows).map(y => (
