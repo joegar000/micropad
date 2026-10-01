@@ -6,14 +6,17 @@ import useResizeObserver from '../../hooks/resize-observer.tsx';
 import { useCallback, useRef, useState } from "react";
 import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
+import { useApp } from "../../model/app.tsx";
+import { observer } from "mobx-react-lite";
 
-export default function Grid() {
+const Grid = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
-  const [cellHeight, setCellHeight] = useState<number | null>(null);
-  const [gridHeight, setGridHeight] = useState<number | null>(null);
-  const [gridWidth, setGridWidth] = useState<number | null>(null);
-  const [columns, _setColumns] = useState(3);
-  const [rows, _setRows] = useState(3);
+  const app = useApp();
+  const cellHeight = app.layout.cellHeight;
+  const gridHeight = app.layout.gridHeight;
+  const gridWidth = app.layout.gridWidth;
+  const columns = 3;
+  const rows = 3;
   const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
@@ -22,15 +25,15 @@ export default function Grid() {
     ref.current.style.setProperty('height', '100%');
     const { height, width } = ref.current.getBoundingClientRect();
     const cellSide = width / columns < height / rows ? width / columns : height / rows;
-    setCellHeight(cellSide);
-    setGridWidth(cellSide * columns);
-    setGridHeight(cellSide * rows);
     ref.current.style.setProperty('width', `${cellSide * columns}px`);
     ref.current.style.setProperty('height', `${cellSide * rows}px`);
+    app.layout.cellHeight = cellSide;
+    app.layout.gridWidth = cellSide * columns;
+    app.layout.gridHeight = cellSide * rows;
   }, [columns, rows]), { waitUntilMounted: true });
 
   return (
-    <div className="p-6 flex flex-col justify-center overflow-hidden flex-grow-1 place-items-center place-content-center">
+    <div className="p-6 flex flex-col justify-center overflow-hidden grow place-items-center place-content-center">
       <div
         ref={ref}
         className={clsx("flex grid-container", { "grid-container-editing": isEditing })}
@@ -56,4 +59,5 @@ export default function Grid() {
       </div>
     </div>
   );
-}
+});
+export default Grid;

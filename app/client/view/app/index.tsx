@@ -8,10 +8,12 @@ import {
   DialogTrigger,
   Button
 } from "micropad-ui";
+import { WidgetsPreview } from "../plugins/widgets";
 
 export default function App() {
   const app = useApp();
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedPlugin, _setSelectedPlugin] = useState(app.plugins[0]);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
@@ -28,6 +30,7 @@ export default function App() {
               );
             })}
           </div>
+          <WidgetsPreview plugin={selectedPlugin} />
           <DialogTitle>Something else</DialogTitle>
         </DialogContent>
         <Grid />
