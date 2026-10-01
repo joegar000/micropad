@@ -43,10 +43,10 @@ export default function App() {
             </div>
           </div>
         </DialogContent>
-        <Carousel>
+        <Carousel className="grow">
           <CarouselContent>
             {app.layout.data[currentLayout].map((page, i) => (
-              <CarouselItem>
+              <CarouselItem className="flex">
                 <Grid key={i} page={page} />
               </CarouselItem>
             ))}
