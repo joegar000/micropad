@@ -8,11 +8,16 @@ export type Schema = Partial<{
   pluginState: Record<string, Partial<IPreservedState>>
   layouts: {
     [name: string]: {
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-      id: string
+      columns: number;
+      rows: number;
+      widgets: {
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        widgetId: string,
+        pluginId: string
+      }[]
     }
   }
 }>
