@@ -19,6 +19,7 @@ class Slider extends Widget {
         this.context.runtimeState.volume = Number(input.value);
       });
     });
+    div.appendChild(input);
     return div;
   }
 }
