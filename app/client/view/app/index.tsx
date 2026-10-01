@@ -20,18 +20,24 @@ export default function App() {
         <DialogTrigger render={<Button variant="outline">Menu</Button>} />
         {/* Change max-w-lg to max-w-4xl, max-w-5xl, or sm:max-w-[800px] */}
         <DialogContent className="sm:max-w-4xl">
-          <DialogTitle>Plugins</DialogTitle>
-          <div className="pt-2 pb-4">
-            {app.plugins.map(p => {
-              return (
-                <div>
-                  {p.displayName}
-                </div>
-              );
-            })}
+          <div className="flex justify-between">
+            <div>
+              <DialogTitle>Plugins</DialogTitle>
+              <div className="pt-2 pb-4">
+                {app.plugins.map(p => {
+                  return (
+                    <div>
+                      {p.displayName}
+                    </div>
+                  );
+                })}
+              </div>
+              <DialogTitle>Something else</DialogTitle>
+            </div>
+            <div className="grow px-4">
+              <WidgetsPreview plugin={selectedPlugin} />
+            </div>
           </div>
-          <WidgetsPreview plugin={selectedPlugin} />
-          <DialogTitle>Something else</DialogTitle>
         </DialogContent>
         <Grid />
       </div>
