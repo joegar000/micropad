@@ -20,6 +20,7 @@ export default defineConfig({
         "micropad-sdk/client",
         "loudness",
         "mobx",
+        "pulseaudio.js",
       ],
     },
   },

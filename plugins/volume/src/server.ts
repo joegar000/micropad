@@ -1,24 +1,50 @@
-import { ServerPlugin, type ServerPluginContext } from "micropad-sdk/server";
+import {
+  isLinux,
+  ServerPlugin,
+  type ServerPluginContext,
+} from "micropad-sdk/server";
 import { autorun, runInAction } from "mobx";
 import loudness from "loudness";
+import { percentToVolume, PulseAudio, volumeToPercent } from "pulseaudio.js";
 import { Mutex } from "es-toolkit";
 
-class LoudnessController {
-  private static readonly instance = new LoudnessController();
+class VolumeController {
+  private static readonly instance = new VolumeController();
   private readonly mutex = new Mutex();
+  private readonly pulseAudio = isLinux ? new PulseAudio("micropad") : undefined;
+  private readonly pulseAudioReady = this.pulseAudio
+    ?.connect()
+    .then(
+      () => true,
+      () => false,
+    );
 
   private constructor() {}
 
-  static getInstance(): LoudnessController {
-    return LoudnessController.instance;
+  static getInstance(): VolumeController {
+    return VolumeController.instance;
   }
 
   async getVolume(): Promise<number> {
-    return this.withLock(() => loudness.getVolume());
+    return this.withLock(async () => {
+      if (!(await this.pulseAudioReady)) return loudness.getVolume();
+
+      const channels: number[] = (await this.pulseAudio!.getSinkInfo()).volume
+        .current;
+      return Math.round(
+        channels.reduce(
+          (total, volume) => total + volumeToPercent(volume),
+          0,
+        ) / channels.length,
+      );
+    });
   }
 
   async setVolume(volume: number): Promise<void> {
-    return this.withLock(() => loudness.setVolume(volume));
+    return this.withLock(async () => {
+      if (!(await this.pulseAudioReady)) return loudness.setVolume(volume);
+      await this.pulseAudio!.setSinkVolume(percentToVolume(volume));
+    });
   }
 
   private async withLock<T>(operation: () => Promise<T>): Promise<T> {
@@ -31,7 +57,7 @@ class LoudnessController {
   }
 }
 
-const volumeController = LoudnessController.getInstance();
+const volumeController = VolumeController.getInstance();
 
 export default class VolumePlugin extends ServerPlugin {
   pluginName = "volume";
