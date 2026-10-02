@@ -12,6 +12,7 @@ import {
   CarouselItem
 } from "micropad-ui";
 import { WidgetsPreview } from "../plugins/widgets";
+import { PageModelContext } from "../../model/layout";
 
 export default function App() {
   const app = useApp();
@@ -47,7 +48,9 @@ export default function App() {
           <CarouselContent>
             {app.layout.data[currentLayout].map((page, i) => (
               <CarouselItem className="flex">
-                <Grid key={i} page={page} />
+                <PageModelContext key={i} value={page}>
+                  <Grid />
+                </PageModelContext>
               </CarouselItem>
             ))}
           </CarouselContent>

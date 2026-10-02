@@ -9,15 +9,17 @@ import { range } from "es-toolkit/math";
 import { useApp } from "../../model/app.tsx";
 import { observer } from "mobx-react-lite";
 import type LayoutModel from "../../model/layout.tsx";
+import { usePage } from "../../model/layout.tsx";
 
-const Grid = observer((props: { page: LayoutModel['data'][string][number] }) => {
+const Grid = observer(() => {
+  const page = usePage();
   const ref = useRef<HTMLDivElement>(null);
   const app = useApp();
   const cellHeight = app.layout.cellHeight;
   const gridHeight = app.layout.gridHeight;
   const gridWidth = app.layout.gridWidth;
-  const columns = props.page.columns
-  const rows = props.page.rows;
+  const columns = page.columns;
+  const rows = page.rows;
   const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
