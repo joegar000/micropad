@@ -57,7 +57,7 @@ const App = observer(() => {
       <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
         <Dialog open={!isDragging && isOpen} onOpenChange={setIsOpen}>
           {/* Change max-w-lg to max-w-4xl, max-w-5xl, or sm:max-w-[800px] */}
-          <DialogContent className="sm:max-w-4xl">
+          <DialogContent className="sm:max-w-4xl" keepMounted={isDragging}>
             <div className="flex justify-between">
               <div>
                 <DialogTitle>Plugins</DialogTitle>
