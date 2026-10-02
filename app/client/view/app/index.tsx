@@ -51,8 +51,8 @@ const App = observer(() => {
       <DragOverlay>
         {(source: Draggable<WidgetData>) => <Widget {...source.data} />}
       </DragOverlay>
-      <div className="relative pt-2 ps-2">
-        <Button className="absolute z-1" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
+      <div className="relative">
+        <Button className="absolute z-1 mt-2 ms-2" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
       </div>
       <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
         <Dialog open={!isDragging && isOpen} onOpenChange={setIsOpen}>
