@@ -26,28 +26,26 @@ const App = observer(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedPlugin, _setSelectedPlugin] = useState(app.plugins[0]);
-  const [sourceData, setSourceData] = useState<WidgetData | null>(null);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   useEffect(() => {
     carouselApi?.reInit({ active: !isDragging });
   }, [carouselApi, isDragging]);
   return (
     <DragDropProvider
-      onDragStart={event => {
+      onDragStart={_event => {
         setIsDragging(true);
-        setSourceData((event.operation.source?.data as WidgetData) ?? null);
       }}
       onDragEnd={event => {
         setIsDragging(false);
-        setSourceData(null);
 
         const target = event.operation.target;
-        if (!target || !sourceData) return;
+        const source = event.operation.source;
+        if (!target || !source || event.canceled) return;
         const { x, y } = target.data as CellData;
         app.layout.data[currentLayout][0].widgets.push({
           x, y,
           w: 1, h: 1,
-          ...(sourceData as WidgetData),
+          ...(source.data as WidgetData),
           // TODO: Robust ids
           uniqId: `${Math.random()}`.replace('0.', '')
         });
