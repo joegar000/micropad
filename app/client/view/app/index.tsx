@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../../model/app";
 import Grid from "../grid";
 import {
@@ -8,7 +8,8 @@ import {
   Button,
   Carousel,
   CarouselContent,
-  CarouselItem
+  CarouselItem,
+  type CarouselApi
 } from "micropad-ui";
 import { WidgetsPreview } from "../plugins/widgets";
 import { PageModelContext } from "../../model/layout";
@@ -26,6 +27,10 @@ const App = observer(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedPlugin, _setSelectedPlugin] = useState(app.plugins[0]);
   const [sourceData, setSourceData] = useState<WidgetData | null>(null);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  useEffect(() => {
+    carouselApi?.reInit({ active: !isDragging });
+  }, [carouselApi, isDragging]);
   return (
     <DragDropProvider
       onDragStart={event => {
@@ -78,7 +83,7 @@ const App = observer(() => {
             </div>
           </DialogContent>
         </Dialog>
-        <Carousel className="grow">
+        <Carousel className="grow" setApi={setCarouselApi}>
           <CarouselContent>
             {app.layout.data[currentLayout].map((page, i) => (
               <CarouselItem className="flex">
