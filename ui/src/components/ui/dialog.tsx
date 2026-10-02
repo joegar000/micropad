@@ -49,7 +49,7 @@ function DialogContent({
   showCloseButton?: boolean
 }) {
   return (
-    <DialogPortal>
+    <DialogPortal keepMounted={true}>
       {/* <DialogOverlay /> */}
       <DialogPrimitive.Popup
         data-slot="dialog-content"

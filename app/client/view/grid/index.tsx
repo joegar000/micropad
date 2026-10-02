@@ -54,10 +54,7 @@ const Grid = observer(() => {
               <div key={y} style={cellHeight ? { height: cellHeight, aspectRatio: 1 } : {}}>
                 <Cell x={x} y={y}>
                   {helpers.widgetAt(x, y) ? (
-                    <Widget
-                      pluginId={helpers.widgetAt(x, y)!.pluginId}
-                      widgetId={helpers.widgetAt(x, y)!.widgetId}
-                    />
+                    <Widget {...helpers.widgetAt(x, y)!} />
                   ) : null}
                 </Cell>
               </div>

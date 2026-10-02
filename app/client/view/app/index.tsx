@@ -13,6 +13,7 @@ import {
 import { WidgetsPreview } from "../plugins/widgets";
 import { PageModelContext } from "../../model/layout";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import { type Draggable } from "@dnd-kit/dom";
 import type { CellData } from "../grid/cell";
 import type { WidgetData } from "../grid/widget";
 import Widget from "../grid/widget.tsx";
@@ -48,7 +49,7 @@ const App = observer(() => {
       }}
     >
       <DragOverlay>
-        {sourceData && <Widget pluginId={sourceData.pluginId} widgetId={sourceData.widgetId} />}
+        {(source: Draggable<WidgetData>) => <Widget {...source.data} />}
       </DragOverlay>
       <div className="relative pt-2 ps-2">
         <Button className="absolute z-1" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
