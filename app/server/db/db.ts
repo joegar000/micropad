@@ -11,17 +11,26 @@ export type Schema = {
       columns: number;
       rows: number;
       widgets: {
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        uniqId: string,
-        widgetId: string,
-        pluginId: string
-      }[]
+        [uniqId: string]: {
+          uniqId: string,
+          widgetId: string,
+          pluginId: string
+        }
+      },
+      widgetCoords: {
+        [uniqId: string]: {
+          x: number,
+          y: number,
+          w: number,
+          h: number
+        }
+      }
     }[]
   }
 };
+export type IPage = Schema['layouts'][string][number];
+export type IWidget = IPage['widgets'][string];
+export type IWidgetCoords = IPage['widgetCoords'][string];
 
 export class DB {
   private static instance: DB;
@@ -38,7 +47,8 @@ export class DB {
           ['Micropad']: [{
             columns: 3,
             rows: 3,
-            widgets: []
+            widgets: {},
+            widgetCoords: {}
           }]
         }
       }

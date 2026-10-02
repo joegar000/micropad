@@ -2,13 +2,8 @@ import { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/react";
 import { useApp } from "../../model/app";
 import { observer } from "mobx-react-lite";
-import type LayoutModel from "../../model/layout";
-
-export type WidgetData = {
-  uniqId: string,
-  pluginId: string;
-  widgetId: string;
-};
+import type LayoutModel from "../../model/layout.tsx";
+import type { IWidget } from "../../../server/db/db.ts";
 
 export type WidgetProps = Pick<
   LayoutModel['data'][string][number]['widgets'][number],
@@ -21,7 +16,7 @@ const Widget = observer((props: WidgetProps) => {
     plugin.createWidget(props.widgetId).dom
   ), [plugin, props.widgetId]);
 
-  const { ref: dragRef } = useDraggable<WidgetData>({
+  const { ref: dragRef } = useDraggable<IWidget>({
     id: props.uniqId,
     data: {
       uniqId: props.uniqId,

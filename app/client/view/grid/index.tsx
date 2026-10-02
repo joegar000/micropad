@@ -7,7 +7,7 @@ import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
 import { useApp } from "../../model/app.tsx";
 import { observer } from "mobx-react-lite";
-import { pageHelpers, usePage } from "../../model/layout.tsx";
+import { usePage } from "../../model/page.tsx";
 import Widget from "./widget.tsx";
 
 const Grid = observer(() => {
@@ -17,9 +17,8 @@ const Grid = observer(() => {
   const cellHeight = app.layout.cellHeight;
   const gridHeight = app.layout.gridHeight;
   const gridWidth = app.layout.gridWidth;
-  const columns = page.columns;
-  const rows = page.rows;
-  const helpers = pageHelpers(page);
+  const columns = page.data.columns;
+  const rows = page.data.rows;
   const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
@@ -53,8 +52,8 @@ const Grid = observer(() => {
             {range(rows).map(y => (
               <div key={y} style={cellHeight ? { height: cellHeight, aspectRatio: 1 } : {}}>
                 <Cell x={x} y={y}>
-                  {helpers.widgetAt(x, y) ? (
-                    <Widget {...helpers.widgetAt(x, y)!} />
+                  {page.widgetRootAt(x, y) ? (
+                    <Widget {...page.widgetRootAt(x, y)!} />
                   ) : null}
                 </Cell>
               </div>

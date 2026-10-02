@@ -12,13 +12,13 @@ import {
   type CarouselApi
 } from "micropad-ui";
 import { WidgetsPreview } from "../plugins/widgets";
-import { PageModelContext } from "../../model/layout";
+import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { type Draggable } from "@dnd-kit/dom";
 import type { CellData } from "../grid/cell";
-import type { WidgetData } from "../grid/widget";
 import Widget from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
+import type { IWidget } from "../../../server/db/db.ts";
 
 const App = observer(() => {
   const app = useApp();
@@ -42,17 +42,11 @@ const App = observer(() => {
         const source = event.operation.source;
         if (!target || !source || event.canceled) return;
         const { x, y } = target.data as CellData;
-        app.layout.data[currentLayout][0].widgets.push({
-          x, y,
-          w: 1, h: 1,
-          ...(source.data as WidgetData),
-          // TODO: Robust ids
-          uniqId: `${Math.random()}`.replace('0.', '')
-        });
+        app.layout.pagesLookup[currentLayout][0].placeWidget(source.data as IWidget, x, y);
       }}
     >
       <DragOverlay>
-        {(source: Draggable<WidgetData>) => <Widget {...source.data} />}
+        {(source: Draggable<IWidget>) => <Widget {...source.data} />}
       </DragOverlay>
       <div className="relative">
         <Button className="absolute z-1 mt-2 ms-2" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
@@ -83,7 +77,7 @@ const App = observer(() => {
         </Dialog>
         <Carousel className="grow" setApi={setCarouselApi}>
           <CarouselContent>
-            {app.layout.data[currentLayout].map((page, i) => (
+            {app.layout.pagesLookup[currentLayout].map((page, i) => (
               <CarouselItem className="flex">
                 <PageModelContext key={i} value={page}>
                   <Grid />
