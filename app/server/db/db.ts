@@ -31,6 +31,7 @@ export class DB {
   private constructor() {
     const lowdb = new LowSync<Schema>(
       new JSONFileSync(path.join(import.meta.dirname, 'db.json')),
+      // FIX: This default plugin state overwrites the database every time
       {
         pluginState: {},
         layouts: {
