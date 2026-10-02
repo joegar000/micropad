@@ -1,15 +1,14 @@
 // @ts-ignore
 import "./styles.css";
 import clsx from 'clsx';
-import { DragDropProvider } from '@dnd-kit/react';
 import useResizeObserver from '../../hooks/resize-observer.tsx';
 import { useCallback, useRef, useState } from "react";
 import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
 import { useApp } from "../../model/app.tsx";
 import { observer } from "mobx-react-lite";
-import type LayoutModel from "../../model/layout.tsx";
-import { usePage } from "../../model/layout.tsx";
+import { pageHelpers, usePage } from "../../model/layout.tsx";
+import Widget from "./widget.tsx";
 
 const Grid = observer(() => {
   const page = usePage();
@@ -20,6 +19,7 @@ const Grid = observer(() => {
   const gridWidth = app.layout.gridWidth;
   const columns = page.columns;
   const rows = page.rows;
+  const helpers = pageHelpers(page);
   const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
@@ -48,21 +48,22 @@ const Grid = observer(() => {
           width: gridWidth ?? '100%'
         } as Record<string, any>}
       >
-        <DragDropProvider
-          onDragEnd={_event => {
-
-          }}
-        >
-          {range(columns).map(x => (
-            <div key={x}>
-              {range(rows).map(y => (
-                <div key={y} style={cellHeight ? { height: cellHeight, aspectRatio: 1 } : {}}>
-                  <Cell x={x} y={y} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </DragDropProvider>
+        {range(columns).map(x => (
+          <div key={x}>
+            {range(rows).map(y => (
+              <div key={y} style={cellHeight ? { height: cellHeight, aspectRatio: 1 } : {}}>
+                <Cell x={x} y={y}>
+                  {helpers.widgetAt(x, y) ? (
+                    <Widget
+                      pluginId={helpers.widgetAt(x, y)!.pluginId}
+                      widgetId={helpers.widgetAt(x, y)!.widgetId}
+                    />
+                  ) : null}
+                </Cell>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

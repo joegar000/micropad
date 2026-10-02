@@ -15,6 +15,7 @@ export type Schema = {
         y: number,
         w: number,
         h: number,
+        uniqId: string,
         widgetId: string,
         pluginId: string
       }[]

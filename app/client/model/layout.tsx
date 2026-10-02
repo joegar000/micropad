@@ -17,6 +17,13 @@ export function pageHelpers(page: Schema['layouts'][string][number]) {
           return false;
       }
       return true;
+    },
+    widgetAt(x: number, y: number) {
+      for (const w of page.widgets) {
+        if (w.x === x && w.y === y)
+          return w;
+      }
+      return null;
     }
   }
 }
