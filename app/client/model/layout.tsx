@@ -13,7 +13,7 @@ export function pageHelpers(page: Schema['layouts'][string][number]) {
         const endX = w.x + w.w - 1;
         const startY = w.y;
         const endY = w.y + w.h - 1;
-        if (startX <= x && x <= endX && startY <= y && endY <= y)
+        if (startX <= x && x <= endX && startY <= y && y <= endY)
           return false;
       }
       return true;
