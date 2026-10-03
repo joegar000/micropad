@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import { useApp } from "../../model/app";
 import Grid from "../grid";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Button,
   Carousel,
   CarouselContent,
   CarouselItem,
   type CarouselApi
 } from "micropad-ui";
-import { WidgetsPreview } from "../plugins/widgets";
 import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { type Draggable } from "@dnd-kit/dom";
@@ -19,13 +15,13 @@ import type { CellData } from "../grid/cell";
 import Widget from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
 import type { IWidget } from "../../../server/db/db.ts";
+import Menu from "../menu/index.tsx";
 
 const App = observer(() => {
   const app = useApp();
   const [currentLayout, _setCurrentLayout] = useState(Object.keys(app.layout.data)[0]);
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedPlugin, _setSelectedPlugin] = useState(app.plugins[0]);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   useEffect(() => {
     carouselApi?.reInit({ active: !isDragging });
@@ -52,29 +48,11 @@ const App = observer(() => {
         <Button className="absolute z-1 mt-2 ms-2" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
       </div>
       <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
-        <Dialog open={!isDragging && isOpen} onOpenChange={setIsOpen}>
-          {/* Change max-w-lg to max-w-4xl, max-w-5xl, or sm:max-w-[800px] */}
-          <DialogContent className="sm:max-w-4xl" keepMounted={isDragging}>
-            <div className="flex justify-between">
-              <div>
-                <DialogTitle>Plugins</DialogTitle>
-                <div className="pt-2 pb-4">
-                  {app.plugins.map(p => {
-                    return (
-                      <div>
-                        {p.displayName}
-                      </div>
-                    );
-                  })}
-                </div>
-                <DialogTitle>Something else</DialogTitle>
-              </div>
-              <div className="grow px-4">
-                <WidgetsPreview plugin={selectedPlugin} />
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Menu
+          open={!isDragging && isOpen}
+          onOpenChange={setIsOpen}
+          keepMounted={isDragging}
+        />
         <Carousel className="grow" setApi={setCarouselApi}>
           <CarouselContent>
             {app.layout.pagesLookup[currentLayout].map((page, i) => (
