@@ -30,6 +30,7 @@ const Widget = observer((props: WidgetProps) => {
       className="h-full border aspect-square p-1 rounded flex justify-center items-center"
       ref={dragRef}
       style={{ height: cellHeight }}
+      data-uniq-id={props.uniqId}
     >
       <div ref={useCallback(node => {
         node?.appendChild(widgetDom);
