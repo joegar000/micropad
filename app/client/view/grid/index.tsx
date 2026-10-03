@@ -1,5 +1,4 @@
 // @ts-ignore
-import "./styles.css";
 import clsx from 'clsx';
 import useResizeObserver from '../../hooks/resize-observer.tsx';
 import { useCallback, useRef, useState } from "react";
@@ -40,9 +39,6 @@ const Grid = observer(() => {
         ref={ref}
         className={clsx("flex grid-container", { "grid-container-editing": isEditing })}
         style={{
-          '--columns': columns,
-          '--cell-height': `${cellHeight}px`,
-          '--grid-color': 'grey',
           height: gridHeight ?? '100%',
           width: gridWidth ?? '100%'
         } as Record<string, any>}

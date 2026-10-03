@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useDroppable } from "@dnd-kit/react";
+import { useDragOperation, useDroppable } from "@dnd-kit/react";
 import { usePage } from "../../model/page.tsx";
 import clsx from "clsx";
 
@@ -7,17 +7,22 @@ export type CellData = { x: number, y: number };
 
 export default function Cell(props: { x: number, y: number, children?: ReactNode }) {
   const page = usePage();
+  const { source } = useDragOperation();
+  const available = page.cellAvailable(props.x, props.y);
+  const disabled = source ? source.id !== page.widgetAt(props.x, props.y)?.uniqId && !available : !available;
   const { ref, isDropTarget } = useDroppable<CellData>({
     id: `${props.x},${props.y}`,
     data: { x: props.x, y: props.y },
-    disabled: !page.cellAvailable(props.x, props.y)
+    disabled
   });
   return (
     <div
-      className={clsx("h-full", isDropTarget && "bg-white")}
+      className={clsx("h-full border", isDropTarget && "bg-gray-500")}
       ref={ref} data-x={props.x} data-y={props.y}
     >
-      {props.children}
+      <div className={clsx(!disabled && "invisible")}>
+        {props.children}
+      </div>
     </div>
   );
 }
