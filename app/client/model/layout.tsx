@@ -4,7 +4,7 @@ import { createContext } from "react";
 import { useApp } from "./app.tsx";
 import { bridge, ClientPlugin } from "micropad-sdk/client";
 import { action, computed, makeObservable, observable } from "mobx";
-import PageLayout from "./page.tsx";
+import PageModel from "./page.tsx";
 
 export default class LayoutModel {
   socket: Socket;
@@ -52,11 +52,11 @@ export default class LayoutModel {
 
   get pagesLookup() {
     return Object.keys(this.data).reduce<
-      { [layoutName: string]: PageLayout[] }
+      { [layoutName: string]: PageModel[] }
     >(
       (lookups, layoutName) => ({
         ...lookups,
-        [layoutName]: this.data[layoutName].map((d) => new PageLayout(d)),
+        [layoutName]: this.data[layoutName].map((d) => new PageModel(d)),
       }),
       {},
     )
