@@ -6,7 +6,12 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi
+  type CarouselApi,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "micropad-ui";
 import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
@@ -19,13 +24,19 @@ import Menu from "../menu/index.tsx";
 
 const App = observer(() => {
   const app = useApp();
-  const [currentLayout, _setCurrentLayout] = useState(Object.keys(app.layout.data)[0]);
+  const selectItems = app.layout.layoutNames.map(name => ({ label: name, value: name }));
+  const [currentLayout, setCurrentLayout] = useState<string | null>(selectItems[0]?.value ?? null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   useEffect(() => {
     carouselApi?.reInit({ active: !isDragging });
   }, [carouselApi, isDragging]);
+
+  // TODO: Add shadcn empty when no layouts available
+  if (!currentLayout)
+    return null;
+
   return (
     <DragDropProvider
       onDragStart={_event => {
@@ -45,7 +56,23 @@ const App = observer(() => {
         {(source: Draggable<IWidget>) => <Widget {...source.data} />}
       </DragOverlay>
       <div className="relative">
-        <Button className="absolute z-1 mt-2 ms-2" variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
+        <div className="absolute z-1 mt-2 ms-2 flex">
+          <div className="pe-2">
+            <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
+          </div>
+          <div>
+            <Select items={selectItems} value={currentLayout} onValueChange={v => setCurrentLayout(v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start">
+                {selectItems.map(item => (
+                  <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
       <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
         <Menu
