@@ -1,20 +1,17 @@
 import type { ClientPlugin } from "micropad-sdk/client";
-import Widget, { type WidgetProps } from "../grid/widget.tsx";
+import Widget from "../grid/widget.tsx";
+import { usePage } from "../../model/page.tsx";
+import { observer } from "mobx-react-lite";
 
-function fauxWidget(plugin: ClientPlugin, widgetId: string): WidgetProps {
-  return {
-    uniqId: `${Math.random()}`.replace('0.', ''),
-    pluginId: plugin.displayName,
-    widgetId: widgetId
-  }
-}
+export const WidgetsPreview = observer((props: { plugin: ClientPlugin }) => {
+  const page = usePage();
 
-export function WidgetsPreview(props: { plugin: ClientPlugin }) {
   return (
     <div className="flex">
       {props.plugin.widgetIds.map(wId => (
-        <Widget {...fauxWidget(props.plugin, wId)} />
+        <Widget {...page.newWidget(props.plugin, wId)} />
       ))}
     </div>
   );
-}
+});
+

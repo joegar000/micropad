@@ -1,6 +1,7 @@
 import { runInAction } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
+import type { ClientPlugin } from "micropad-sdk/client";
 
 export default class Page {
   data: IPage;
@@ -53,6 +54,25 @@ export default class Page {
         return this.data.widgets[uniqId];
     }
     return null;
+  }
+
+  /**
+   * Creates a new widget whose uniqId is not yet used.
+   * Responds to mobx changes since it checks if `id in this.data.widgets`
+   */
+  newWidget(plugin: ClientPlugin, widgetId: string) {
+    return {
+      uniqId: this.createId(),
+      pluginId: plugin.displayName,
+      widgetId: widgetId
+    }
+  }
+
+  private createId(): string {
+    const id = `${Math.random()}`.replace('0.', '');
+    if (id in this.data.widgets)
+      return this.createId();
+    return id;
   }
 }
 
