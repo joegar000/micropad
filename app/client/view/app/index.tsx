@@ -8,7 +8,9 @@ import {
   CarouselItem,
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "micropad-ui";
@@ -20,6 +22,7 @@ import Widget from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
 import type { IWidget } from "../../../server/db/db.ts";
 import Menu from "../menu/index.tsx";
+import AddLayout from "./add-layout.tsx";
 
 const App = observer(() => {
   const app = useApp();
@@ -27,6 +30,8 @@ const App = observer(() => {
   const [currentLayout, setCurrentLayout] = useState<string | null>(selectItems[0]?.value ?? null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
+  const [showAddLayout, setShowAddLayout] = useState(false);
 
   // TODO: Add shadcn empty when no layouts available
   if (!currentLayout)
@@ -56,14 +61,31 @@ const App = observer(() => {
             <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
           </div>
           <div>
-            <Select items={selectItems} value={currentLayout} onValueChange={v => setCurrentLayout(v)}>
+            <Select open={selectOpen} onOpenChange={setSelectOpen}
+              items={selectItems} value={currentLayout}
+              onValueChange={setCurrentLayout}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="start">
-                {selectItems.map(item => (
-                  <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                ))}
+                <SelectGroup>
+                  {selectItems.map(item => (
+                    <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                  ))}
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <Button variant="ghost" className="w-full justify-start text-left mb-1"
+                    onClick={() => {
+                      setSelectOpen(false);
+                      setShowAddLayout(true);
+                    }}
+                  >
+                    + Add layout
+                  </Button>
+                  <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout} />
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>

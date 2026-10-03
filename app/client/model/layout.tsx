@@ -8,7 +8,6 @@ import PageLayout from "./page.tsx";
 
 export default class LayoutModel {
   socket: Socket;
-  pagesLookup: { [layoutName: string]: PageLayout[] };
   data: Schema["layouts"];
   cellHeight: number = 0;
   gridHeight: number = 0;
@@ -17,21 +16,14 @@ export default class LayoutModel {
   constructor(params: { socket: Socket; data: Schema["layouts"] }) {
     this.socket = params.socket;
     this.data = params.data;
-    this.pagesLookup = Object.keys(this.data).reduce<
-      LayoutModel["pagesLookup"]
-    >(
-      (lookups, layoutName) => ({
-        ...lookups,
-        [layoutName]: this.data[layoutName].map((d) => new PageLayout(d)),
-      }),
-      {},
-    );
 
     makeObservable(this, {
       cellHeight: observable,
       gridHeight: observable,
       gridWidth: observable,
-      usedIds: computed,
+      layoutNames: computed,
+      pagesLookup: computed,
+      usedIds: computed
     });
   }
 
@@ -55,6 +47,18 @@ export default class LayoutModel {
 
   get layoutNames() {
     return Object.keys(this.data);
+  }
+
+  get pagesLookup() {
+    return Object.keys(this.data).reduce<
+      { [layoutName: string]: PageLayout[] }
+    >(
+      (lookups, layoutName) => ({
+        ...lookups,
+        [layoutName]: this.data[layoutName].map((d) => new PageLayout(d)),
+      }),
+      {},
+    )
   }
 
   get usedIds() {
