@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useApp } from "../../model/app";
 import Grid from "../grid";
 import {
@@ -6,7 +6,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi,
   Select,
   SelectContent,
   SelectItem,
@@ -28,10 +27,6 @@ const App = observer(() => {
   const [currentLayout, setCurrentLayout] = useState<string | null>(selectItems[0]?.value ?? null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
-  useEffect(() => {
-    carouselApi?.reInit({ active: !isDragging });
-  }, [carouselApi, isDragging]);
 
   // TODO: Add shadcn empty when no layouts available
   if (!currentLayout)
@@ -80,7 +75,7 @@ const App = observer(() => {
           onOpenChange={setIsOpen}
           keepMounted={isDragging}
         />
-        <Carousel className="grow" setApi={setCarouselApi}>
+        <Carousel className="grow" opts={{ watchDrag: !isDragging  }}>
           <CarouselContent>
             {app.layout.pagesLookup[currentLayout].map((page, i) => (
               <CarouselItem className="flex">
