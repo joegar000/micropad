@@ -3,7 +3,7 @@ import { type Schema } from "../../server/db/db.ts";
 import { createContext } from "react";
 import { useApp } from "./app.tsx";
 import { bridge, ClientPlugin } from "micropad-sdk/client";
-import { computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import PageLayout from "./page.tsx";
 
 export default class LayoutModel {
@@ -23,7 +23,8 @@ export default class LayoutModel {
       gridWidth: observable,
       layoutNames: computed,
       pagesLookup: computed,
-      usedIds: computed
+      usedIds: computed,
+      addLayout: action
     });
   }
 
@@ -69,6 +70,18 @@ export default class LayoutModel {
       ids.forEach(id => usedIds.add(id));
       return usedIds;
     }, new Set<string>());
+  }
+
+  addLayout(name: string, columns: number = 3, rows: number = 3) {
+    if (name in this.data)
+      return false;
+    this.data[name] = [{
+      columns,
+      rows,
+      widgets: {},
+      widgetCoords: {}
+    }];
+    return true;
   }
 
   static async create(socket: Socket) {

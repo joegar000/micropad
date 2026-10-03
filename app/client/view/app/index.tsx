@@ -13,6 +13,8 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  CarouselNext,
+  CarouselPrevious
 } from "micropad-ui";
 import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
@@ -84,7 +86,12 @@ const App = observer(() => {
                   >
                     + Add layout
                   </Button>
-                  <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout} />
+                  <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout}
+                    onSave={newLayout => {
+                      if (app.layout.addLayout(newLayout))
+                        setCurrentLayout(newLayout);
+                    }}
+                  />
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -106,6 +113,8 @@ const App = observer(() => {
                 </CarouselItem>
               ))}
             </CarouselContent>
+            <CarouselNext />
+            <CarouselPrevious />
           </Carousel>
         </div>
       </div>

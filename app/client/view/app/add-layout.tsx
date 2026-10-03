@@ -3,19 +3,14 @@ import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useApp } from "../../model/app";
 
-const AddLayout = observer((props: { open: boolean, onOpenChange: (open: boolean) => void }) => {
+const AddLayout = observer((props: { open: boolean, onOpenChange: (open: boolean) => void, onSave: (newLayout: string) => void }) => {
   const app = useApp();
   const [newLayoutName, setNewLayoutName] = useState('');
   const error = newLayoutName in app.layout.data;
   const save = () => {
-    setNewLayoutName('');
     props.onOpenChange(false);
-    app.layout.data[newLayoutName] = [{
-      columns: 3,
-      rows: 3,
-      widgets: {},
-      widgetCoords: {}
-    }];
+    props.onSave(newLayoutName);
+    setNewLayoutName('');
   }
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
