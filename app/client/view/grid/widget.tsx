@@ -27,7 +27,7 @@ const Widget = observer((props: WidgetProps) => {
   const cellHeight = app.layout.cellHeight;
   return (
     <div
-      className="h-full border aspect-square p-1 rounded flex justify-center items-center"
+      className="h-full border border-ring aspect-square p-1 rounded flex justify-center items-center bg-secondary"
       ref={dragRef}
       style={{ height: cellHeight }}
       data-uniq-id={props.uniqId}
