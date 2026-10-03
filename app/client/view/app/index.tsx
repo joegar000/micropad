@@ -86,7 +86,7 @@ const App = observer(() => {
             </CarouselContent>
           </Carousel>
         </div>
-      </div >
+      </div>
     </DragDropProvider>
   );
 });
