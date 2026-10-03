@@ -50,8 +50,8 @@ const App = observer(() => {
       <DragOverlay>
         {(source: Draggable<IWidget>) => <Widget {...source.data} />}
       </DragOverlay>
-      <div className="relative">
-        <div className="absolute z-1 mt-2 ms-2 flex">
+      <div className="flex flex-col h-full">
+        <div className="z-1 mt-2 ms-2 flex">
           <div className="pe-2">
             <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
           </div>
@@ -68,25 +68,25 @@ const App = observer(() => {
             </Select>
           </div>
         </div>
-      </div>
-      <div className="flex h-full bg-background text-foreground min-h-screen antialiased p-2">
-        <Menu
-          open={!isDragging && isOpen}
-          onOpenChange={setIsOpen}
-          keepMounted={isDragging}
-        />
-        <Carousel className="grow" opts={{ watchDrag: !isDragging  }}>
-          <CarouselContent>
-            {app.layout.pagesLookup[currentLayout].map((page, i) => (
-              <CarouselItem className="flex">
-                <PageModelContext key={i} value={page}>
-                  <Grid />
-                </PageModelContext>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      </div>
+        <div className="flex grow bg-background text-foreground antialiased p-2">
+          <Menu
+            open={!isDragging && isOpen}
+            onOpenChange={setIsOpen}
+            keepMounted={isDragging}
+          />
+          <Carousel className="grow" opts={{ watchDrag: !isDragging }}>
+            <CarouselContent>
+              {app.layout.pagesLookup[currentLayout].map((page, i) => (
+                <CarouselItem className="flex">
+                  <PageModelContext key={i} value={page}>
+                    <Grid />
+                  </PageModelContext>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
+      </div >
     </DragDropProvider>
   );
 });
