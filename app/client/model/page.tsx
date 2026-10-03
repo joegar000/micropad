@@ -2,7 +2,7 @@ import { runInAction } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 
-export default class Page {
+export default class PageLayout {
   data: IPage;
 
   constructor(page: IPage) {
@@ -56,7 +56,7 @@ export default class Page {
   }
 }
 
-export const PageModelContext = createContext<Page | null>(null);
+export const PageModelContext = createContext<PageLayout | null>(null);
 
 export const usePage = () => {
   const page = useContext(PageModelContext);

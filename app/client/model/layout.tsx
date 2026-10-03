@@ -4,11 +4,11 @@ import { createContext } from "react";
 import { useApp } from "./app.tsx";
 import { bridge, ClientPlugin } from "micropad-sdk/client";
 import { computed, makeObservable, observable } from "mobx";
-import Page from "./page.tsx";
+import PageLayout from "./page.tsx";
 
 export default class LayoutModel {
   socket: Socket;
-  pagesLookup: { [layoutName: string]: Page[] };
+  pagesLookup: { [layoutName: string]: PageLayout[] };
   data: Schema["layouts"];
   cellHeight: number = 0;
   gridHeight: number = 0;
@@ -22,7 +22,7 @@ export default class LayoutModel {
     >(
       (lookups, layoutName) => ({
         ...lookups,
-        [layoutName]: this.data[layoutName].map((d) => new Page(d)),
+        [layoutName]: this.data[layoutName].map((d) => new PageLayout(d)),
       }),
       {},
     );
