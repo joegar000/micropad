@@ -1,12 +1,20 @@
-import { runInAction } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 
 export default class PageLayout {
   data: IPage;
+  index: number;
 
-  constructor(page: IPage) {
+  constructor(page: IPage, index: number) {
     this.data = page;
+    this.index = index;
+
+    makeObservable(this, {
+      data: observable,
+      index: observable,
+      placeWidget: action
+    });
   }
 
   placeWidget(widget: IWidget, x: number, y: number, w: number = 1, h: number = 1): boolean {
@@ -16,10 +24,8 @@ export default class PageLayout {
           return false;
       }
     }
-    runInAction(() => {
-      this.data.widgets[widget.uniqId] = widget;
-      this.data.widgetCoords[widget.uniqId] = { x, y, w, h };
-    });
+    this.data.widgets[widget.uniqId] = widget;
+    this.data.widgetCoords[widget.uniqId] = { x, y, w, h };
     return true;
   }
 

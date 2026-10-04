@@ -1,7 +1,7 @@
 // @ts-ignore
 import clsx from 'clsx';
 import useResizeObserver from '../../hooks/resize-observer.tsx';
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
 import { useApp } from "../../model/app.tsx";
@@ -18,7 +18,6 @@ const Grid = observer(() => {
   const gridWidth = app.layout.gridWidth;
   const columns = page.data.columns;
   const rows = page.data.rows;
-  const [isEditing, _setIsEditing] = useState(true);
 
   useResizeObserver({ current: document.documentElement }, useCallback(() => {
     if (!ref.current) return;
@@ -37,7 +36,7 @@ const Grid = observer(() => {
     <div className="p-6 flex flex-col justify-center overflow-hidden grow place-items-center place-content-center">
       <div
         ref={ref}
-        className={clsx("flex grid-container", { "grid-container-editing": isEditing })}
+        className={clsx("flex grid-container")}
         style={{
           height: gridHeight ?? '100%',
           width: gridWidth ?? '100%'

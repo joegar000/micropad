@@ -11,7 +11,7 @@ export default function Cell(props: { x: number, y: number, children?: ReactNode
   const available = page.cellAvailable(props.x, props.y);
   const disabled = source ? source.id !== page.widgetAt(props.x, props.y)?.uniqId && !available : !available;
   const { ref, isDropTarget } = useDroppable<CellData>({
-    id: `${props.x},${props.y}`,
+    id: `${page.index}: ${props.x},${props.y}`,
     data: { x: props.x, y: props.y },
     disabled
   });

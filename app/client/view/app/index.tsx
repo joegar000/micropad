@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "../../model/app";
 import Grid from "../grid";
 import {
@@ -6,6 +6,7 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  type CarouselApi,
   Select,
   SelectContent,
   SelectGroup,
@@ -25,6 +26,7 @@ import { observer } from "mobx-react-lite";
 import type { IWidget } from "../../../server/db/db.ts";
 import Menu from "../menu/index.tsx";
 import AddLayout from "./add-layout.tsx";
+import { useHover } from "../../hooks/hover.tsx";
 
 const App = observer(() => {
   const app = useApp();
@@ -34,6 +36,34 @@ const App = observer(() => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
   const [showAddLayout, setShowAddLayout] = useState(false);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  const [pageNum, setPageNum] = useState(0);
+  const [nextRef, overNext] = useHover();
+  const [prevRef, overPrevious] = useHover();
+
+  useEffect(() => {
+    const cb = () => setPageNum(carouselApi?.selectedScrollSnap() ?? 0);
+    carouselApi?.on('select', cb);
+    return () => void carouselApi?.off('select', cb);
+  }, [carouselApi]);
+
+  useEffect(() => {
+    if (overNext && isDragging) {
+      const interval = setInterval(() => {
+        carouselApi?.scrollNext();
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [overNext, isDragging]);
+
+  useEffect(() => {
+    if (overPrevious && isDragging) {
+      const interval = setInterval(() => {
+        carouselApi?.scrollPrev();
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [overPrevious, isDragging]);
 
   // TODO: Add shadcn empty when no layouts available
   if (!currentLayout)
@@ -49,16 +79,22 @@ const App = observer(() => {
 
         const target = event.operation.target;
         const source = event.operation.source;
-        if (!target || !source || event.canceled) return;
+        if (!target || !source || event.canceled || !carouselApi) return;
         const { x, y } = target.data as CellData;
-        app.layout.pagesLookup[currentLayout][0].placeWidget(source.data as IWidget, x, y);
+        app.layout.pagesLookup[currentLayout][pageNum].placeWidget(source.data as IWidget, x, y);
       }}
     >
       <DragOverlay>
         {(source: Draggable<IWidget>) => <Widget {...source.data} />}
       </DragOverlay>
       <div className="flex flex-col h-full">
-        <div className="z-1 mt-2 ms-2 flex">
+        <div className="mt-2 ms-2 flex">
+          <Button onClick={() => {
+            app.layout.addPage(currentLayout);
+            setTimeout(() => {
+              carouselApi?.scrollTo(app.layout.pagesLookup[currentLayout].length - 1);
+            }, 0);
+          }}>add page</Button>
           <div className="pe-2">
             <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
           </div>
@@ -103,19 +139,39 @@ const App = observer(() => {
             onOpenChange={setIsOpen}
             keepMounted={isDragging}
           />
-          <Carousel className="grow" opts={{ watchDrag: !isDragging }}>
+          <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
+            <div className="relative z-1 h-full flex items-center ps-3"
+              ref={prevRef}
+            >
+              <CarouselPrevious className="static scale-150" />
+            </div>
             <CarouselContent>
               {app.layout.pagesLookup[currentLayout].map((page, i) => (
-                <CarouselItem className="flex">
-                  <PageModelContext key={i} value={page}>
+                <CarouselItem key={i} className="flex">
+                  <PageModelContext value={page}>
                     <Grid />
                   </PageModelContext>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselNext />
-            <CarouselPrevious />
+            <div className="relative z-1 h-full flex items-center pe-3"
+              ref={nextRef}
+            >
+              <CarouselNext className="static scale-150" />
+            </div>
           </Carousel>
+        </div>
+        <div className="mb-2 ms-2 flex justify-center">
+          <div className="flex justify-center gap-2 py-2">
+            {Array.from({ length: app.layout.pagesLookup[currentLayout].length }).map((_, index) => (
+              <button
+                key={index}
+                className={`h-2 w-2 rounded-full transition-all ${index === pageNum ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
+                onClick={() => carouselApi?.scrollTo(index)}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </DragDropProvider>

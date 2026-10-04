@@ -18,13 +18,15 @@ export default class LayoutModel {
     this.data = params.data;
 
     makeObservable(this, {
+      data: observable,
       cellHeight: observable,
       gridHeight: observable,
       gridWidth: observable,
       layoutNames: computed,
       pagesLookup: computed,
       usedIds: computed,
-      addLayout: action
+      addLayout: action,
+      addPage: action
     });
   }
 
@@ -56,7 +58,7 @@ export default class LayoutModel {
     >(
       (lookups, layoutName) => ({
         ...lookups,
-        [layoutName]: this.data[layoutName].map((d) => new PageModel(d)),
+        [layoutName]: this.data[layoutName].map((d, i) => new PageModel(d, i)),
       }),
       {},
     )
@@ -82,6 +84,15 @@ export default class LayoutModel {
       widgetCoords: {}
     }];
     return true;
+  }
+
+  addPage(layoutName: string, index = Infinity) {
+    this.data[layoutName].splice(index, 0, {
+      columns: 3,
+      rows: 3,
+      widgets: {},
+      widgetCoords: {}
+    });
   }
 
   static async create(socket: Socket) {
