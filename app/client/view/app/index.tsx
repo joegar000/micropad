@@ -27,6 +27,7 @@ import type { IWidget } from "../../../server/db/db.ts";
 import Menu from "../menu/index.tsx";
 import AddLayout from "./add-layout.tsx";
 import { useHover } from "../../hooks/hover.tsx";
+import clsx from "clsx";
 
 const App = observer(() => {
   const app = useApp();
@@ -142,10 +143,10 @@ const App = observer(() => {
             keepMounted={isDragging}
           />
           <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
-            <div className="relative z-1 h-full flex items-center ps-3"
+            <div className={"relative z-1 h-full flex items-center ps-3"}
               ref={prevRef}
             >
-              <CarouselPrevious className="static scale-150" />
+              <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />
             </div>
             <CarouselContent>
               {app.layout.pagesLookup[currentLayout].map((page, i) => (
@@ -159,7 +160,7 @@ const App = observer(() => {
             <div className="relative z-1 h-full flex items-center pe-3"
               ref={nextRef}
             >
-              <CarouselNext className="static scale-150" />
+              <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />
             </div>
           </Carousel>
         </div>
