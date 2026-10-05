@@ -49,6 +49,7 @@ const App = observer(() => {
 
   useEffect(() => {
     if (overNext && isDragging) {
+      carouselApi?.scrollNext();
       const interval = setInterval(() => {
         carouselApi?.scrollNext();
       }, 500);
@@ -58,6 +59,7 @@ const App = observer(() => {
 
   useEffect(() => {
     if (overPrevious && isDragging) {
+      carouselApi?.scrollPrev();
       const interval = setInterval(() => {
         carouselApi?.scrollPrev();
       }, 500);
