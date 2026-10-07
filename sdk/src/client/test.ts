@@ -1,8 +1,8 @@
-import { invariant, isJSONArray, isJSONObject, limitAsync, retry } from "es-toolkit";
-import { observable, runInAction } from "mobx";
+import { invariant, isJSONArray, isJSONObject } from "es-toolkit";
+import { observable, reaction, runInAction, toJS } from "mobx";
 import type { Socket } from "socket.io-client";
-import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
 import * as jsonpatch from "fast-json-patch";
+import { type Snapshot, type Write, type WriteResult, singleflight } from "../shared";
 
 export class ClientBridge<T extends 'obj' | 'arr'> {
   private static bridges = new Map<
@@ -41,12 +41,12 @@ export class ClientBridge<T extends 'obj' | 'arr'> {
   }
 
   private static async getSnapshot(socket: Socket, namespace: string) {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<Snapshot['body']>((resolve, reject) => {
       socket.emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
         if (err) {
           reject(`Failed to get snapshot for namespace ${namespace}`);
         } else if (snapshot.status === 'ok') {
-          resolve(snapshot);
+          resolve(snapshot.body);
         } else {
           reject('Invalid snapshot status');
         }
@@ -57,30 +57,76 @@ export class ClientBridge<T extends 'obj' | 'arr'> {
   public readonly socket: Socket;
   public readonly namespace: string;
   public readonly data: T extends 'obj' ? Record<string, any> : any[];
-  public ready: Promise<void>;
+  public readonly ready: Promise<void>;
   private type: T;
+  private cleanup?: () => void
 
   private constructor(socket: Socket, namespace: string, type: T) {
     this.socket = socket;
     this.namespace = namespace;
     this.data = observable(type === 'obj' ? {} as Record<string, any> : [] as any);
     this.type = type;
-    this.reset = limitAsync(this.reset.bind(this), 1);
+    this.reset = singleflight(this.reset.bind(this));
 
-    this.ready = retry(this.reset, 5);
+    this.ready = this.reset();
 
     let applyingPatches = 0;
 
-    socket.on(`bridge:${namespace}:write`, (payload: Write) => {
-      applyingPatches++;
-      try {
-        runInAction(() => {
-          jsonpatch.applyPatch(this.data, payload.patches);
-        });
-      } catch (e) {
-        this.reset();
-      } finally {
-        applyingPatches--;
+    setInterval(() => {
+      this.reset();
+    }, 30000);
+
+    this.ready.then(() => {
+      const write = (payload: Write) => {
+        applyingPatches++;
+        try {
+          runInAction(() => {
+            jsonpatch.applyPatch(this.data, payload.patches);
+          });
+        } catch (e) {
+          this.reset();
+        } finally {
+          applyingPatches--;
+        }
+      }
+
+      socket.on(`bridge:${namespace}:write`, write);
+
+      const disposer = reaction(
+        () => toJS(this.data),
+        (current, previous) => {
+          if (!applyingPatches) {
+            const patches = jsonpatch.compare(previous, current);
+            if (!patches.length) return;
+            socket.emit(
+              `bridge:${namespace}:write`,
+              { patches } as Write,
+              (err: boolean, ack: WriteResult) => {
+                if (err) {
+                  this.reset();
+                } else if (ack.status === 'invalid') {
+                  this.overwriteData(ack.body);
+                }
+              }
+            );
+          }
+        }
+      );
+
+      this.cleanup = () => {
+        disposer();
+        socket.off(`bridge:${namespace}:write`, write);
+      }
+    });
+  }
+
+  private overwriteData(snapshot: Snapshot['body']) {
+    runInAction(() => {
+      for (const key of Object.keys(this.data)) {
+        delete this.data[key as keyof typeof this.data];
+      }
+      for (const [key, value] of Object.entries(snapshot)) {
+        this.data[key as keyof typeof this.data] = value as any;
       }
     });
   }
@@ -94,14 +140,11 @@ export class ClientBridge<T extends 'obj' | 'arr'> {
       `ClientBridge data mismatch with type ${this.type}`
     );
 
-    runInAction(() => {
-      for (const key of Object.keys(this.data)) {
-        delete this.data[key as keyof typeof this.data];
-      }
-      for (const [key, value] of Object.entries(snapshot)) {
-        this.data[key as keyof typeof this.data] = value;
-      }
-    });
+    this.overwriteData(snapshot);
+  }
+
+  public dispose() {
+    this.cleanup?.();
   }
 }
 
