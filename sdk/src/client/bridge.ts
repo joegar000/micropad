@@ -5,23 +5,29 @@ import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/pr
 import { Mutex } from "es-toolkit";
 import { memoize } from "es-toolkit/function";
 
-export const getNamespaceDescriptor = memoize((namespace: string) => {
+type BridgeObject = Record<string, any> | Array<any>;
+
+export const getNamespaceDescriptor = memoize(<O extends BridgeObject>(namespace: string) => {
   const socketFnCache = new Map<Socket, any>();
   return memoize(async function (socket: Socket) {
     socket = socket.timeout(5000);
 
-    const obs: Record<string, any> = observable({});
+    let obs: O | undefined;
     let applyingPatches = 0;
 
     function overwriteObs(newObs: Record<string, any>) {
       applyingPatches++;
       try {
         runInAction(() => {
+          if (!obs) {
+            obs = observable(newObs) as O;
+            return;
+          };
           for (const key of Object.keys(obs)) {
-            delete obs[key];
+            delete obs[key as keyof O];
           }
           for (const [key, value] of Object.entries(newObs)) {
-            obs[key] = value;
+            obs[key as keyof O] = value;
           }
         });
       } finally {
@@ -57,7 +63,8 @@ export const getNamespaceDescriptor = memoize((namespace: string) => {
         syncMutex.release();
       }
       if (retry) {
-        sync();
+        console.log('retrying sync...')
+        await sync();
       }
     }
 
@@ -74,8 +81,10 @@ export const getNamespaceDescriptor = memoize((namespace: string) => {
       }
     });
 
+    await sync();
+
     const disposer = reaction(
-      () => toJS(obs),
+      () => toJS(obs!),
       (current, previous) => {
         if (!applyingPatches) {
           const patches = jsonpatch.compare(previous, current);
@@ -97,8 +106,6 @@ export const getNamespaceDescriptor = memoize((namespace: string) => {
 
     const intervalId = setInterval(() => sync(), 30000);
 
-    await sync();
-
     return {
       observable: obs,
       detach: () => {
@@ -111,8 +118,8 @@ export const getNamespaceDescriptor = memoize((namespace: string) => {
   }, { cache: socketFnCache });
 });
 
-export async function bridge<D extends Record<string, any>>(socket: Socket, namespace: string) {
-  const desc = await getNamespaceDescriptor(namespace)(socket);
+export async function bridge<D extends BridgeObject>(socket: Socket, namespace: string) {
+  const desc = await getNamespaceDescriptor<D>(namespace)(socket);
   return {
     get data(): D {
       return desc.observable as D;

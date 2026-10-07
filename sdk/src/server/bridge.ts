@@ -1,11 +1,13 @@
-import { observable, reaction, runInAction, toJS } from "mobx";
+import { isObservable, observable, reaction, runInAction, toJS } from "mobx";
 import type { Socket } from "socket.io";
 import * as jsonpatch from "fast-json-patch";
 import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
 import { memoize } from "es-toolkit/function";
 
-const getNamespaceDescriptor = memoize((namespace: string) => {
-  const obs: Record<string, any> = observable({});
+type BridgeObject = Record<string, any> | Array<any>;
+
+const getNamespaceDescriptor = memoize(<O extends BridgeObject>(namespace: string, obj: O) => {
+  const obs: O = isObservable(obj) ? obj : observable(obj);
 
   const attach = memoize((socket: Socket) => {
     let applyingPatches = 0;
@@ -55,14 +57,16 @@ const getNamespaceDescriptor = memoize((namespace: string) => {
   }
 });
 
-export function bridge<D extends Record<string, any>>(namespace: string) {
-  const desc = getNamespaceDescriptor(namespace);
+export function bridge<B extends BridgeObject = Record<string, any>>(namespace: string, obj: B = {} as B) {
+
+  const desc = getNamespaceDescriptor<B>(namespace, obj);
   return {
-    get data(): D {
-      return desc.observable as D;
+    get data(): B extends never[] ? any[] : B {
+      return desc.observable as any;
     },
     get attach() {
       return desc.attach;
     }
   }
 }
+

@@ -2,7 +2,7 @@ import { type Operation } from "fast-json-patch";
 
 export type Snapshot = {
   status: "ok";
-  body: Record<string, unknown>;
+  body: Record<string, unknown> | Array<unknown>;
 };
 
 export type Write = {
