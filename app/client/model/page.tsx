@@ -5,6 +5,9 @@ import { createContext, useContext } from "react";
 export default class PageLayout {
   data: IPage;
   index: number;
+  cellHeight: number = 0;
+  gridHeight: number = 0;
+  gridWidth: number = 0;
 
   constructor(page: IPage, index: number) {
     this.data = page;
@@ -13,6 +16,9 @@ export default class PageLayout {
     makeObservable(this, {
       data: observable,
       index: observable,
+      cellHeight: observable,
+      gridHeight: observable,
+      gridWidth: observable,
       placeWidget: action
     });
   }

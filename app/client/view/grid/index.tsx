@@ -4,7 +4,6 @@ import useResizeObserver from '../../hooks/resize-observer.tsx';
 import { useCallback, useRef } from "react";
 import Cell from "./cell.tsx";
 import { range } from "es-toolkit/math";
-import { useApp } from "../../model/app.tsx";
 import { observer } from "mobx-react-lite";
 import { usePage } from "../../model/page.tsx";
 import Widget from "./widget.tsx";
@@ -12,10 +11,9 @@ import Widget from "./widget.tsx";
 const Grid = observer(() => {
   const page = usePage();
   const ref = useRef<HTMLDivElement>(null);
-  const app = useApp();
-  const cellHeight = app.layout.cellHeight;
-  const gridHeight = app.layout.gridHeight;
-  const gridWidth = app.layout.gridWidth;
+  const cellHeight = page.cellHeight;
+  const gridHeight = page.gridHeight;
+  const gridWidth = page.gridWidth;
   const columns = page.data.columns;
   const rows = page.data.rows;
 
@@ -27,9 +25,9 @@ const Grid = observer(() => {
     const cellSide = width / columns < height / rows ? width / columns : height / rows;
     ref.current.style.setProperty('width', `${cellSide * columns}px`);
     ref.current.style.setProperty('height', `${cellSide * rows}px`);
-    app.layout.cellHeight = cellSide;
-    app.layout.gridWidth = cellSide * columns;
-    app.layout.gridHeight = cellSide * rows;
+    page.cellHeight = cellSide;
+    page.gridWidth = cellSide * columns;
+    page.gridHeight = cellSide * rows;
   }, [columns, rows]), { waitUntilMounted: true });
 
   return (

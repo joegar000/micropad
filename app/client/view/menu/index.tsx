@@ -11,6 +11,7 @@ import {
 import { type ReactNode } from "react";
 import { useApp } from "../../model/app";
 import Widget from "../grid/widget";
+import { useLayout } from "../../model/layout";
 
 function TabsHeader(props: { children: ReactNode }) {
   return (
@@ -26,6 +27,7 @@ const Menu = observer((props: {
   keepMounted?: boolean
 }) => {
   const app = useApp();
+  const layout = useLayout();
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       {/* Change max-w-lg to max-w-4xl, max-w-5xl, or sm:max-w-[800px] */}
@@ -46,7 +48,7 @@ const Menu = observer((props: {
             {app.plugins.map(p => (
               <TabsContent className="ps-4" value={p.displayName}>
                 {p.widgetIds.map(wId => (
-                  <Widget {...app.layout.newWidget(p, wId)} />
+                  <Widget {...layout.newWidget(p, wId)} />
                 ))}
               </TabsContent>
             ))}

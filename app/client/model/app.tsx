@@ -4,24 +4,61 @@ import { type ClientPlugin } from 'micropad-sdk/client';
 import LayoutModel from './layout.tsx';
 import createClientPluginContext from '../plugins/context.ts';
 import { invariant } from 'es-toolkit/util';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 export default class AppModel {
   socket: Socket;
   plugins: ClientPlugin[];
-  layout: LayoutModel;
+  layouts: LayoutModel[];
 
   constructor(params: {
     socket: Socket,
     plugins: ClientPlugin[],
-    layout: LayoutModel
+    layouts: LayoutModel[]
   }) {
     this.socket = params.socket;
     this.plugins = params.plugins;
-    this.layout = params.layout;
+    this.layouts = params.layouts;
+
+    makeObservable(this, {
+      layouts: observable,
+      plugins: observable,
+      addLayout: action,
+      layoutNames: computed,
+      layoutLookup: computed
+    });
+  }
+
+  addLayout(name: string, defaultColumns: number = 3, defaultRows: number = 3) {
+    if (name in this.layoutNames)
+      return false;
+    this.layouts.push(new LayoutModel({
+      socket: this.socket,
+      data: {
+        name,
+        pages: [{
+          columns: defaultColumns,
+          rows: defaultRows,
+          widgets: {},
+          widgetCoords: {}
+        }]
+      }
+    }));
+    return true;
+  }
+
+  get layoutNames() {
+    return this.layouts.map(l => l.data.name);
+  }
+
+  get layoutLookup() {
+    return this.layouts.reduce((lookup, layout) => {
+      return { ...lookup, [layout.data.name]: layout };
+    }, {} as Record<string, LayoutModel>);
   }
 
   static async create(socket: Socket) {
-    const pluginIds: string[] = await(await fetch('/plugins')).json();
+    const pluginIds: string[] = await (await fetch('/plugins')).json();
     const plugins = await Promise.all(pluginIds.map(async id => {
       const pluginModule = await import(`/plugins/${id}`);
       invariant(
@@ -34,7 +71,7 @@ export default class AppModel {
     return new AppModel({
       socket: socket,
       plugins: plugins,
-      layout: await LayoutModel.create(socket)
+      layouts: await LayoutModel.pullLayouts(socket)
     })
   }
 }

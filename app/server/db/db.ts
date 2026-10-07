@@ -7,7 +7,8 @@ import path from 'path';
 export type Schema = {
   pluginState: Record<string, Partial<IPreservedState>>
   layouts: {
-    [name: string]: {
+    name: string;
+    pages: {
       columns: number;
       rows: number;
       widgets: {
@@ -26,9 +27,10 @@ export type Schema = {
         }
       }
     }[]
-  }
+  }[]
 };
-export type IPage = Schema['layouts'][string][number];
+export type ILayout = Schema['layouts'][number];
+export type IPage = ILayout['pages'][number];
 export type IWidget = IPage['widgets'][string];
 export type IWidgetCoords = IPage['widgetCoords'][string];
 
@@ -43,14 +45,15 @@ export class DB {
       // FIX: This default plugin state overwrites the database every time
       {
         pluginState: {},
-        layouts: {
-          ['Micropad']: [{
+        layouts: [{
+          name: 'Micropad',
+          pages: [{
             columns: 3,
             rows: 3,
             widgets: {},
             widgetCoords: {}
           }]
-        }
+        }]
       }
     );
 

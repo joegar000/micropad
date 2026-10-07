@@ -6,7 +6,7 @@ import { useApp } from "../../model/app";
 const AddLayout = observer((props: { open: boolean, onOpenChange: (open: boolean) => void, onSave: (newLayout: string) => void }) => {
   const app = useApp();
   const [newLayoutName, setNewLayoutName] = useState('');
-  const error = newLayoutName in app.layout.data;
+  const error = newLayoutName in app.layoutLookup;
   const save = () => {
     props.onOpenChange(false);
     props.onSave(newLayoutName);

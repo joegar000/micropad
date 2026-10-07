@@ -1,31 +1,23 @@
 import { type Socket } from "socket.io-client";
 import { type Schema } from "../../server/db/db.ts";
-import { createContext } from "react";
-import { useApp } from "./app.tsx";
+import { createContext, useContext } from "react";
 import { bridge, ClientPlugin } from "micropad-sdk/client";
 import { action, computed, makeObservable, observable } from "mobx";
 import PageModel from "./page.tsx";
 
 export default class LayoutModel {
   socket: Socket;
-  data: Schema["layouts"];
-  cellHeight: number = 0;
-  gridHeight: number = 0;
-  gridWidth: number = 0;
+  data: Schema["layouts"][number];
 
-  constructor(params: { socket: Socket; data: Schema["layouts"] }) {
+  constructor(params: { socket: Socket, data: Schema["layouts"][number] }) {
     this.socket = params.socket;
     this.data = params.data;
 
     makeObservable(this, {
       data: observable,
-      cellHeight: observable,
-      gridHeight: observable,
-      gridWidth: observable,
       layoutNames: computed,
-      pagesLookup: computed,
+      pages: computed,
       usedIds: computed,
-      addLayout: action,
       addPage: action
     });
   }
@@ -52,21 +44,15 @@ export default class LayoutModel {
     return Object.keys(this.data);
   }
 
-  get pagesLookup() {
-    return Object.keys(this.data).reduce<
-      { [layoutName: string]: PageModel[] }
-    >(
-      (lookups, layoutName) => ({
-        ...lookups,
-        [layoutName]: this.data[layoutName].map((d, i) => new PageModel(d, i)),
-      }),
-      {},
-    )
+  get pages() {
+    return this.data.pages.map((p, i) => {
+      return new PageModel(p, i);
+    });
   }
 
   get usedIds() {
-    return Object.keys(this.data).reduce((usedIds, layoutName) => {
-      const ids = this.data[layoutName].flatMap((page) =>
+    return Object.keys(this.data).reduce((usedIds) => {
+      const ids = this.data.pages.flatMap((page) =>
         Object.keys(page.widgets),
       );
       ids.forEach(id => usedIds.add(id));
@@ -74,33 +60,29 @@ export default class LayoutModel {
     }, new Set<string>());
   }
 
-  addLayout(name: string, columns: number = 3, rows: number = 3) {
-    if (name in this.data)
-      return false;
-    this.data[name] = [{
-      columns,
-      rows,
-      widgets: {},
-      widgetCoords: {}
-    }];
-    return true;
-  }
-
-  addPage(layoutName: string, index = Infinity) {
-    this.data[layoutName].splice(index, 0, {
-      columns: 3,
-      rows: 3,
+  addPage(index = Infinity, defaultColumns = 3, defaultRows = 3) {
+    this.data.pages.splice(index, 0, {
+      columns: defaultColumns,
+      rows: defaultRows,
       widgets: {},
       widgetCoords: {}
     });
   }
 
-  static async create(socket: Socket) {
-    const { data } = await bridge(socket, "db:micropad-layouts");
-    return new LayoutModel({ socket, data });
+  static async pullLayouts(socket: Socket) {
+    const { data } = await bridge<Schema['layouts']>(socket, "db:micropad-layouts");
+    return data.map(d => {
+      return new LayoutModel({ socket, data: d });
+    });
   }
 }
 
 export const LayoutModelContext = createContext<LayoutModel | null>(null);
 
-export const useLayout = () => useApp().layout;
+export const useLayout = () => {
+  const layout = useContext(LayoutModelContext);
+  if (!layout)
+    throw Error('Cannot call `useLayout` outside of AppModelContext');
+  return layout;
+}
+
