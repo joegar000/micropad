@@ -62,6 +62,7 @@ const App = observer(() => {
   if (!currentLayout)
     return null;
 
+  const layout = app.layoutLookup[currentLayout];
   return (
     <DragDropProvider
       onBeforeDragStart={event => {
@@ -86,13 +87,13 @@ const App = observer(() => {
         const source = event.operation.source;
         if (!target || !source || event.canceled || !carouselApi) return;
         const { x, y } = target.data as CellData;
-        app.layoutLookup[currentLayout].pages[pageNum].placeWidget(source.data as IWidget, x, y);
+        layout.pages[pageNum].placeWidget(source.data as IWidget, x, y);
         document.body.style.removeProperty('--overlay-width');
         document.body.style.removeProperty('--overlay-height');
       }}
     >
-      <LayoutModelContext value={app.layoutLookup[currentLayout]}>
-        <PageModelContext value={app.layoutLookup[currentLayout].pages[pageNum]}>
+      <LayoutModelContext value={layout}>
+        <PageModelContext value={layout.pages[pageNum]}>
           <DragOverlay>
             {(source: Draggable<IWidget>) => (
               <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
@@ -103,9 +104,9 @@ const App = observer(() => {
           <div className="flex flex-col h-full">
             <div className="mt-2 ms-2 flex">
               <Button onClick={() => {
-                app.layoutLookup[currentLayout].addPage();
+                layout.addPage();
                 setTimeout(() => {
-                  carouselApi?.scrollTo(app.layoutLookup[currentLayout].pages.length - 1);
+                  carouselApi?.scrollTo(layout.pages.length - 1);
                 }, 0);
               }}>add page</Button>
               <div className="pe-2">
@@ -123,7 +124,7 @@ const App = observer(() => {
                   <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />
                 </div>
                 <CarouselContent>
-                  {app.layoutLookup[currentLayout].pages.map((page, i) => (
+                  {layout.pages.map((page, i) => (
                     <CarouselItem key={i} className="flex">
                       <PageModelContext value={page}>
                         <Grid />
@@ -140,7 +141,7 @@ const App = observer(() => {
             </div>
             <div className="mb-2 ms-2 flex justify-center">
               <div className="flex justify-center gap-2 py-2">
-                {Array.from({ length: app.layoutLookup[currentLayout].pages.length }).map((_, index) => (
+                {Array.from({ length: layout.pages.length }).map((_, index) => (
                   <button
                     key={index}
                     className={`h-2 w-2 rounded-full transition-all ${index === pageNum ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
