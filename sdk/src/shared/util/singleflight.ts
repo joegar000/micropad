@@ -4,18 +4,17 @@ export function singleflight<TArgs extends unknown[], TResult>(fn: (...args: TAr
   return (...args) => {
     if (inFlight) return inFlight;
 
-    const promise = fn(...args);
-    inFlight = promise;
+    inFlight = fn(...args);
 
-    promise.then(
+    inFlight.then(
       () => {
-        if (inFlight === promise) inFlight = undefined;
+        inFlight = undefined;
       },
       () => {
-        if (inFlight === promise) inFlight = undefined;
+        inFlight = undefined;
       }
     );
 
-    return promise;
+    return inFlight;
   };
 }

@@ -3,12 +3,12 @@ import type { IRuntimeState, IPreservedState } from "micropad-sdk/shared";
 import { DB } from "../db/db.ts";
 import { reaction, runInAction } from "mobx";
 import { clone } from "es-toolkit/compat";
-import { bridge } from "micropad-sdk/server";
+import { ServerBridge } from "micropad-sdk/server";
 
 export function runtimeState(socket: Socket, pluginName: string): IRuntimeState {
-  const { data, attach } = bridge<IRuntimeState>(`runtime:${pluginName}`);
-  attach(socket);
-  return data;
+  const bridge = ServerBridge.get<IRuntimeState>(`runtime:${pluginName}`);
+  bridge.attach(socket);
+  return bridge.data;
 }
 
 export function preservedState(socket: Socket, pluginName: string): IPreservedState {
@@ -18,27 +18,27 @@ export function preservedState(socket: Socket, pluginName: string): IPreservedSt
   });
 
   const pluginState = DB.data.pluginState![pluginName];
-  const { data, attach } = bridge<IPreservedState>(`db:${pluginName}`);
+  const bridge = ServerBridge.get<IPreservedState>(`db:${pluginName}`);
   runInAction(() => {
-    for (const key of Object.keys(data)) {
-      delete data[key];
+    for (const key of Object.keys(bridge.data)) {
+      delete bridge.data[key];
     }
     for (const key of Object.keys(pluginState)) {
-      data[key] = pluginState[key];
+      bridge.data[key] = pluginState[key];
     }
-    data.enabled ??= true;
+    bridge.data.enabled ??= true;
   });
 
   reaction(
-    () => JSON.stringify(data),
+    () => JSON.stringify(bridge.data),
     () => {
-      DB.data.pluginState![pluginName] = clone(data);
+      DB.data.pluginState![pluginName] = clone(bridge.data);
     }
   );
 
-  attach(socket);
+  bridge.attach(socket);
 
-  return data;
+  return bridge.data;
 }
 
 export class ServerPluginContext {

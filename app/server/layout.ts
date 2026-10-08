@@ -1,28 +1,29 @@
-import { bridge } from "micropad-sdk/server";
+import { ServerBridge } from "micropad-sdk/server";
 import { type Socket } from "socket.io";
-import { DB } from "./db/db.ts";
+import { DB, type Schema } from "./db/db.ts";
+import { reaction, runInAction } from "mobx";
+import { clone } from "es-toolkit/compat";
 
 export function syncLayout(socket: Socket) {
-  console.log('HEY OVER HERE', JSON.parse(JSON.stringify(DB.data)))
-  const { data, attach } = bridge('db:micropad-layouts', DB.data.layouts);
+  const bridge = ServerBridge.getArr<Schema['layouts']>('db:micropad-layouts');
 
-  // runInAction(() => {
-  //   for (const key of Object.keys(data)) {
-  //     delete data[key];
-  //   }
-  //   for (const key of Object.keys(DB.data.layouts!)) {
-  //     data[key] = DB.data.layouts[key];
-  //   }
-  // });
+  runInAction(() => {
+    while (bridge.data.length) {
+      bridge.data.pop();
+    }
 
-  // reaction(
-  //   () => JSON.stringify(data),
-  //   () => {
-  //     DB.data.layouts = clone(data);
-  //   }
-  // );
+    for (const index of DB.data.layouts.keys()) {
+      bridge.data[index] = DB.data.layouts[index];
+    }
+  });
 
-  attach(socket);
+  reaction(
+    () => JSON.stringify(bridge.data),
+    () => {
+      DB.data.layouts = clone(bridge.data);
+    }
+  );
 
-  return data;
+  bridge.attach(socket);
+  return bridge.data;
 }
