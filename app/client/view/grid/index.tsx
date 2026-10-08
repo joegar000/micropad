@@ -13,19 +13,6 @@ const Grid = observer(() => {
   const columns = page.data.columns;
   const rows = page.data.rows;
 
-  // useResizeObserver({ current: document.documentElement }, useCallback(() => {
-  //   if (!ref.current) return;
-  //   ref.current.style.setProperty('width', '100%');
-  //   ref.current.style.setProperty('height', '100%');
-  //   const { height, width } = ref.current.getBoundingClientRect();
-  //   const cellSide = width / columns < height / rows ? width / columns : height / rows;
-  //   ref.current.style.setProperty('width', `${cellSide * columns}px`);
-  //   ref.current.style.setProperty('height', `${cellSide * rows}px`);
-  //   page.cellHeight = cellSide;
-  //   page.gridWidth = cellSide * columns;
-  //   page.gridHeight = cellSide * rows;
-  // }, [columns, rows]), { waitUntilMounted: true });
-
   return (
     <div
       className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center overflow-hidden p-6"
