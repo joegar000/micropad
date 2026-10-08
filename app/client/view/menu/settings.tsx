@@ -21,7 +21,7 @@ function TabsHeader(props: { children: ReactNode }) {
   );
 }
 
-const Menu = observer((props: {
+const Settings = observer((props: {
   open: boolean,
   onOpenChange: (open: boolean) => void,
   keepMounted?: boolean
@@ -59,5 +59,5 @@ const Menu = observer((props: {
   )
 });
 
-export default Menu;
+export default Settings;
 

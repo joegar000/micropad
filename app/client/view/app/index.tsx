@@ -7,13 +7,6 @@ import {
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
   CarouselNext,
   CarouselPrevious
 } from "micropad-ui";
@@ -24,20 +17,17 @@ import type { CellData } from "../grid/cell";
 import Widget from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
 import type { IWidget } from "../../../server/db/db.ts";
-import Menu from "../menu/index.tsx";
-import AddLayout from "./add-layout.tsx";
+import Settings from "../menu/settings.tsx";
 import { useHover } from "../../hooks/hover.tsx";
 import clsx from "clsx";
 import { LayoutModelContext } from "../../model/layout.tsx";
+import LayoutSelector from "../menu/layout-selector.tsx";
 
 const App = observer(() => {
   const app = useApp();
-  const selectItems = app.layoutNames.map(name => ({ label: name, value: name }));
-  const [currentLayout, setCurrentLayout] = useState<string | null>(selectItems[0]?.value ?? null);
+  const [currentLayout, setCurrentLayout] = useState<string | null>(app.layoutNames[0] ?? null);
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [selectOpen, setSelectOpen] = useState(false);
-  const [showAddLayout, setShowAddLayout] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [pageNum, setPageNum] = useState(0);
   const [nextRef, overNext] = useHover();
@@ -105,42 +95,11 @@ const App = observer(() => {
                 <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
               </div>
               <div>
-                <Select open={selectOpen} onOpenChange={setSelectOpen}
-                  items={selectItems} value={currentLayout}
-                  onValueChange={setCurrentLayout}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    <SelectGroup>
-                      {selectItems.map(item => (
-                        <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                    <SelectSeparator />
-                    <SelectGroup>
-                      <Button variant="ghost" className="w-full justify-start text-left mb-1"
-                        onClick={() => {
-                          setSelectOpen(false);
-                          setShowAddLayout(true);
-                        }}
-                      >
-                        + Add layout
-                      </Button>
-                      <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout}
-                        onSave={newLayout => {
-                          if (app.addLayout(newLayout))
-                            setCurrentLayout(newLayout);
-                        }}
-                      />
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <LayoutSelector currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
               </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
-              <Menu
+              <Settings
                 open={!isDragging && isOpen}
                 onOpenChange={setIsOpen}
                 keepMounted={isDragging}
