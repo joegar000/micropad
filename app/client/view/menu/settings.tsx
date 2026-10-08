@@ -9,11 +9,12 @@ import {
   TabsContent,
   Button
 } from "micropad-ui";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useApp } from "../../model/app";
 import Widget from "../grid/widget";
 import { useLayout } from "../../model/layout";
 import { useDragOperation } from "@dnd-kit/react";
+import type { ClientPlugin } from "micropad-sdk/client";
 
 function TabsHeader(props: { children: ReactNode }) {
   return (
@@ -28,6 +29,21 @@ const Settings = observer(() => {
   const layout = useLayout();
   const [isOpen, setIsOpen] = useState(false);
   const isDragging = !!useDragOperation().source;
+  const displayWidgets = useMemo(() => {
+    const usedIds = new Set<string>();
+    return app.plugins.reduce((lookup, p) => {
+      lookup.set(p, p.widgetIds.map(wId => {
+        let w = layout.newWidget(p, wId);
+        while (usedIds.has(w.uniqId)) {
+          w = layout.newWidget(p, wId);
+        }
+        usedIds.add(w.uniqId);
+        return w;
+      }));
+      return lookup;
+    }, new Map<ClientPlugin, ReturnType<typeof layout.newWidget>[]>);
+  }, [layout.usedIds]);
+
   return (
     <>
       <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
@@ -49,8 +65,8 @@ const Settings = observer(() => {
               </TabsList>
               {app.plugins.map(p => (
                 <TabsContent className="ps-4" value={p.displayName}>
-                  {p.widgetIds.map(wId => (
-                    <Widget {...layout.newWidget(p, wId)} />
+                  {displayWidgets.get(p)!.map(w => (
+                    <Widget {...w} />
                   ))}
                 </TabsContent>
               ))}
