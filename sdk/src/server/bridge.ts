@@ -74,7 +74,7 @@ export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any>
       (current, previous) => {
         if (!applyingPatches) {
           socket.emit(
-            `bridge:${this.namespace}: write`,
+            `bridge:${this.namespace}:write`,
             { patches: jsonpatch.compare(previous, current) } as Write
           );
         }
@@ -82,8 +82,8 @@ export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any>
     );
 
     this.sockets.set(socket, () => {
-      socket.off(`bridge:${this.namespace}: snapshot`, snapshot);
-      socket.off(`bridge:${this.namespace}: write`, write);
+      socket.off(`bridge:${this.namespace}:snapshot`, snapshot);
+      socket.off(`bridge:${this.namespace}:write`, write);
       disposer();
     });
 
