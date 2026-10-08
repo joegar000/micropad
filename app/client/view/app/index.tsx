@@ -26,7 +26,6 @@ import LayoutSelector from "../menu/layout-selector.tsx";
 const App = observer(() => {
   const app = useApp();
   const [currentLayout, setCurrentLayout] = useState<string | null>(app.layoutNames[0] ?? null);
-  const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [pageNum, setPageNum] = useState(0);
@@ -92,18 +91,13 @@ const App = observer(() => {
                 }, 0);
               }}>add page</Button>
               <div className="pe-2">
-                <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
+                <Settings />
               </div>
               <div>
                 <LayoutSelector currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
               </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
-              <Settings
-                open={!isDragging && isOpen}
-                onOpenChange={setIsOpen}
-                keepMounted={isDragging}
-              />
               <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
                 <div className={"relative z-1 h-full flex items-center ps-3"}
                   ref={prevRef}
