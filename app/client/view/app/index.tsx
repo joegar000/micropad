@@ -117,7 +117,7 @@ const App = observer(() => {
               </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
-              <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
+              <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
                 <div className={"relative z-1 h-full flex items-center ps-3"}
                   ref={prevRef}
                 >
@@ -125,7 +125,7 @@ const App = observer(() => {
                 </div>
                 <CarouselContent>
                   {layout.pages.map((page, i) => (
-                    <CarouselItem key={i} className="flex">
+                    <CarouselItem key={i} className="flex items-center justify-center">
                       <PageModelContext value={page}>
                         <Grid />
                       </PageModelContext>
