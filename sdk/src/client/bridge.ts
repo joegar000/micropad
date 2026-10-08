@@ -48,6 +48,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
     return await new Promise<Snapshot['body']>((resolve, reject) => {
       socket.timeout(5000).emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
         if (err) {
+          console.error(err);
           reject(`Failed to get snapshot for namespace ${namespace}`);
         } else if (snapshot.status === 'ok') {
           resolve(snapshot.body);
