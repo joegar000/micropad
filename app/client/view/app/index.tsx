@@ -91,15 +91,15 @@ const App = observer(() => {
         document.body.style.removeProperty('--overlay-height');
       }}
     >
-      <PageModelContext value={app.layoutLookup[currentLayout].pages[pageNum]}>
-        <DragOverlay>
-          {(source: Draggable<IWidget>) => (
-            <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
-              <Widget {...source.data} />
-            </div>
-          )}
-        </DragOverlay>
-        <LayoutModelContext value={app.layoutLookup[currentLayout]}>
+      <LayoutModelContext value={app.layoutLookup[currentLayout]}>
+        <PageModelContext value={app.layoutLookup[currentLayout].pages[pageNum]}>
+          <DragOverlay>
+            {(source: Draggable<IWidget>) => (
+              <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
+                <Widget {...source.data} />
+              </div>
+            )}
+          </DragOverlay>
           <div className="flex flex-col h-full">
             <div className="mt-2 ms-2 flex">
               <Button onClick={() => {
@@ -151,8 +151,8 @@ const App = observer(() => {
               </div>
             </div>
           </div>
-        </LayoutModelContext>
-      </PageModelContext>
+        </PageModelContext>
+      </LayoutModelContext>
     </DragDropProvider>
   );
 });
