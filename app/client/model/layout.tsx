@@ -46,7 +46,7 @@ export default class LayoutModel {
 
   get pages() {
     return this.data.pages.map((p, i) => {
-      return new PageModel(p, i);
+      return new PageModel(p, i, this);
     });
   }
 

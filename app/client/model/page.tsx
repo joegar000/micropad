@@ -1,17 +1,20 @@
 import { action, makeObservable, observable } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
+import type LayoutModel from "./layout.tsx";
 
 export default class PageLayout {
   data: IPage;
   index: number;
+  layout: LayoutModel;
   cellHeight: number = 0;
   gridHeight: number = 0;
   gridWidth: number = 0;
 
-  constructor(page: IPage, index: number) {
+  constructor(page: IPage, index: number, layout: LayoutModel) {
     this.data = page;
     this.index = index;
+    this.layout = layout;
 
     makeObservable(this, {
       data: observable,
@@ -19,7 +22,8 @@ export default class PageLayout {
       cellHeight: observable,
       gridHeight: observable,
       gridWidth: observable,
-      placeWidget: action
+      placeWidget: action,
+      removeWidget: action
     });
   }
 
@@ -32,6 +36,19 @@ export default class PageLayout {
     }
     this.data.widgets[widget.uniqId] = widget;
     this.data.widgetCoords[widget.uniqId] = { x, y, w, h };
+
+    this.layout.pages.forEach((p, i) => {
+      if (i === this.index) return;
+      p.removeWidget(widget.uniqId);
+    });
+    return true;
+  }
+
+  removeWidget(uniqId: string) {
+    if (!(uniqId in this.data.widgets))
+      return false;
+    delete this.data.widgets[uniqId];
+    delete this.data.widgetCoords[uniqId];
     return true;
   }
 
