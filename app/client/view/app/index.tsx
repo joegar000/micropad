@@ -64,8 +64,20 @@ const App = observer(() => {
 
   return (
     <DragDropProvider
+      onBeforeDragStart={event => {
+        const rect = event.operation.source?.element?.getBoundingClientRect();
+        // if (!rect) return;
+        document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
+        document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
+      }}
       onDragStart={_event => {
         setIsDragging(true);
+      }}
+      onDragOver={event => {
+        const rect = event.operation.target?.element?.getBoundingClientRect();
+        // if (!rect) return;
+        document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
+        document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
       }}
       onDragEnd={event => {
         setIsDragging(false);
@@ -75,11 +87,17 @@ const App = observer(() => {
         if (!target || !source || event.canceled || !carouselApi) return;
         const { x, y } = target.data as CellData;
         app.layoutLookup[currentLayout].pages[pageNum].placeWidget(source.data as IWidget, x, y);
+        document.body.style.removeProperty('--overlay-width');
+        document.body.style.removeProperty('--overlay-height');
       }}
     >
       <PageModelContext value={app.layoutLookup[currentLayout].pages[pageNum]}>
         <DragOverlay>
-          {(source: Draggable<IWidget>) => <Widget {...source.data} />}
+          {(source: Draggable<IWidget>) => (
+            <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
+              <Widget {...source.data} />
+            </div>
+          )}
         </DragOverlay>
         <LayoutModelContext value={app.layoutLookup[currentLayout]}>
           <div className="flex flex-col h-full">
