@@ -88,98 +88,100 @@ const App = observer(() => {
         app.layoutLookup[currentLayout].pages[pageNum].placeWidget(source.data as IWidget, x, y);
       }}
     >
-      <DragOverlay>
-        {(source: Draggable<IWidget>) => <Widget {...source.data} />}
-      </DragOverlay>
-      <LayoutModelContext value={app.layoutLookup[currentLayout]}>
-        <div className="flex flex-col h-full">
-          <div className="mt-2 ms-2 flex">
-            <Button onClick={() => {
-              app.layoutLookup[currentLayout].addPage();
-              setTimeout(() => {
-                carouselApi?.scrollTo(app.layoutLookup[currentLayout].pages.length - 1);
-              }, 0);
-            }}>add page</Button>
-            <div className="pe-2">
-              <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
-            </div>
-            <div>
-              <Select open={selectOpen} onOpenChange={setSelectOpen}
-                items={selectItems} value={currentLayout}
-                onValueChange={setCurrentLayout}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="start">
-                  <SelectGroup>
-                    {selectItems.map(item => (
-                      <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
-                    ))}
-                  </SelectGroup>
-                  <SelectSeparator />
-                  <SelectGroup>
-                    <Button variant="ghost" className="w-full justify-start text-left mb-1"
-                      onClick={() => {
-                        setSelectOpen(false);
-                        setShowAddLayout(true);
-                      }}
-                    >
-                      + Add layout
-                    </Button>
-                    <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout}
-                      onSave={newLayout => {
-                        if (app.addLayout(newLayout))
-                          setCurrentLayout(newLayout);
-                      }}
-                    />
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="flex grow bg-background text-foreground antialiased p-2">
-            <Menu
-              open={!isDragging && isOpen}
-              onOpenChange={setIsOpen}
-              keepMounted={isDragging}
-            />
-            <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
-              <div className={"relative z-1 h-full flex items-center ps-3"}
-                ref={prevRef}
-              >
-                <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />
+      <PageModelContext value={app.layoutLookup[currentLayout].pages[pageNum]}>
+        <DragOverlay>
+          {(source: Draggable<IWidget>) => <Widget {...source.data} />}
+        </DragOverlay>
+        <LayoutModelContext value={app.layoutLookup[currentLayout]}>
+          <div className="flex flex-col h-full">
+            <div className="mt-2 ms-2 flex">
+              <Button onClick={() => {
+                app.layoutLookup[currentLayout].addPage();
+                setTimeout(() => {
+                  carouselApi?.scrollTo(app.layoutLookup[currentLayout].pages.length - 1);
+                }, 0);
+              }}>add page</Button>
+              <div className="pe-2">
+                <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>Menu</Button>
               </div>
-              <CarouselContent>
-                {app.layoutLookup[currentLayout].pages.map((page, i) => (
-                  <CarouselItem key={i} className="flex">
-                    <PageModelContext value={page}>
-                      <Grid />
-                    </PageModelContext>
-                  </CarouselItem>
+              <div>
+                <Select open={selectOpen} onOpenChange={setSelectOpen}
+                  items={selectItems} value={currentLayout}
+                  onValueChange={setCurrentLayout}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    <SelectGroup>
+                      {selectItems.map(item => (
+                        <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                    <SelectSeparator />
+                    <SelectGroup>
+                      <Button variant="ghost" className="w-full justify-start text-left mb-1"
+                        onClick={() => {
+                          setSelectOpen(false);
+                          setShowAddLayout(true);
+                        }}
+                      >
+                        + Add layout
+                      </Button>
+                      <AddLayout open={showAddLayout} onOpenChange={setShowAddLayout}
+                        onSave={newLayout => {
+                          if (app.addLayout(newLayout))
+                            setCurrentLayout(newLayout);
+                        }}
+                      />
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex grow bg-background text-foreground antialiased p-2">
+              <Menu
+                open={!isDragging && isOpen}
+                onOpenChange={setIsOpen}
+                keepMounted={isDragging}
+              />
+              <Carousel className="grow w-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
+                <div className={"relative z-1 h-full flex items-center ps-3"}
+                  ref={prevRef}
+                >
+                  <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />
+                </div>
+                <CarouselContent>
+                  {app.layoutLookup[currentLayout].pages.map((page, i) => (
+                    <CarouselItem key={i} className="flex">
+                      <PageModelContext value={page}>
+                        <Grid />
+                      </PageModelContext>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="relative z-1 h-full flex items-center pe-3"
+                  ref={nextRef}
+                >
+                  <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />
+                </div>
+              </Carousel>
+            </div>
+            <div className="mb-2 ms-2 flex justify-center">
+              <div className="flex justify-center gap-2 py-2">
+                {Array.from({ length: app.layoutLookup[currentLayout].pages.length }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={`h-2 w-2 rounded-full transition-all ${index === pageNum ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
+                    onClick={() => carouselApi?.scrollTo(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
                 ))}
-              </CarouselContent>
-              <div className="relative z-1 h-full flex items-center pe-3"
-                ref={nextRef}
-              >
-                <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />
               </div>
-            </Carousel>
-          </div>
-          <div className="mb-2 ms-2 flex justify-center">
-            <div className="flex justify-center gap-2 py-2">
-              {Array.from({ length: app.layoutLookup[currentLayout].pages.length }).map((_, index) => (
-                <button
-                  key={index}
-                  className={`h-2 w-2 rounded-full transition-all ${index === pageNum ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
-                  onClick={() => carouselApi?.scrollTo(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
             </div>
           </div>
-        </div>
-      </LayoutModelContext>
+        </LayoutModelContext>
+      </PageModelContext>
     </DragDropProvider>
   );
 });
