@@ -1,32 +1,40 @@
 import { type Socket } from 'socket.io-client';
 import { useContext, createContext } from 'react';
-import { type ClientPlugin } from 'micropad-sdk/client';
+import { ClientBridge, type ClientPlugin } from 'micropad-sdk/client';
 import LayoutModel from './layout.tsx';
 import createClientPluginContext from '../plugins/context.ts';
 import { invariant } from 'es-toolkit/util';
 import { action, computed, makeObservable, observable } from 'mobx';
+import type { Schema } from '../../server/db/db.ts';
 
 export default class AppModel {
   socket: Socket;
   plugins: ClientPlugin[];
-  layouts: LayoutModel[];
+  data: Schema["layouts"];
 
   constructor(params: {
     socket: Socket,
     plugins: ClientPlugin[],
-    layouts: LayoutModel[]
+    layouts: Schema["layouts"]
   }) {
     this.socket = params.socket;
     this.plugins = params.plugins;
-    this.layouts = params.layouts;
+    this.data = params.layouts;
 
     makeObservable(this, {
-      layouts: observable,
+      data: observable,
       plugins: observable,
       addLayout: action,
       layoutNames: computed,
       layoutLookup: computed
     });
+  }
+
+  get layouts() {
+    return this.data.map(d => new LayoutModel({
+      socket: this.socket,
+      data: d
+    }));
   }
 
   addLayout(name: string, defaultColumns: number = 3, defaultRows: number = 3) {
@@ -71,7 +79,7 @@ export default class AppModel {
     return new AppModel({
       socket: socket,
       plugins: plugins,
-      layouts: await LayoutModel.pullLayouts(socket)
+      layouts: (await ClientBridge.getArr<Schema["layouts"]>(socket, "db:micropad-layouts")).data
     })
   }
 }

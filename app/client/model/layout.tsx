@@ -1,7 +1,7 @@
 import { type Socket } from "socket.io-client";
 import { type Schema } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
-import { ClientBridge, ClientPlugin } from "micropad-sdk/client";
+import { ClientPlugin } from "micropad-sdk/client";
 import { action, computed, makeObservable, observable } from "mobx";
 import PageModel from "./page.tsx";
 
@@ -72,13 +72,6 @@ export default class LayoutModel {
 
   removePage(index: number) {
     this.data.pages.splice(index, 1);
-  }
-
-  static async pullLayouts(socket: Socket) {
-    const bridge = await ClientBridge.getArr(socket, "db:micropad-layouts");
-    return bridge.data.map(d => {
-      return new LayoutModel({ socket, data: d });
-    });
   }
 }
 

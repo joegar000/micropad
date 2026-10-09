@@ -64,6 +64,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
   public readonly data: D;
   public readonly ready: Promise<void>;
   private type: T;
+  private applyingPatches = 0;
   private cleanup?: () => void
 
   private constructor(socket: Socket, namespace: string, type: T) {
@@ -75,23 +76,16 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
 
     this.ready = this.reset();
 
-    let applyingPatches = 0;
-
     setInterval(() => {
       this.reset();
     }, 30000);
 
     this.ready.then(() => {
       const write = (payload: Write) => {
-        applyingPatches++;
         try {
-          runInAction(() => {
-            jsonpatch.applyPatch(this.data, payload.patches);
-          });
+          this.applyPatches(payload.patches);
         } catch (e) {
           this.reset();
-        } finally {
-          applyingPatches--;
         }
       }
 
@@ -100,7 +94,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
       const disposer = reaction(
         () => toJS(this.data),
         (current, previous) => {
-          if (!applyingPatches) {
+          if (!this.applyingPatches) {
             const patches = jsonpatch.compare(previous, current);
             if (!patches.length) return;
             socket.timeout(5000).emit(
@@ -110,7 +104,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
                 if (err) {
                   this.reset();
                 } else if (ack.status === 'invalid') {
-                  this.overwriteData(ack.body);
+                  this.applyPatches(jsonpatch.compare(toJS(this.data), ack.body));
                 }
               }
             );
@@ -125,15 +119,15 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
     });
   }
 
-  private overwriteData(snapshot: Snapshot['body']) {
-    runInAction(() => {
-      for (const key of Object.keys(this.data)) {
-        delete this.data[key as keyof typeof this.data];
-      }
-      for (const [key, value] of Object.entries(snapshot)) {
-        this.data[key as keyof typeof this.data] = value as any;
-      }
-    });
+  private applyPatches(patches: Write['patches']) {
+    this.applyingPatches++;
+    try {
+      runInAction(() => {
+        jsonpatch.applyPatch(this.data, patches);
+      });
+    } finally {
+      this.applyingPatches--;
+    }
   }
 
   public async reset() {
@@ -145,11 +139,10 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
       `ClientBridge data mismatch with type ${this.type}`
     );
 
-    this.overwriteData(snapshot);
+    this.applyPatches(jsonpatch.compare(toJS(this.data), snapshot));
   }
 
   public dispose() {
     this.cleanup?.();
   }
 }
-
