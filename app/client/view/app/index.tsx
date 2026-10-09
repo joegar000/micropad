@@ -130,7 +130,7 @@ const App = observer(() => {
                 <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >
-                  {pageNum !== 0 && <CarouselPrevious className={clsx("static scale-150", isDragging && "animate-horizontal-bounce")} />}
+                  {pageNum !== 0 && <CarouselPrevious className={clsx("static scale-150", isDragging && "animate-horizontal-bounce-reverse")} />}
                 </div>
                 <CarouselContent>
                   {layout.pages.map((page, i) => (
