@@ -9,7 +9,8 @@ import {
   CarouselNext,
   CarouselPrevious,
   Input,
-  CarouselAdd
+  CarouselAdd,
+  Button
 } from "micropad-ui";
 import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
@@ -109,7 +110,10 @@ const App = observer(() => {
                 <Settings />
               </div>
               <div className="p-2">
-                <LayoutSelector currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
+                <LayoutSelector currentLayout={currentLayout} onLayoutChange={(l) => {
+                  setCurrentLayout(l);
+                  setPageNum(0);
+                }} />
               </div>
               <div className="p-2 flex">
                 <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
@@ -124,9 +128,33 @@ const App = observer(() => {
                   }}
                 />
               </div>
+              <div className="p-2">
+                <Button variant="destructive" disabled={layout.pages.length === 1}
+                  onClick={() => {
+                    if (pageNum === 0) {
+                      const remove = () => {
+                        layout.removePage(0);
+                        carouselApi?.off('settle', remove);
+                      }
+                      carouselApi?.on('settle', remove);
+                      carouselApi?.scrollTo(1);
+                    } else {
+                      const remove = () => {
+                        layout.removePage(pageNum - 1);
+                        setPageNum(pageNum - 1);
+                        carouselApi?.off('settle', remove);
+                      }
+                      carouselApi?.on('settle', remove);
+                      carouselApi?.scrollTo(pageNum - 1);
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
-              <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
+              <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging, duration: 25 }}>
                 <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >

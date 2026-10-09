@@ -18,7 +18,8 @@ export default class LayoutModel {
       layoutNames: computed,
       pages: computed,
       usedIds: computed,
-      addPage: action
+      addPage: action,
+      removePage: action
     });
   }
 
@@ -67,6 +68,10 @@ export default class LayoutModel {
       widgets: {},
       widgetCoords: {}
     });
+  }
+
+  removePage(index: number) {
+    this.data.pages.splice(index, 1);
   }
 
   static async pullLayouts(socket: Socket) {
