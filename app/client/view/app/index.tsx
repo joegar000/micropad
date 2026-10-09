@@ -23,6 +23,7 @@ import { useHover } from "../../hooks/hover.tsx";
 import clsx from "clsx";
 import { LayoutModelContext } from "../../model/layout.tsx";
 import LayoutSelector from "../menu/layout-selector.tsx";
+import './styles.css'
 
 const App = observer(() => {
   const app = useApp();
@@ -111,13 +112,13 @@ const App = observer(() => {
                 <LayoutSelector currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
               </div>
               <div className="p-2 flex">
-                <Input className="me-1" type="number" min={1} value={layout.pages[pageNum].data.columns}
+                <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
                   onChange={e => {
                     layout.pages[pageNum].data.columns = Number(e.target.value);
                   }}
                 />
                 x
-                <Input className="ms-1" type="number" min={1} value={layout.pages[pageNum].data.rows}
+                <Input className="ms-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.rows}
                   onChange={e => {
                     layout.pages[pageNum].data.rows = Number(e.target.value);
                   }}
@@ -129,7 +130,7 @@ const App = observer(() => {
                 <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >
-                  {pageNum !== 0 && <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />}
+                  {pageNum !== 0 && <CarouselPrevious className={clsx("static scale-150", isDragging && "animate-horizontal-bounce")} />}
                 </div>
                 <CarouselContent>
                   {layout.pages.map((page, i) => (
@@ -143,7 +144,7 @@ const App = observer(() => {
                 <div className="relative z-1 flex h-full w-10 shrink-0 items-center pe-3"
                   ref={nextRef}
                 >
-                  {pageNum === layout.pages.length - 1 && <CarouselAdd className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")}
+                  {pageNum === layout.pages.length - 1 && <CarouselAdd className={clsx("static scale-150", isDragging && "hidden")}
                     onClick={() => {
                       layout.addPage();
                       setTimeout(() => {
@@ -151,7 +152,7 @@ const App = observer(() => {
                       }, 0);
                     }}
                   />}
-                  {pageNum !== layout.pages.length - 1 && <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />}
+                  {pageNum !== layout.pages.length - 1 && <CarouselNext className={clsx("static scale-150", isDragging && "animate-horizontal-bounce")} />}
                 </div>
               </Carousel>
             </div>
