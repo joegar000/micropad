@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useApp } from "../../model/app";
 import Grid from "../grid";
 import {
-  Button,
   Carousel,
   CarouselContent,
   CarouselItem,
   type CarouselApi,
   CarouselNext,
-  CarouselPrevious
+  CarouselPrevious,
+  Input,
+  CarouselAdd
 } from "micropad-ui";
 import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
@@ -67,7 +68,7 @@ const App = observer(() => {
     <DragDropProvider
       onBeforeDragStart={event => {
         const rect = event.operation.source?.element?.getBoundingClientRect();
-        // if (!rect) return;
+        if (!rect) return;
         document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
         document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
       }}
@@ -76,7 +77,7 @@ const App = observer(() => {
       }}
       onDragOver={event => {
         const rect = event.operation.target?.element?.getBoundingClientRect();
-        // if (!rect) return;
+        if (!rect) return;
         document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
         document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
       }}
@@ -103,25 +104,32 @@ const App = observer(() => {
           </DragOverlay>
           <div className="flex flex-col h-full">
             <div className="mt-2 ms-2 flex">
-              <Button onClick={() => {
-                layout.addPage();
-                setTimeout(() => {
-                  carouselApi?.scrollTo(layout.pages.length - 1);
-                }, 0);
-              }}>add page</Button>
-              <div className="pe-2">
+              <div className="p-2">
                 <Settings />
               </div>
-              <div>
+              <div className="p-2">
                 <LayoutSelector currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
+              </div>
+              <div className="p-2 flex">
+                <Input className="me-1" type="number" min={1} value={layout.pages[pageNum].data.columns}
+                  onChange={e => {
+                    layout.pages[pageNum].data.columns = Number(e.target.value);
+                  }}
+                />
+                x
+                <Input className="ms-1" type="number" min={1} value={layout.pages[pageNum].data.rows}
+                  onChange={e => {
+                    layout.pages[pageNum].data.rows = Number(e.target.value);
+                  }}
+                />
               </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
               <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
-                <div className={"relative z-1 h-full flex items-center ps-3"}
+                <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >
-                  <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />
+                  {pageNum !== 0 && <CarouselPrevious className={clsx("static", isDragging ? "scale-300 ms-3" : "scale-150")} />}
                 </div>
                 <CarouselContent>
                   {layout.pages.map((page, i) => (
@@ -132,10 +140,18 @@ const App = observer(() => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <div className="relative z-1 h-full flex items-center pe-3"
+                <div className="relative z-1 flex h-full w-10 shrink-0 items-center pe-3"
                   ref={nextRef}
                 >
-                  <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />
+                  {pageNum === layout.pages.length - 1 && <CarouselAdd className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")}
+                    onClick={() => {
+                      layout.addPage();
+                      setTimeout(() => {
+                        carouselApi?.scrollTo(layout.pages.length - 1);
+                      }, 0);
+                    }}
+                  />}
+                  {pageNum !== layout.pages.length - 1 && <CarouselNext className={clsx("static", isDragging ? "scale-300 me-3" : "scale-150")} />}
                 </div>
               </Carousel>
             </div>

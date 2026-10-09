@@ -6,7 +6,7 @@ import useEmblaCarousel, {
 
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, ArrowRight01Icon, Add01Icon } from "@hugeicons/core-free-icons"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -230,6 +230,34 @@ function CarouselNext({
   )
 }
 
+function CarouselAdd({
+  className,
+  variant = "outline",
+  size = "icon-sm",
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  const { orientation } = useCarousel()
+
+  return (
+    <Button
+      data-slot="carousel-add"
+      variant={variant}
+      size={size}
+      className={cn(
+        "absolute touch-manipulation rounded-full",
+        orientation === "horizontal"
+          ? "inset-y-0 -right-12 my-auto"
+          : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
+        className
+      )}
+      {...props}
+    >
+      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+      <span className="sr-only">Add slide</span>
+    </Button>
+  )
+}
+
 export {
   type CarouselApi,
   Carousel,
@@ -237,5 +265,6 @@ export {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselAdd,
   useCarousel,
 }
