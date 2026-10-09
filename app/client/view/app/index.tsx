@@ -158,7 +158,7 @@ const App = observer(() => {
             </div>
             <div className="mb-2 ms-2 flex justify-center">
               <div className="flex justify-center gap-2 py-2">
-                {Array.from({ length: layout.pages.length }).map((_, index) => (
+                {layout.pages.map((_, index) => (
                   <button
                     key={index}
                     className={`h-2 w-2 rounded-full transition-all ${index === pageNum ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
