@@ -27,10 +27,12 @@ export default class PageLayout {
     });
   }
 
-  placeWidget(widget: IWidget, x: number, y: number, w: number = 1, h: number = 1): boolean {
+  placeWidget(widget: IWidget, x: number, y: number, w?: number, h?: number): boolean {
+    w = w ?? this.data.widgetCoords[widget.uniqId]?.w ?? 1;
+    h = h ?? this.data.widgetCoords[widget.uniqId]?.h ?? 1;
     for (let i = x; i <= x + w - 1; i++) {
       for (let j = y; j <= y + h - 1; j++) {
-        if (!this.cellAvailable(i, j))
+        if (!this.cellAvailable(i, j) && this.widgetAt(i, j)?.uniqId !== widget.uniqId)
           return false;
       }
     }

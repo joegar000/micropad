@@ -11,7 +11,7 @@ import {
 } from "micropad-ui";
 import { useMemo, useState, type ReactNode } from "react";
 import { useApp } from "../../model/app";
-import Widget from "../grid/widget";
+import { PreviewWidget } from "../grid/widget";
 import { useLayout } from "../../model/layout";
 import { useDragOperation } from "@dnd-kit/react";
 import type { ClientPlugin } from "micropad-sdk/client";
@@ -66,7 +66,7 @@ const Settings = observer(() => {
               {app.plugins.map(p => (
                 <TabsContent className="ps-4" value={p.displayName}>
                   {displayWidgets.get(p)!.map(w => (
-                    <Widget {...w} />
+                    <PreviewWidget {...w} />
                   ))}
                 </TabsContent>
               ))}

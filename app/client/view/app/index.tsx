@@ -16,7 +16,7 @@ import { PageModelContext } from "../../model/page.tsx";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { type Draggable } from "@dnd-kit/dom";
 import type { CellData } from "../grid/cell";
-import Widget from "../grid/widget.tsx";
+import { PreviewWidget } from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
 import type { IWidget } from "../../../server/db/db.ts";
 import Settings from "../menu/settings.tsx";
@@ -96,7 +96,7 @@ const App = observer(() => {
           <DragOverlay>
             {(source: Draggable<IWidget>) => (
               <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
-                <Widget {...source.data} />
+                <PreviewWidget {...source.data} />
               </div>
             )}
           </DragOverlay>

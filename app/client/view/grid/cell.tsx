@@ -20,7 +20,7 @@ export default function Cell(props: { x: number, y: number, children?: ReactNode
       className={clsx("h-full border", isDropTarget && "bg-card")}
       ref={ref} data-x={props.x} data-y={props.y}
     >
-      <div className={clsx(!disabled && "invisible")}>
+      <div className={clsx("h-full", !disabled && "invisible")}>
         {props.children}
       </div>
     </div>
