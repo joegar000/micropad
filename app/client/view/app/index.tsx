@@ -107,6 +107,7 @@ const App = observer(() => {
               </div>
               <div className="p-2">
                 <LayoutSelector currentLayout={currentLayout} onLayoutChange={(l) => {
+                  if (l === null) return;
                   setCurrentLayout(l);
                   setPageNum(0);
                 }} />
@@ -125,32 +126,21 @@ const App = observer(() => {
                 />
               </div>
               <div className="p-2">
-                <Button variant="destructive" disabled={layout.pages.length === 1}
+                <Button variant="destructive" disabled={app.layouts.length === 1}
                   onClick={() => {
-                    if (pageNum === 0) {
-                      const remove = () => {
-                        layout.removePage(0);
-                        carouselApi?.off('settle', remove);
-                      }
-                      carouselApi?.on('settle', remove);
-                      carouselApi?.scrollTo(1);
-                    } else {
-                      const remove = () => {
-                        layout.removePage(pageNum - 1);
-                        setPageNum(pageNum - 1);
-                        carouselApi?.off('settle', remove);
-                      }
-                      carouselApi?.on('settle', remove);
-                      carouselApi?.scrollTo(pageNum - 1);
-                    }
+                    const layoutIndex = app.layoutNames.indexOf(currentLayout);
+                    const nextLayout = app.layoutNames[layoutIndex === 0 ? layoutIndex + 1 : layoutIndex - 1];
+                    setCurrentLayout(nextLayout);
+                    setPageNum(0);
+                    app.deleteLayout(currentLayout);
                   }}
                 >
-                  Delete
+                  Delete Layout
                 </Button>
               </div>
             </div>
             <div className="flex grow bg-background text-foreground antialiased p-2">
-              <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging, duration: 25 }}>
+              <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
                 <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >
@@ -179,6 +169,24 @@ const App = observer(() => {
                   {pageNum !== layout.pages.length - 1 && <CarouselNext className={clsx("static scale-150", isDragging && "animate-horizontal-bounce")} />}
                 </div>
               </Carousel>
+            </div>
+            <div>
+              <div className="p-2">
+                <Button variant="destructive" disabled={layout.pages.length === 1}
+                  onClick={() => {
+                    if (pageNum === 0) {
+                      layout.removePage(0);
+                    } else if (pageNum === layout.pages.length - 1) {
+                      layout.removePage(pageNum);
+                      setPageNum(pageNum - 1);
+                    } else {
+                      layout.removePage(pageNum);
+                    }
+                  }}
+                >
+                  Delete Page
+                </Button>
+              </div>
             </div>
             <div className="mb-2 ms-2 flex justify-center">
               <div className="flex justify-center gap-2 py-2">

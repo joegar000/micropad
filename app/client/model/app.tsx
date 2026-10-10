@@ -25,6 +25,7 @@ export default class AppModel {
       data: observable,
       plugins: observable,
       addLayout: action,
+      deleteLayout: action,
       layoutNames: computed,
       layoutLookup: computed
     });
@@ -40,19 +41,23 @@ export default class AppModel {
   addLayout(name: string, defaultColumns: number = 3, defaultRows: number = 3) {
     if (name in this.layoutNames)
       return false;
-    this.layouts.push(new LayoutModel({
-      socket: this.socket,
-      data: {
-        name,
-        pages: [{
-          columns: defaultColumns,
-          rows: defaultRows,
-          widgets: {},
-          widgetCoords: {}
-        }]
-      }
-    }));
+    this.data.push({
+      name,
+      pages: [{
+        columns: defaultColumns,
+        rows: defaultRows,
+        widgets: {},
+        widgetCoords: {}
+      }]
+    });
     return true;
+  }
+
+  deleteLayout(name: string) {
+    const index = this.data.findIndex(d => d.name === name);
+    if (index !== -1) {
+      this.data.splice(index, 1);
+    }
   }
 
   get layoutNames() {
