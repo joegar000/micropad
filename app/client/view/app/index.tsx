@@ -25,21 +25,17 @@ import clsx from "clsx";
 import { LayoutModelContext } from "../../model/layout.tsx";
 import LayoutSelector from "../menu/layout-selector.tsx";
 import './styles.css'
+import { useSyncedCarousel } from "../../hooks/synced-carousel.tsx";
 
 const App = observer(() => {
   const app = useApp();
   const [currentLayout, setCurrentLayout] = useState<string | null>(app.layoutNames[0] ?? null);
   const [isDragging, setIsDragging] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
-  const [pageNum, setPageNum] = useState(0);
+  const [pageNum, setPageNum] = useSyncedCarousel(carouselApi);
   const [nextRef, overNext] = useHover();
   const [prevRef, overPrevious] = useHover();
 
-  useEffect(() => {
-    const cb = () => setPageNum(carouselApi?.selectedScrollSnap() ?? 0);
-    carouselApi?.on('select', cb);
-    return () => void carouselApi?.off('select', cb);
-  }, [carouselApi]);
 
   useEffect(() => {
     if (overNext && isDragging) {
