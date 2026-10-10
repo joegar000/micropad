@@ -101,7 +101,7 @@ const App = observer(() => {
             )}
           </DragOverlay>
           <div className="flex flex-col h-full">
-            <div className="mt-2 ms-2 flex">
+            <div className="py-2 ps-2 flex border-b border-b-secondary">
               <div className="p-2">
                 <Settings />
               </div>
