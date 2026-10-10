@@ -170,7 +170,7 @@ const App = observer(() => {
                 </div>
               </Carousel>
             </div>
-            <div>
+            <div className="flex justify-center">
               <div className="p-2">
                 <Button variant="destructive" disabled={layout.pages.length === 1}
                   onClick={() => {
@@ -185,6 +185,18 @@ const App = observer(() => {
                   }}
                 >
                   Delete Page
+                </Button>
+              </div>
+              <div className="p-2">
+                <Button variant="secondary"
+                  onClick={() => {
+                    layout.addPage(pageNum + 1);
+                    setTimeout(() => {
+                      carouselApi?.scrollTo(pageNum + 1);
+                    }, 0);
+                  }}
+                >
+                  Add Page
                 </Button>
               </div>
             </div>
