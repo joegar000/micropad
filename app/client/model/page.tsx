@@ -16,6 +16,7 @@ export default class PageLayout {
     makeObservable(this, {
       data: observable,
       index: observable,
+      layout: observable,
       widgets: computed,
       placeWidget: action,
       removeWidget: action

@@ -13,12 +13,7 @@ import {
   Button
 } from "micropad-ui";
 import { PageModelContext } from "../../model/page.tsx";
-import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import { type Draggable } from "@dnd-kit/dom";
-import type { CellData } from "../grid/cell";
-import { WidgetContent } from "../grid/widget.tsx";
 import { observer } from "mobx-react-lite";
-import type { IWidget } from "../../../server/db/db.ts";
 import Settings from "../menu/settings.tsx";
 import { useHover } from "../../hooks/hover.tsx";
 import clsx from "clsx";
@@ -26,6 +21,8 @@ import { LayoutModelContext } from "../../model/layout.tsx";
 import LayoutSelector from "../menu/layout-selector.tsx";
 import './styles.css'
 import { useSyncedCarousel } from "../../hooks/synced-carousel.tsx";
+import DragProvider from "./drag-provider.tsx";
+
 
 const App = observer(() => {
   const app = useApp();
@@ -63,43 +60,12 @@ const App = observer(() => {
 
   const layout = app.layoutLookup[currentLayout];
   return (
-    <DragDropProvider
-      onBeforeDragStart={event => {
-        const rect = event.operation.source?.element?.getBoundingClientRect();
-        if (!rect) return;
-        document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
-        document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
-      }}
-      onDragStart={_event => {
-        setIsDragging(true);
-      }}
-      onDragOver={event => {
-        const rect = event.operation.target?.element?.getBoundingClientRect();
-        if (!rect) return;
-        document.body.style.setProperty('--overlay-width', `${rect!.width}px`);
-        document.body.style.setProperty('--overlay-height', `${rect!.height}px`);
-      }}
-      onDragEnd={event => {
-        setIsDragging(false);
-
-        const target = event.operation.target;
-        const source = event.operation.source;
-        if (!target || !source || event.canceled || !carouselApi) return;
-        const { x, y } = target.data as CellData;
-        layout.pages[pageNum].placeWidget(source.data as IWidget, x, y);
-        document.body.style.removeProperty('--overlay-width');
-        document.body.style.removeProperty('--overlay-height');
-      }}
-    >
-      <LayoutModelContext value={layout}>
-        <PageModelContext value={layout.pages[pageNum]}>
-          <DragOverlay>
-            {(source: Draggable<IWidget>) => (
-              <div className="transition-all" style={{ width: 'var(--overlay-width)', height: 'var(--overlay-height)' }}>
-                <WidgetContent {...source.data} />
-              </div>
-            )}
-          </DragOverlay>
+    <LayoutModelContext value={layout}>
+      <PageModelContext value={layout.pages[pageNum]}>
+        <DragProvider
+          onDragStart={() => setIsDragging(true)}
+          onDragEnd={() => setIsDragging(false)}
+        >
           <div className="flex flex-col h-full">
             <div className="py-2 ps-2 flex border-b border-b-secondary">
               <div className="p-2">
@@ -111,19 +77,6 @@ const App = observer(() => {
                   setCurrentLayout(l);
                   setPageNum(0);
                 }} />
-              </div>
-              <div className="p-2 flex">
-                <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
-                  onChange={e => {
-                    layout.pages[pageNum].data.columns = Number(e.target.value);
-                  }}
-                />
-                x
-                <Input className="ms-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.rows}
-                  onChange={e => {
-                    layout.pages[pageNum].data.rows = Number(e.target.value);
-                  }}
-                />
               </div>
               <div className="p-2">
                 <Button variant="destructive" disabled={app.layouts.length === 1}
@@ -150,7 +103,54 @@ const App = observer(() => {
                   {layout.pages.map((page, i) => (
                     <CarouselItem key={i} className="flex items-center justify-center">
                       <PageModelContext value={page}>
-                        <Grid />
+                        <div className="flex flex-col h-full w-full">
+                          <div className="flex justify-center">
+                            <div className="px-2 flex">
+                              <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
+                                onChange={e => {
+                                  page.data.columns = Number(e.target.value);
+                                }}
+                              />
+                              x
+                              <Input className="ms-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.rows}
+                                onChange={e => {
+                                  page.data.rows = Number(e.target.value);
+                                }}
+                              />
+                            </div>
+                            <div className="px-2">
+                              <Button variant="secondary"
+                                onClick={() => {
+                                  layout.addPage(pageNum + 1);
+                                  setTimeout(() => {
+                                    carouselApi?.scrollTo(pageNum + 1);
+                                  }, 0);
+                                }}
+                              >
+                                Add Page
+                              </Button>
+                            </div>
+                            <div className="px-2">
+                              <Button variant="destructive" disabled={layout.pages.length === 1}
+                                onClick={() => {
+                                  if (pageNum === 0) {
+                                    layout.removePage(0);
+                                  } else if (pageNum === layout.pages.length - 1) {
+                                    layout.removePage(pageNum);
+                                    setPageNum(pageNum - 1);
+                                  } else {
+                                    layout.removePage(pageNum);
+                                  }
+                                }}
+                              >
+                                Delete Page
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grow">
+                            <Grid />
+                          </div>
+                        </div>
                       </PageModelContext>
                     </CarouselItem>
                   ))}
@@ -170,36 +170,6 @@ const App = observer(() => {
                 </div>
               </Carousel>
             </div>
-            <div className="flex justify-center">
-              <div className="p-2">
-                <Button variant="destructive" disabled={layout.pages.length === 1}
-                  onClick={() => {
-                    if (pageNum === 0) {
-                      layout.removePage(0);
-                    } else if (pageNum === layout.pages.length - 1) {
-                      layout.removePage(pageNum);
-                      setPageNum(pageNum - 1);
-                    } else {
-                      layout.removePage(pageNum);
-                    }
-                  }}
-                >
-                  Delete Page
-                </Button>
-              </div>
-              <div className="p-2">
-                <Button variant="secondary"
-                  onClick={() => {
-                    layout.addPage(pageNum + 1);
-                    setTimeout(() => {
-                      carouselApi?.scrollTo(pageNum + 1);
-                    }, 0);
-                  }}
-                >
-                  Add Page
-                </Button>
-              </div>
-            </div>
             <div className="mb-2 ms-2 flex justify-center">
               <div className="flex justify-center gap-2 py-2">
                 {layout.pages.map((_, index) => (
@@ -213,9 +183,9 @@ const App = observer(() => {
               </div>
             </div>
           </div>
-        </PageModelContext>
-      </LayoutModelContext>
-    </DragDropProvider>
+        </DragProvider>
+      </PageModelContext>
+    </LayoutModelContext>
   );
 });
 export default App;

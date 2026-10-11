@@ -10,6 +10,7 @@ import { usePage } from "../../model/page.tsx";
 import 'react-resizable/css/styles.css';
 import { useLayout } from "../../model/layout.tsx";
 import useResizeObserver from "../../hooks/resize-observer.tsx";
+import clsx from "clsx";
 
 export const WidgetContent = observer((props: WidgetProps) => {
   const app = useApp();
@@ -57,7 +58,7 @@ const Widget = observer((props: WidgetProps) => {
     setGridCellHeight(entry.contentRect.height);
   }, []));
 
-  const { ref: dragRef, handleRef } = useDraggable<IWidget>({
+  const { ref: dragRef, handleRef, isDragging } = useDraggable<IWidget>({
     id: props.uniqId,
     data: {
       uniqId: props.uniqId,
@@ -77,6 +78,7 @@ const Widget = observer((props: WidgetProps) => {
         }}
       />
       <Resizable
+        className={clsx(isDragging && "invisible")}
         width={width ?? gridCellWidth}
         height={height ?? gridCellHeight}
         onResize={(_event, { size }) => {
