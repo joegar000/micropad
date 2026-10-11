@@ -11,17 +11,25 @@ export default function Cell(props: { x: number, y: number, children?: ReactNode
   const page = usePage();
   const id = `${page.index}: ${props.x},${props.y}`;
   const { source, target } = useDragOperation() as { source?: Draggable<WidgetProps>, target?: Droppable<{ x: number, y: number }> };
+  const sourceCoords = source && page.layout.widgets[source.data.uniqId]?.coords;
+  const width = sourceCoords?.w ?? 1;
+  const height = sourceCoords?.h ?? 1;
   const available = page.cellAvailable(props.x, props.y);
-  const disabled = source ? source.id !== page.widgetAt(props.x, props.y)?.uniqId && !available : !available;
+
+  const outsideGrid = (
+    props.x + width > page.data.columns
+    || props.y + height > page.data.rows
+  );
+  const disabled = (
+    outsideGrid
+    || (source ? source.id !== page.widgetAt(props.x, props.y)?.uniqId && !available : !available)
+  );
   const { ref } = useDroppable<CellData>({
     id,
     data: { x: props.x, y: props.y },
     disabled
   });
 
-  const sourceCoords = source && page.layout.widgets[source.data.uniqId]?.coords;
-  const width = sourceCoords?.w ?? 1;
-  const height = sourceCoords?.h ?? 1;
   const isDropTarget = !!target
     && props.x >= target.data.x
     && props.x < target.data.x + width
