@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 import type LayoutModel from "./layout.tsx";
@@ -7,9 +7,6 @@ export default class PageLayout {
   data: IPage;
   index: number;
   layout: LayoutModel;
-  cellHeight: number = 0;
-  gridHeight: number = 0;
-  gridWidth: number = 0;
 
   constructor(page: IPage, index: number, layout: LayoutModel) {
     this.data = page;
@@ -19,12 +16,22 @@ export default class PageLayout {
     makeObservable(this, {
       data: observable,
       index: observable,
-      cellHeight: observable,
-      gridHeight: observable,
-      gridWidth: observable,
+      widgets: computed,
       placeWidget: action,
       removeWidget: action
     });
+  }
+
+  get widgets() {
+    return Object.keys(this.data.widgets).reduce((acc, uniqId) => {
+      return [
+        ...acc,
+        {
+          widget: this.data.widgets[uniqId],
+          coords: this.data.widgetCoords[uniqId]
+        }
+      ];
+    }, [] as { widget: IPage['widgets'][string], coords: IPage['widgetCoords'][string] }[]);
   }
 
   placeWidget(widget: IWidget, x: number, y: number, w?: number, h?: number): boolean {

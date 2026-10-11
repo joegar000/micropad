@@ -18,6 +18,7 @@ export default class LayoutModel {
       layoutNames: computed,
       pages: computed,
       usedIds: computed,
+      widgets: computed,
       addPage: action,
       removePage: action
     });
@@ -59,6 +60,27 @@ export default class LayoutModel {
       ids.forEach(id => usedIds.add(id));
       return usedIds;
     }, new Set<string>());
+  }
+
+  get widgets() {
+    type W = {
+      coords: Schema['layouts'][number]['pages'][number]['widgetCoords'][string],
+      widget: Schema['layouts'][number]['pages'][number]['widgets'][string],
+      pageNum: number
+    };
+    return this.data.pages.reduce((acc, page, pageNum) => {
+      return {
+        ...acc,
+        ...Object.keys(page.widgets).reduce((acc_, uniqId) => ({
+          ...acc_,
+          [uniqId]: {
+            widget: page.widgets[uniqId],
+            coords: page.widgetCoords[uniqId],
+            pageNum
+          }
+        }), {} as Record<string, W>)
+      };
+    }, {} as Record<string, W>);
   }
 
   addPage(index = Infinity, defaultColumns = 3, defaultRows = 3) {

@@ -19,6 +19,10 @@ export default function Cell(props: { x: number, y: number, children?: ReactNode
     <div
       className={clsx("h-full border", isDropTarget && "bg-card")}
       ref={ref} data-x={props.x} data-y={props.y}
+      style={{
+        gridColumn: props.x + 1,
+        gridRow: props.y + 1
+      }}
     >
       <div className={clsx("h-full", !disabled && "invisible")}>
         {props.children}
