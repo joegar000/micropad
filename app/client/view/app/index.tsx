@@ -67,18 +67,18 @@ const App = observer(() => {
           onDragEnd={() => setIsDragging(false)}
         >
           <div className="flex flex-col h-full">
-            <div className="py-2 ps-2 flex border-b border-b-secondary">
-              <div className="p-2">
+            <div className="py-1 ps-2 flex border-b border-b-secondary">
+              <div className="px-2">
                 <Settings />
               </div>
-              <div className="p-2">
+              <div className="px-2">
                 <LayoutSelector currentLayout={currentLayout} onLayoutChange={(l) => {
                   if (l === null) return;
                   setCurrentLayout(l);
                   setPageNum(0);
                 }} />
               </div>
-              <div className="p-2">
+              <div className="px-2">
                 <Button variant="destructive" disabled={app.layouts.length === 1}
                   onClick={() => {
                     const layoutIndex = app.layoutNames.indexOf(currentLayout);
@@ -92,19 +92,19 @@ const App = observer(() => {
                 </Button>
               </div>
             </div>
-            <div className="flex grow bg-background text-foreground antialiased p-2">
+            <div className="flex grow bg-background text-foreground antialiased pt-1">
               <Carousel className="grow w-full h-full flex flex-row" setApi={setCarouselApi} opts={{ watchDrag: !isDragging }}>
                 <div className={"relative z-1 flex h-full w-10 shrink-0 items-center ps-3"}
                   ref={prevRef}
                 >
                   {pageNum !== 0 && <CarouselPrevious className={clsx("static scale-150", isDragging && "animate-horizontal-bounce-reverse")} />}
                 </div>
-                <CarouselContent>
+                <CarouselContent className="px-2">
                   {layout.pages.map((page, i) => (
                     <CarouselItem key={i} className="flex items-center justify-center">
                       <PageModelContext value={page}>
                         <div className="flex flex-col h-full w-full">
-                          <div className="flex justify-center">
+                          <div className="flex justify-center pb-1">
                             <div className="px-2 flex">
                               <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
                                 onChange={e => {
@@ -170,7 +170,7 @@ const App = observer(() => {
                 </div>
               </Carousel>
             </div>
-            <div className="mb-2 ms-2 flex justify-center">
+            <div className="ms-2 flex justify-center">
               <div className="flex justify-center gap-2 py-2">
                 {layout.pages.map((_, index) => (
                   <button

@@ -13,7 +13,7 @@ const Grid = observer(() => {
 
   return (
     <div
-      className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center overflow-hidden p-6"
+      className="flex h-full w-full min-h-0 min-w-0 flex-col items-center justify-center overflow-hidden p-1"
       style={{ containerType: "size" }}
     >
       <div
