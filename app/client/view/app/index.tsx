@@ -8,7 +8,6 @@ import {
   type CarouselApi,
   CarouselNext,
   CarouselPrevious,
-  Input,
   CarouselAdd,
   Button
 } from "micropad-ui";
@@ -22,6 +21,7 @@ import LayoutSelector from "../menu/layout-selector.tsx";
 import './styles.css'
 import { useSyncedCarousel } from "../../hooks/synced-carousel.tsx";
 import DragProvider from "./drag-provider.tsx";
+import PageMenu from "../menu/page.tsx";
 
 
 const App = observer(() => {
@@ -105,47 +105,7 @@ const App = observer(() => {
                       <PageModelContext value={page}>
                         <div className="flex flex-col h-full w-full">
                           <div className="flex justify-center pb-1">
-                            <div className="px-2 flex">
-                              <Input className="me-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.columns}
-                                onChange={e => {
-                                  page.data.columns = Number(e.target.value);
-                                }}
-                              />
-                              x
-                              <Input className="ms-1" type="number" min={1} max={25} value={layout.pages[pageNum].data.rows}
-                                onChange={e => {
-                                  page.data.rows = Number(e.target.value);
-                                }}
-                              />
-                            </div>
-                            <div className="px-2">
-                              <Button variant="secondary"
-                                onClick={() => {
-                                  layout.addPage(pageNum + 1);
-                                  setTimeout(() => {
-                                    carouselApi?.scrollTo(pageNum + 1);
-                                  }, 0);
-                                }}
-                              >
-                                Add Page
-                              </Button>
-                            </div>
-                            <div className="px-2">
-                              <Button variant="destructive" disabled={layout.pages.length === 1}
-                                onClick={() => {
-                                  if (pageNum === 0) {
-                                    layout.removePage(0);
-                                  } else if (pageNum === layout.pages.length - 1) {
-                                    layout.removePage(pageNum);
-                                    setPageNum(pageNum - 1);
-                                  } else {
-                                    layout.removePage(pageNum);
-                                  }
-                                }}
-                              >
-                                Delete Page
-                              </Button>
-                            </div>
+                            <PageMenu />
                           </div>
                           <div className="grow">
                             <Grid />
