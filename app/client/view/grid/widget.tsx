@@ -25,7 +25,7 @@ export const WidgetContent = observer((props: WidgetProps) => {
 
   return (
     <div
-      className="w-full h-full flex justify-center items-center border border-ring aspect-square p-1 rounded bg-secondary"
+      className="w-full h-full flex justify-center items-center border border-ring p-1 rounded bg-secondary"
       ref={ref}
     />
   );
@@ -82,6 +82,13 @@ const Widget = observer((props: WidgetProps) => {
         width={width ?? gridCellWidth}
         height={height ?? gridCellHeight}
         onResize={(_event, { size }) => {
+          page.placeWidget(
+            props,
+            coords.x,
+            coords.y,
+            Math.round(size.width / original),
+            Math.round(size.height / original)
+          );
           setWidth(size.width);
           setHeight(size.height);
         }}
@@ -106,7 +113,7 @@ const Widget = observer((props: WidgetProps) => {
         }}
       >
         <div
-          className="h-full relative"
+          className="h-full relative transition-all"
           ref={node => {
             gridCellRef.current = node;
             dragRef(node);
@@ -117,12 +124,13 @@ const Widget = observer((props: WidgetProps) => {
             gridRow: `${coords.y + 1} / span ${coords.h}`
           }}
         >
-          <div className="min-h-full min-w-full absolute" ref={handleRef} style={{
-            minHeight: original,
-            minWidth: original,
-            width: width ?? '100%',
-            height: height ?? '100%'
-          }}>
+          {resizing && <div className="absolute border-2 border-dashed border-ring rounded z-1"
+            style={{
+              width: width ?? gridCellWidth,
+              height: height ?? gridCellHeight
+            }}
+          />}
+          <div className="h-full w-full" ref={handleRef}>
             <WidgetContent {...props} />
           </div>
         </div>
@@ -147,7 +155,7 @@ export const PreviewWidget = observer((props: WidgetProps) => {
   return (
     <div
       className="h-full w-full"
-      style={{ width: `${100 * w}%`, height: `${100 * h}%` }}
+      style={{ width: `${100 * w}%`, height: `${100 * h}%`, aspectRatio: 1 }}
       ref={dragRef}
       data-uniq-id={props.uniqId}
     >
