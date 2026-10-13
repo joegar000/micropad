@@ -1,9 +1,9 @@
 {
-  "id": "volume",
-  "name": "Volume",
+  "id": "media",
+  "name": "Media",
   "version": "1.0.0",
   "minAppVersion": "1.0.0",
-  "description": "System volume controls.",
+  "description": "System media and volume controls.",
   "author": "David Garcia",
   "entrypoints": {
     "server": "dist/server.js",
