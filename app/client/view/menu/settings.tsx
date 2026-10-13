@@ -28,6 +28,7 @@ const Settings = observer(() => {
   const app = useApp();
   const layout = useLayout();
   const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState<string>('device-settings');
   const isDragging = !!useDragOperation().source;
   const displayWidgets = useMemo(() => {
     const usedIds = new Set<string>();
@@ -52,8 +53,11 @@ const Settings = observer(() => {
         <DialogContent className="sm:max-w-4xl" keepMounted={isDragging}>
           <DialogTitle>Menu</DialogTitle>
           <div className="flex justify-between">
-            <Tabs orientation="vertical" className="pb-2">
+            <Tabs orientation="vertical" className="pb-2 grow" value={value} onValueChange={setValue}>
               <TabsList variant="line">
+                <TabsTrigger className="ps-0" value={"device-settings"}>
+                  <TabsHeader>Device Settings</TabsHeader>
+                </TabsTrigger>
                 <TabsHeader>Plugins</TabsHeader>
                 {app.plugins.map(p => {
                   return (
@@ -63,10 +67,15 @@ const Settings = observer(() => {
                   );
                 })}
               </TabsList>
+              <TabsContent className="ps-4" value="device-settings">
+                hi
+              </TabsContent>
               {app.plugins.map(p => (
-                <TabsContent className="ps-4" value={p.displayName}>
+                <TabsContent className="ps-4 flex flex-wrap gap-3" value={p.displayName}>
                   {displayWidgets.get(p)!.map(w => (
-                    <PreviewWidget {...w} />
+                    <div key={w.uniqId} style={{ width: '8rem' }}>
+                      <PreviewWidget {...w} />
+                    </div>
                   ))}
                 </TabsContent>
               ))}

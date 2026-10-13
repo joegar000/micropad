@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../../plugins/media/src";
 
 body {
   height: 100vh;

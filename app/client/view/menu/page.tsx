@@ -1,11 +1,10 @@
-import { Button, Input, useCarousel } from "micropad-ui";
+import { Button, Input, type CarouselApi } from "micropad-ui";
 import { usePage } from "../../model/page";
 import { observer } from "mobx-react-lite";
 
 
-const PageMenu = observer(() => {
+const PageMenu = observer((props: { carouselApi?: CarouselApi | null }) => {
   const page = usePage();
-  const { api: carouselApi } = useCarousel();
   return (
     <>
       <div className="px-2 flex">
@@ -26,7 +25,7 @@ const PageMenu = observer(() => {
           onClick={() => {
             page.layout.addPage(page.index + 1);
             setTimeout(() => {
-              carouselApi?.scrollTo(page.index + 1);
+              props.carouselApi?.scrollTo(page.index + 1);
             }, 0);
           }}
         >
@@ -40,7 +39,7 @@ const PageMenu = observer(() => {
               page.layout.removePage(0);
             } else if (page.index === page.layout.pages.length - 1) {
               page.layout.removePage(page.index);
-              carouselApi?.scrollTo(page.index - 1, true);
+              props.carouselApi?.scrollTo(page.index - 1, true);
             } else {
               page.layout.removePage(page.index);
             }

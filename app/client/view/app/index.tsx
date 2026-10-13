@@ -67,18 +67,23 @@ const App = observer(() => {
           onDragEnd={() => setIsDragging(false)}
         >
           <div className="flex flex-col h-full">
-            <div className="py-1 ps-2 flex border-b border-b-secondary">
-              <div className="px-2">
-                <Settings />
+            <div className="py-1 ps-2 flex border-b border-b-secondary justify-around">
+              <div className="px-2 flex grow">
+                <div className="pe-2">
+                  <Settings />
+                </div>
+                <div className="px-2">
+                  <LayoutSelector currentLayout={currentLayout} onLayoutChange={(l) => {
+                    if (l === null) return;
+                    setCurrentLayout(l);
+                    setPageNum(0);
+                  }} />
+                </div>
               </div>
-              <div className="px-2">
-                <LayoutSelector currentLayout={currentLayout} onLayoutChange={(l) => {
-                  if (l === null) return;
-                  setCurrentLayout(l);
-                  setPageNum(0);
-                }} />
+              <div className="px-2 flex">
+                <PageMenu carouselApi={carouselApi} />
               </div>
-              <div className="px-2">
+              <div className="px-2 flex justify-end grow">
                 <Button variant="destructive" disabled={app.layouts.length === 1}
                   onClick={() => {
                     const layoutIndex = app.layoutNames.indexOf(currentLayout);
@@ -104,9 +109,6 @@ const App = observer(() => {
                     <CarouselItem key={i} className="flex items-center justify-center">
                       <PageModelContext value={page}>
                         <div className="flex flex-col h-full w-full">
-                          <div className="flex justify-center pb-1">
-                            <PageMenu />
-                          </div>
                           <div className="grow">
                             <Grid />
                           </div>
