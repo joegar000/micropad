@@ -33,26 +33,50 @@ export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any>
   public readonly data: D;
   private type: T;
   private sockets = new Map<Socket, () => void>();
+  private originSocket: Socket | null = null;
 
   private constructor(namespace: string, type: T) {
     this.namespace = namespace;
     this.type = type;
     this.data = observable(type === 'obj' ? {} as Record<string, any> : [] as any);
+    this.lock = this.lock.bind(this);
+
+    reaction(
+      () => toJS(this.data),
+      (current, previous) => {
+        const payload = {
+          patches: jsonpatch.compare(previous, current)
+        } as Write;
+        for (const socket of this.sockets.keys()) {
+          if (socket === this.originSocket) continue
+          socket.emit(`bridge:${this.namespace}:write`, payload);
+        }
+      }
+    );
+  }
+
+  lock(socket: Socket, cb: (...args: any[]) => void) {
+    return (...args: any[]) => {
+      this.originSocket = socket;
+      try {
+        return cb(...args);
+      } finally {
+        this.originSocket = null;
+      }
+    }
   }
 
   attach(socket: Socket) {
     if (this.sockets.has(socket)) return;
-    let applyingPatches = 0;
 
-    const snapshot = (ack: (r: Snapshot) => void) => {
+    const snapshot = this.lock(socket, (ack: (r: Snapshot) => void) => {
       ack({
         status: 'ok',
         body: toJS(this.data)
       });
-    }
+    });
 
-    const write = (payload: Write, ack: (r: WriteResult) => void) => {
-      applyingPatches++;
+    const write = this.lock(socket, (payload: Write, ack: (r: WriteResult) => void) => {
       try {
         runInAction(() => {
           jsonpatch.applyPatch(this.data, payload.patches, true);
@@ -60,31 +84,16 @@ export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any>
         ack({ status: 'ok' } as WriteResult);
       } catch (e: any) {
         ack({ status: 'invalid', body: toJS(this.data) } as WriteResult);
-      } finally {
-        applyingPatches--;
       }
-    }
+    });
 
 
     socket.on(`bridge:${this.namespace}:snapshot`, snapshot);
     socket.on(`bridge:${this.namespace}:write`, write);
 
-    const disposer = reaction(
-      () => toJS(this.data),
-      (current, previous) => {
-        if (!applyingPatches) {
-          socket.emit(
-            `bridge:${this.namespace}:write`,
-            { patches: jsonpatch.compare(previous, current) } as Write
-          );
-        }
-      }
-    );
-
     this.sockets.set(socket, () => {
       socket.off(`bridge:${this.namespace}:snapshot`, snapshot);
       socket.off(`bridge:${this.namespace}:write`, write);
-      disposer();
     });
 
     return this.sockets.get(socket)!
