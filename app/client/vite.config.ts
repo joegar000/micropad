@@ -15,6 +15,7 @@ export default defineConfig({
       imports: [
         "micropad-sdk/client",
         "mobx",
+        "mobx-react-lite",
         "react",
         "react-dom"
       ]

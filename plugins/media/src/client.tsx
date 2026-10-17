@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ClientPlugin, Widget } from "micropad-sdk/client";
-import { autorun, runInAction } from "mobx";
+import { ClientPlugin, ClientSignal, Widget } from "micropad-sdk/client";
 import { clamp } from "es-toolkit";
 import { Button } from "../../../ui/src/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -15,12 +13,13 @@ import VolumeMinusIcon from "@hugeicons/core-free-icons/VolumeMinusIcon";
 import VolumeMute01Icon from "@hugeicons/core-free-icons/VolumeMute01Icon";
 import VolumeUpIcon from "@hugeicons/core-free-icons/VolumeUpIcon";
 import type { MediaState } from "./state";
+import { observer } from "mobx-react-lite";
+import { runInAction } from "mobx";
 
-type MediaProps = { state: MediaState };
+type MediaProps = { context: MediaState<ClientSignal> };
 
-function VolumeSlider({ state }: MediaProps) {
-  const [volume, setVolume] = useState(() => state.volume ?? 0);
-  useEffect(() => autorun(() => setVolume(state.volume ?? 0)), [state]);
+const VolumeSlider = observer(({ context }: MediaProps) => {
+  const volume = context.runtimeState.volume ?? 0;
 
   return (
     <input
@@ -32,19 +31,17 @@ function VolumeSlider({ state }: MediaProps) {
       aria-orientation="vertical"
       aria-valuetext={`${volume}%`}
       className="h-[calc(100%-1rem)] min-h-0 w-7 cursor-pointer accent-primary [direction:rtl] [writing-mode:vertical-lr]"
-      onPointerDown={(event) => event.stopPropagation()}
-      onChange={(event) =>
+      onChange={(event) => {
         runInAction(() => {
-          state.volume = clamp(event.currentTarget.valueAsNumber, 0, 100);
-        })
-      }
+          context.runtimeState.volume = clamp(event.currentTarget.valueAsNumber, 0, 100);
+        });
+      }}
     />
   );
-}
+});
 
-function PlayPause({ state }: MediaProps) {
-  const [playing, setPlaying] = useState(() => state.playing ?? false);
-  useEffect(() => autorun(() => setPlaying(state.playing ?? false)), [state]);
+const PlayPause = observer(({ context }: MediaProps) => {
+  const playing = context.runtimeState.playing ?? false;
 
   return (
     <Button
@@ -53,12 +50,11 @@ function PlayPause({ state }: MediaProps) {
       aria-label={playing ? "Pause" : "Play"}
       aria-pressed={playing}
       title={playing ? "Pause" : "Play"}
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
+      onClick={() => {
         runInAction(() => {
-          state.command = { id: crypto.randomUUID(), action: "playPause" };
-        })
-      }
+          context.runtimeState.playing = !playing;
+        });
+      }}
     >
       <HugeiconsIcon
         icon={PlayIcon}
@@ -66,13 +62,12 @@ function PlayPause({ state }: MediaProps) {
         showAlt={playing}
         strokeWidth={2}
       />
-    </Button>
+    </Button >
   );
-}
+});
 
-function Mute({ state }: MediaProps) {
-  const [muted, setMuted] = useState(() => state.muted ?? false);
-  useEffect(() => autorun(() => setMuted(state.muted ?? false)), [state]);
+const Mute = observer(({ context }: MediaProps) => {
+  const muted = context.runtimeState.muted ?? false;
 
   return (
     <Button
@@ -82,12 +77,11 @@ function Mute({ state }: MediaProps) {
       aria-label={muted ? "Unmute" : "Mute"}
       aria-pressed={muted}
       title={muted ? "Unmute" : "Mute"}
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
+      onClick={() => {
         runInAction(() => {
-          state.muted = !state.muted;
-        })
-      }
+          context.runtimeState.muted = !muted;
+        });
+      }}
     >
       <HugeiconsIcon
         icon={VolumeHighIcon}
@@ -97,9 +91,9 @@ function Mute({ state }: MediaProps) {
       />
     </Button>
   );
-}
+});
 
-function Next({ state }: MediaProps) {
+const Next = observer(({ context }: MediaProps) => {
   return (
     <Button
       type="button"
@@ -107,19 +101,16 @@ function Next({ state }: MediaProps) {
       size="icon-lg"
       aria-label="Next"
       title="Next"
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
-        runInAction(() => {
-          state.command = { id: crypto.randomUUID(), action: "next" };
-        })
-      }
+      onClick={() => {
+        context.signal.send('next');
+      }}
     >
       <HugeiconsIcon icon={NextIcon} strokeWidth={2} />
-    </Button>
+    </Button >
   );
-}
+});
 
-function Previous({ state }: MediaProps) {
+const Previous = observer(({ context }: MediaProps) => {
   return (
     <Button
       type="button"
@@ -127,19 +118,16 @@ function Previous({ state }: MediaProps) {
       size="icon-lg"
       aria-label="Previous"
       title="Previous"
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
-        runInAction(() => {
-          state.command = { id: crypto.randomUUID(), action: "previous" };
-        })
-      }
+      onClick={() => {
+        context.signal.send('previous');
+      }}
     >
       <HugeiconsIcon icon={PreviousIcon} strokeWidth={2} />
     </Button>
   );
-}
+});
 
-function VolumeUp({ state }: MediaProps) {
+const VolumeUp = observer(({ context }: MediaProps) => {
   return (
     <Button
       type="button"
@@ -147,19 +135,16 @@ function VolumeUp({ state }: MediaProps) {
       size="icon-lg"
       aria-label="Volume up"
       title="Volume up"
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
-        runInAction(() => {
-          state.volume = clamp((state.volume ?? 0) + 5, 0, 100);
-        })
-      }
+      onClick={() => {
+        context.signal.send('volumeUp', 5);
+      }}
     >
       <HugeiconsIcon icon={VolumeUpIcon} strokeWidth={2} />
     </Button>
   );
-}
+});
 
-function VolumeDown({ state }: MediaProps) {
+const VolumeDown = observer(({ context }: MediaProps) => {
   return (
     <Button
       type="button"
@@ -167,17 +152,14 @@ function VolumeDown({ state }: MediaProps) {
       size="icon-lg"
       aria-label="Volume down"
       title="Volume down"
-      onPointerDown={(event) => event.stopPropagation()}
-      onClick={() =>
-        runInAction(() => {
-          state.volume = clamp((state.volume ?? 0) - 5, 0, 100);
-        })
-      }
+      onClick={() => {
+        context.signal.send('volumeDown', 5);
+      }}
     >
       <HugeiconsIcon icon={VolumeMinusIcon} strokeWidth={2} />
     </Button>
   );
-}
+});
 
 function renderComponent(component: ReactNode) {
   const container = document.createElement("div");
@@ -193,45 +175,43 @@ export default class MediaPlugin extends ClientPlugin {
     volume: class extends Widget {
       displayName = "Volume";
       get dom() {
-        return renderComponent(
-          <VolumeSlider state={this.context.runtimeState} />,
-        );
+        return renderComponent(<VolumeSlider context={this.context} />);
       }
     },
     playPause: class extends Widget {
       displayName = "Play / Pause";
       get dom() {
-        return renderComponent(<PlayPause state={this.context.runtimeState} />);
+        return renderComponent(<PlayPause context={this.context} />);
       }
     },
     next: class extends Widget {
       displayName = "Next";
       get dom() {
-        return renderComponent(<Next state={this.context.runtimeState} />);
+        return renderComponent(<Next context={this.context} />);
       }
     },
     previous: class extends Widget {
       displayName = "Previous";
       get dom() {
-        return renderComponent(<Previous state={this.context.runtimeState} />);
+        return renderComponent(<Previous context={this.context} />);
       }
     },
     mute: class extends Widget {
       displayName = "Mute";
       get dom() {
-        return renderComponent(<Mute state={this.context.runtimeState} />);
+        return renderComponent(<Mute context={this.context} />);
       }
     },
     volumeUp: class extends Widget {
       displayName = "Volume up";
       get dom() {
-        return renderComponent(<VolumeUp state={this.context.runtimeState} />);
+        return renderComponent(<VolumeUp context={this.context} />);
       }
     },
     volumeDown: class extends Widget {
       displayName = "Volume down";
       get dom() {
-        return renderComponent(<VolumeDown state={this.context.runtimeState} />);
+        return renderComponent(<VolumeDown context={this.context} />);
       }
     },
   };

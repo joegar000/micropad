@@ -4,6 +4,8 @@ import type { Socket } from "socket.io-client";
 import * as jsonpatch from "fast-json-patch";
 import { type Snapshot, type Write, type WriteResult, singleflight } from "../shared";
 
+const SOCKET_TIMEOUT = 30000;
+
 export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any> | any[] = T extends 'obj' ? Record<string, any> : any[]> {
   private static bridges = new Map<
     Socket,
@@ -46,7 +48,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
 
   private static async getSnapshot(socket: Socket, namespace: string) {
     return await new Promise<Snapshot['body']>((resolve, reject) => {
-      socket.timeout(5000).emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
+      socket.timeout(SOCKET_TIMEOUT).emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
         if (err) {
           console.error(err);
           reject(`Failed to get snapshot for namespace ${namespace}`);
@@ -97,7 +99,7 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
           if (!this.applyingPatches) {
             const patches = jsonpatch.compare(previous, current);
             if (!patches.length) return;
-            socket.timeout(5000).emit(
+            socket.timeout(SOCKET_TIMEOUT).emit(
               `bridge:${namespace}:write`,
               { patches } as Write,
               (err: boolean, ack: WriteResult) => {
@@ -144,5 +146,11 @@ export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any>
 
   public dispose() {
     this.cleanup?.();
+  }
+
+  safeEdit(cb: (data: D) => void) {
+    runInAction(() => {
+      cb(this.data);
+    });
   }
 }

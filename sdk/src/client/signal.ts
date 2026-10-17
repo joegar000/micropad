@@ -1,3 +1,4 @@
+import { runInAction } from "mobx";
 import { Socket } from "socket.io-client"
 
 export class ClientSignal {
@@ -9,29 +10,31 @@ export class ClientSignal {
         namespace, new ClientSignal(socket, namespace)
       );
     }
-    return this.signals.get(socket)!.get(namespace);
+    return this.signals.get(socket)!.get(namespace)!;
 
   }
 
   public readonly socket: Socket;
   public readonly namespace: string;
-  private listeners: Map<string, ((payload: unknown) => void)[]>;
+  private listeners: Map<string, ((payload?: unknown) => void)[]>;
 
   private constructor(socket: Socket, namespace: string) {
     this.socket = socket;
     this.namespace = namespace;
     this.listeners = new Map();
-    this.socket.onAny((topEvent: string, payload: unknown) => {
+    this.socket.onAny((topEvent: string, payload?: unknown) => {
       if (topEvent.indexOf(`signal:${this.namespace}:`) !== 0) return;
       const eventName = topEvent.replace(`signal:${this.namespace}:`, '');
       const cbs = this.listeners.get(eventName);
       for (const cb of (cbs ?? [])) {
-        cb(payload);
+        runInAction(() => {
+          cb(payload);
+        });
       }
     });
   }
 
-  on(eventName: string, cb: (payload: unknown) => void) {
+  on(eventName: string, cb: (payload?: unknown) => void) {
     let existing = this.listeners.get(eventName);
     if (existing) {
       existing.push(cb);
@@ -44,16 +47,16 @@ export class ClientSignal {
     }
   }
 
-  off(eventName: string, cb: (payload: unknown) => void) {
-   const existing = this.listeners.get(eventName);
-   const index = existing?.indexOf(cb);
-   if (existing && index !== undefined && index !== -1)
-     existing.splice(index, 1);
-   if (!existing || existing.length === 0)
-     this.listeners.delete(eventName);
+  off(eventName: string, cb: (payload?: unknown) => void) {
+    const existing = this.listeners.get(eventName);
+    const index = existing?.indexOf(cb);
+    if (existing && index !== undefined && index !== -1)
+      existing.splice(index, 1);
+    if (!existing || existing.length === 0)
+      this.listeners.delete(eventName);
   }
 
-  send(eventName: string, payload: any) {
+  send(eventName: string, payload?: any) {
     this.socket.emit(`signal:${this.namespace}:${eventName}`, payload);
   }
 

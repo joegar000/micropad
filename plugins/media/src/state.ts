@@ -1,8 +1,8 @@
-export type MediaAction = "playPause" | "next" | "previous";
-
-export type MediaState = {
-  volume?: number;
-  muted?: boolean;
-  playing?: boolean;
-  command?: { id: string; action: MediaAction };
+export type MediaState<Signal> = {
+  runtimeState: {
+    volume?: number;
+    muted?: boolean;
+    playing?: boolean;
+  },
+  signal: Signal;
 };

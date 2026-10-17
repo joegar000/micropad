@@ -3,22 +3,22 @@ import type { IRuntimeState, IPreservedState } from "micropad-sdk/shared";
 import { DB } from "../db/db.ts";
 import { reaction, runInAction } from "mobx";
 import { clone } from "es-toolkit/compat";
-import { ServerBridge } from "micropad-sdk/server";
+import { ServerBridge, ServerSignal } from "micropad-sdk/server";
 
-export function runtimeState(socket: Socket, pluginName: string): IRuntimeState {
-  const bridge = ServerBridge.get<IRuntimeState>(`runtime:${pluginName}`);
+export function runtimeState(socket: Socket, pluginId: string): IRuntimeState {
+  const bridge = ServerBridge.get<IRuntimeState>(`runtime:${pluginId}`);
   bridge.attach(socket);
   return bridge.data;
 }
 
-export function preservedState(socket: Socket, pluginName: string): IPreservedState {
+export function preservedState(socket: Socket, pluginId: string): IPreservedState {
   runInAction(() => {
     DB.data.pluginState ??= {};
-    DB.data.pluginState[pluginName] ??= {};
+    DB.data.pluginState[pluginId] ??= {};
   });
 
-  const pluginState = DB.data.pluginState![pluginName];
-  const bridge = ServerBridge.get<IPreservedState>(`db:${pluginName}`);
+  const pluginState = DB.data.pluginState![pluginId];
+  const bridge = ServerBridge.get<IPreservedState>(`db:${pluginId}`);
   runInAction(() => {
     for (const key of Object.keys(bridge.data)) {
       delete bridge.data[key];
@@ -32,7 +32,7 @@ export function preservedState(socket: Socket, pluginName: string): IPreservedSt
   reaction(
     () => JSON.stringify(bridge.data),
     () => {
-      DB.data.pluginState![pluginName] = clone(bridge.data);
+      DB.data.pluginState![pluginId] = clone(bridge.data);
     }
   );
 
@@ -44,9 +44,11 @@ export function preservedState(socket: Socket, pluginName: string): IPreservedSt
 export class ServerPluginContext {
   runtimeState: IRuntimeState;
   preservedState: IPreservedState;
+  signal: ServerSignal
 
-  constructor(socket: Socket, pluginName: string) {
-    this.runtimeState = runtimeState(socket, pluginName);
-    this.preservedState = preservedState(socket, pluginName);
+  constructor(socket: Socket, pluginId: string) {
+    this.runtimeState = runtimeState(socket, pluginId);
+    this.preservedState = preservedState(socket, pluginId);
+    this.signal = ServerSignal.get(pluginId);
   }
 }

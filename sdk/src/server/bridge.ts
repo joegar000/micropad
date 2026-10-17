@@ -103,5 +103,11 @@ export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any>
     this.sockets.get(socket)?.();
     this.sockets.delete(socket);
   }
+
+  safeEdit(cb: (data: D) => void) {
+    runInAction(() => {
+      cb(this.data);
+    });
+  }
 }
 
