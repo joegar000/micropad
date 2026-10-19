@@ -36,7 +36,7 @@ export class ClientSignal {
 
   on(eventName: string, cb: (payload?: unknown) => void) {
     let existing = this.listeners.get(eventName);
-    if (existing) {
+    if (existing && !existing.includes(cb)) {
       existing.push(cb);
     } else {
       existing = [cb];

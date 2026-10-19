@@ -22,10 +22,13 @@ export class ServerSignal {
 
   on(eventName: string, cb: (payload?: unknown) => void) {
     let existing = this.listeners.get(eventName);
-    if (existing)
+    if (existing && !existing.includes(cb)) {
       existing.push(cb);
-    else
+    } else {
       existing = [cb];
+    }
+    this.listeners.set(eventName, existing);
+
     return () => {
       this.off(eventName, cb);
     }
@@ -58,6 +61,7 @@ export class ServerSignal {
     };
 
     socket.onAny(callback);
+    return this;
   }
 
   detach(socket: Socket) {
@@ -65,5 +69,6 @@ export class ServerSignal {
     if (callback) {
       socket.offAny(callback);
     }
+    return this;
   }
 }
