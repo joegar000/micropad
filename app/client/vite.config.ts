@@ -17,7 +17,9 @@ export default defineConfig({
         "mobx",
         "mobx-react-lite",
         "react",
-        "react-dom"
+        "react/jsx-runtime",
+        "react-dom",
+        "react-dom/client"
       ]
     })
   ],
