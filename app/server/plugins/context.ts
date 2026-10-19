@@ -49,6 +49,6 @@ export class ServerPluginContext {
   constructor(socket: Socket, pluginId: string) {
     this.runtimeState = runtimeState(socket, pluginId);
     this.preservedState = preservedState(socket, pluginId);
-    this.signal = ServerSignal.get(pluginId);
+    this.signal = ServerSignal.get(pluginId).attach(socket);
   }
 }
