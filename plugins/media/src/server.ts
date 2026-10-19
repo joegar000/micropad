@@ -6,8 +6,8 @@ import {
 import { autorun, runInAction } from "mobx";
 import loudness from "loudness";
 import { percentToVolume, PulseAudio, volumeToPercent } from "pulseaudio.js";
-import { Mutex, clamp, isNotNil, noop } from "es-toolkit";
-import { NowPlaying } from "node-nowplaying";
+import { Mutex, clamp, isNotNil } from "es-toolkit";
+import { NowPlaying, type NowPlayingMessage } from "node-nowplaying";
 import type { MediaState } from "./state";
 
 class VolumeController {
@@ -72,15 +72,44 @@ class VolumeController {
   }
 }
 
-const volumeController = VolumeController.getInstance();
+class MediaController {
+  private static readonly instance = new MediaController();
 
-export default class VolumePlugin extends ServerPlugin {
+  private subscribers: ((m: NowPlayingMessage) => void)[] = [];
+
+  public static getInstance() {
+    return this.instance;
+  }
+
+  nowPlaying: NowPlaying;
+  constructor() {
+    this.nowPlaying = new NowPlaying(m => {
+      this.subscribers.forEach(s => s(m));
+    });
+    this.nowPlaying.subscribe();
+  }
+
+  onMediaChange(cb: (m: NowPlayingMessage) => void) {
+    this.subscribers.push(cb);
+    return () => {
+      this.offMediaChange(cb);
+    };
+  }
+
+  offMediaChange(cb: (m: NowPlayingMessage) => void) {
+    this.subscribers = this.subscribers.filter(cb_ => cb !== cb_);
+  }
+}
+
+const volumeController = VolumeController.getInstance();
+const mediaController = MediaController.getInstance();
+
+export default class MediaPlugin extends ServerPlugin {
   pluginName = "media";
 
   async init(ctx: MediaState<ServerSignal>): Promise<void> {
     runInAction(() => {
       ctx.runtimeState.volume ??= 0;
-      ctx.runtimeState.playing ??= false;
       ctx.runtimeState.muted ??= false;
     });
 
@@ -104,7 +133,9 @@ export default class VolumePlugin extends ServerPlugin {
     const syncVolume = async () => {
       const v = await volumeController.getVolume();
       if (ctx.runtimeState.volume !== v) {
-        ctx.runtimeState.volume = v;
+        runInAction(() => {
+          ctx.runtimeState.volume = v;
+        });
       }
       setTimeout(syncVolume, 200);
     };
@@ -112,21 +143,13 @@ export default class VolumePlugin extends ServerPlugin {
     syncVolume();
 
 
-    // Media controls
-    const nowPlaying = new NowPlaying(m => {
-      ctx.runtimeState.playing ??= m.isPlaying;
-    });
-
-    await nowPlaying.unsubscribe();
-
-    await nowPlaying.subscribe();
-
+    // media controls
     ctx.signal.on('next', () => {
-      nowPlaying.nextTrack();
+      mediaController.nowPlaying.nextTrack();
     });
 
     ctx.signal.on('previous', () => {
-      nowPlaying.previousTrack();
+      mediaController.nowPlaying.previousTrack();
     });
 
 
@@ -138,9 +161,9 @@ export default class VolumePlugin extends ServerPlugin {
 
     autorun(() => {
       if (ctx.runtimeState.playing === true)
-        nowPlaying.play();
+        mediaController.nowPlaying.play();
       else if (ctx.runtimeState.playing === false)
-        nowPlaying.pause();
+        mediaController.nowPlaying.pause();
     });
 
     autorun(() => {
