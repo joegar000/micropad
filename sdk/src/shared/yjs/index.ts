@@ -53,4 +53,5 @@ export { wrappedBindMap as bindMap, wrappedBindArray as bindArray };
 export { bindMap as _bindMap, bindArray as _bindArray };
 export { $Y } from './symbol.ts';
 export type * from './types.ts';
+export * from './mobxify.ts';
 

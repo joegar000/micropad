@@ -2,7 +2,7 @@ import { $Y } from "./symbol.ts";
 import type { BindContext, BoundArray, JSON, JSONArray, YJSON } from "./types.ts";
 import * as Y from "yjs";
 
-function toInteger(value: unknown): number {
+export function toInteger(value: unknown): number {
   const number = Number(value);
 
   if (Number.isNaN(number) || number === 0)
@@ -14,7 +14,7 @@ function toInteger(value: unknown): number {
   return Math.trunc(number);
 }
 
-function normalizeIndex(value: unknown, length: number): number {
+export function normalizeIndex(value: unknown, length: number): number {
   const index = toInteger(value);
 
   if (index < 0)
@@ -23,7 +23,7 @@ function normalizeIndex(value: unknown, length: number): number {
   return Math.min(index, length);
 }
 
-function getArrayIndex(property: string | symbol): number | undefined {
+export function getArrayIndex(property: string | symbol): number | undefined {
   if (typeof property !== 'string')
     return undefined;
 
@@ -228,6 +228,9 @@ export function bindArray<R extends JSON = JSON>(
       const i = getArrayIndex(p);
       if (i !== undefined)
         return i < y.length;
+
+      if (p === $Y)
+        return true;
 
       return Reflect.has(target, p);
     },

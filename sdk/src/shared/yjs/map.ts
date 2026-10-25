@@ -25,7 +25,7 @@ export function bindMap<R extends JSONObject = JSONObject>(
       return Reflect.get(target, p);
     },
     has(_target, p) {
-      return typeof p === 'string' && y.has(p);
+      return typeof p === 'string' ? y.has(p) : p === $Y;
     },
     set(_target, p, newValue, _receiver) {
       if (typeof p === 'symbol')
