@@ -1,8 +1,32 @@
 import { observable, reaction, runInAction, toJS } from "mobx";
-import type { Socket } from "socket.io";
+import type { Socket, Server } from "socket.io";
 import * as jsonpatch from "fast-json-patch";
 import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
 import { invariant } from "es-toolkit";
+import * as Y from 'yjs';
+
+export function sync(io: Server, doc: Y.Doc) {
+  const sockets = new Set<Socket>();
+  io.on('connection', socket => {
+    sockets.add(socket);
+
+    socket.on('yjs:update', (update: Uint8Array) => {
+      Y.applyUpdate(doc, update);
+      socket.broadcast.emit('yjs:update', update);
+    });
+
+    socket.on('disconnect', () => {
+      sockets.delete(socket);
+    });
+  });
+
+  doc.on('update', (update) => {
+    sockets.forEach(socket => {
+      socket.emit('yjs:update', update);
+    });
+  });
+  return doc;
+}
 
 export class ServerBridge<T extends 'obj' | 'arr', D extends Record<string, any> | any[] = T extends 'obj' ? Record<string, any> : any[]> {
   private static bridges = new Map<string, ServerBridge<any>>();

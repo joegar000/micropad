@@ -1,4 +1,4 @@
 export * from './state.ts';
 export * from "./bridge/protocol.ts";
 export * from "./util";
-export * from "./yjs";
+export * from "./yjs/index.ts";
