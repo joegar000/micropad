@@ -3,10 +3,10 @@ import path from 'node:path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { plugins } from './plugins/loader.ts';
-import { syncLayout } from './layout.ts';
-import { sync } from 'micropad-sdk/server';
+import { sync, ServerSignal } from 'micropad-sdk/server';
 import * as Y from 'yjs';
 import { DB } from './db/db.ts';
+import { mobxify, bindMap } from 'micropad-sdk/shared';
 
 
 const app: Express = express();
@@ -22,20 +22,19 @@ const doc = sync(io, new Y.Doc());
 
 const db = DB.getSynced(doc);
 
-io.on("connection", (socket) => {
-  console.info("Websockets connected");
-  syncLayout(socket);
-  // loadPlugins(socket);
-});
-
 app.get('/plugins', (req, res) => {
   const ids = plugins.map(p => p.server.manifest.id);
   res.status(200).json(ids);
 });
 
 for (const plugin of plugins) {
+  plugin.server.init({
+    preservedState: db.pluginState,
+    runtimeState: mobxify(bindMap(doc.getMap(plugin.server.manifest.id))),
+    signal: ServerSignal.get(plugin.server.manifest.id)
+  });
   app.get(`/plugins/${plugin.server.manifest.id}`, (req, res) => {
-    console.info(`Sending client plugins for ${plugin.server.manifest.name}...`, plugin.client);
+    console.info(`Sending client plugins for id ${plugin.server.manifest.id}...`, plugin.client);
     res.status(200)
       .setHeader('Content-Type', 'application/javascript')
       .sendFile(plugin.client);
