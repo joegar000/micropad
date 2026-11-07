@@ -11,8 +11,6 @@ import { mobxify, bindMap } from 'micropad-sdk/shared';
 
 const app: Express = express();
 
-app.router
-
 app.use(express.static(path.join(import.meta.dirname, '..', 'client', 'dist')));
 
 const httpServer = createServer(app);
