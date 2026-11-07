@@ -1,10 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { Socket } from "socket.io";
 import type { ServerPlugin } from "micropad-sdk/server";
-import { ServerPluginContext } from "./context.ts";
-import { type PluginManifestSchema, pluginManifestSchema } from "micropad-sdk/server";
+import {  pluginManifestSchema } from "micropad-sdk/server";
 
 export type PluginBundle = {
   server: ServerPlugin;

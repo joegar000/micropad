@@ -1,11 +1,12 @@
 import { type Socket } from 'socket.io-client';
 import { useContext, createContext } from 'react';
-import { ClientBridge, type ClientPlugin } from 'micropad-sdk/client';
+import { ClientBridge, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/client';
+import { bindMap, mobxify } from 'micropad-sdk/shared';
 import LayoutModel from './layout.tsx';
-import createClientPluginContext from '../plugins/context.ts';
 import { invariant } from 'es-toolkit/util';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type { Schema } from '../../server/db/db.ts';
+import * as Y from "yjs";
 
 export default class AppModel {
   socket: Socket;
@@ -72,6 +73,9 @@ export default class AppModel {
 
   static async create(socket: Socket) {
     const pluginIds: string[] = await (await fetch('/plugins')).json();
+    const doc = new Y.Doc();
+    const db = mobxify(bindMap(doc.getMap('db')));
+    const getSignal = clientSignalGenerator(socket);
     const plugins = await Promise.all(pluginIds.map(async id => {
       const pluginModule = await import(`/plugins/${id}`);
       invariant(
@@ -79,12 +83,18 @@ export default class AppModel {
         "Client entrypoint must have a default plugin class export"
       );
       const Plugin = pluginModule.default as new (...p: ConstructorParameters<typeof ClientPlugin>) => ClientPlugin;
-      return new Plugin(await createClientPluginContext(socket, id));
+      return new Plugin({
+        // @ts-ignore
+        preservedState: db.pluginState,
+        runtimeState: mobxify(bindMap(doc.getMap(id))),
+        signal: getSignal(id)
+      });
     }));
     return new AppModel({
       socket: socket,
       plugins: plugins,
-      layouts: (await ClientBridge.getArr<Schema["layouts"]>(socket, "db:micropad-layouts")).data
+      // @ts-ignore
+      layouts: db.layouts
     })
   }
 }

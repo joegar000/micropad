@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { plugins } from './plugins/loader.ts';
-import { sync, ServerSignal } from 'micropad-sdk/server';
+import { sync, serverSignalGenerator } from 'micropad-sdk/server';
 import * as Y from 'yjs';
 import { DB } from './db/db.ts';
 import { mobxify, bindMap } from 'micropad-sdk/shared';
@@ -18,6 +18,8 @@ const io = new Server(httpServer);
 
 const doc = sync(io, new Y.Doc());
 
+const getSignal = serverSignalGenerator(io);
+
 const db = DB.getSynced(doc);
 
 app.get('/plugins', (req, res) => {
@@ -29,7 +31,7 @@ for (const plugin of plugins) {
   plugin.server.init({
     preservedState: db.pluginState,
     runtimeState: mobxify(bindMap(doc.getMap(plugin.server.manifest.id))),
-    signal: ServerSignal.get(plugin.server.manifest.id)
+    signal: getSignal(plugin.server.manifest.id)
   });
   app.get(`/plugins/${plugin.server.manifest.id}`, (req, res) => {
     console.info(`Sending client plugins for id ${plugin.server.manifest.id}...`, plugin.client);
