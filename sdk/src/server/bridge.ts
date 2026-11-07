@@ -8,6 +8,7 @@ import * as Y from 'yjs';
 export function sync(io: Server, doc: Y.Doc) {
   const sockets = new Set<Socket>();
   io.on('connection', socket => {
+    console.info('new connection...');
     sockets.add(socket);
 
     socket.on('yjs:update', (update: Uint8Array) => {
@@ -16,6 +17,7 @@ export function sync(io: Server, doc: Y.Doc) {
     });
 
     socket.on('disconnect', () => {
+      console.info('connection lost');
       sockets.delete(socket);
     });
   });
