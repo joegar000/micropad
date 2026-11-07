@@ -1,8 +1,11 @@
-export type MediaState<Signal> = {
+import type { NamespacedClientSignal } from "micropad-sdk/client";
+import type { NamespacedServerSignal } from "micropad-sdk/server";
+
+export type MediaState = {
   runtimeState: {
     volume?: number;
     muted?: boolean;
     playing?: boolean;
   },
-  signal: Signal;
+  signal: NamespacedServerSignal | NamespacedClientSignal;
 };

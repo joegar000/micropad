@@ -1,7 +1,6 @@
 import {
   isLinux,
   ServerPlugin,
-  ServerSignal,
 } from "micropad-sdk/server";
 import { autorun, runInAction } from "mobx";
 import loudness from "loudness";
@@ -107,7 +106,7 @@ const mediaController = MediaController.getInstance();
 export default class MediaPlugin extends ServerPlugin {
   pluginName = "media";
 
-  async init(ctx: MediaState<ServerSignal>): Promise<void> {
+  async init(ctx: MediaState): Promise<void> {
     runInAction(() => {
       ctx.runtimeState.volume ??= 0;
       ctx.runtimeState.muted ??= false;

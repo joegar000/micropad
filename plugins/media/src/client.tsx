@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { ClientPlugin, ClientSignal, Widget } from "micropad-sdk/client";
+import { ClientPlugin, Widget } from "micropad-sdk/client";
 import { clamp } from "es-toolkit";
 import { Button } from "../../../ui/src/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -16,7 +16,7 @@ import type { MediaState } from "./state";
 import { observer } from "mobx-react-lite";
 import { runInAction } from "mobx";
 
-type MediaProps = { context: MediaState<ClientSignal> };
+type MediaProps = { context: MediaState };
 
 const VolumeSlider = observer(({ context }: MediaProps) => {
   const volume = context.runtimeState.volume ?? 0;
