@@ -1,8 +1,4 @@
-import { observable, reaction, runInAction, toJS } from "mobx";
 import type { Socket, Server } from "socket.io";
-import * as jsonpatch from "fast-json-patch";
-import { type Snapshot, type Write, type WriteResult } from "../shared/bridge/protocol";
-import { invariant } from "es-toolkit";
 import * as Y from 'yjs';
 
 export function sync(io: Server, doc: Y.Doc) {

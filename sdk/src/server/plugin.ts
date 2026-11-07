@@ -1,5 +1,5 @@
 import type { IPreservedState, IRuntimeState } from "../shared/state";
-import type { ServerSignal } from "./signal";
+import type { NamespacedServerSignal } from "./signal";
 import { z } from "zod";
 
 export const pluginManifestSchema = z.object({
@@ -20,7 +20,7 @@ export type PluginManifestSchema = z.infer<typeof pluginManifestSchema>;
 export interface ServerPluginContext {
   runtimeState: IRuntimeState;
   preservedState: IPreservedState;
-  signal: ServerSignal;
+  signal: NamespacedServerSignal;
 }
 
 export abstract class ServerPlugin {

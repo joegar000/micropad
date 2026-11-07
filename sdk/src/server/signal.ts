@@ -1,5 +1,7 @@
 import type { Socket, Server } from "socket.io";
 
+export type NamespacedServerSignal = ReturnType<ReturnType<typeof serverSignalGenerator>>;
+
 export function serverSignalGenerator(io: Server) {
   const sockets = new Set<Socket>();
   const listeners = new Map<string, ((payload?: unknown) => void)[]>();

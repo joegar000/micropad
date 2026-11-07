@@ -1,10 +1,10 @@
 import type { IPreservedState, IRuntimeState } from "../shared";
-import type { ClientSignal } from "./signal";
+import type { NamespacedClientSignal } from "./signal";
 
 export interface IClientPluginContext {
   runtimeState: IRuntimeState;
   preservedState: IPreservedState;
-  signal: ClientSignal;
+  signal: NamespacedClientSignal;
 }
 
 export abstract class Widget {
