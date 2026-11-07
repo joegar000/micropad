@@ -3,12 +3,11 @@ import { LowSync } from 'lowdb';
 import { JSONFileSync } from 'lowdb/node';
 import type { IPreservedState } from 'micropad-sdk/shared';
 import { bindMap, mobxify } from 'micropad-sdk/shared';
-import { observable, reaction } from 'mobx';
 import path from 'path';
 import * as Y from 'yjs';
 
 export type Schema = {
-  pluginState: Record<string, Partial<IPreservedState>>
+  pluginState: Record<string, Partial<IPreservedState>>;
   layouts: {
     name: string;
     pages: {
@@ -16,17 +15,17 @@ export type Schema = {
       rows: number;
       widgets: {
         [uniqId: string]: {
-          uniqId: string,
-          widgetId: string,
-          pluginId: string
+          uniqId: string;
+          widgetId: string;
+          pluginId: string;
         }
-      },
+      };
       widgetCoords: {
         [uniqId: string]: {
-          x: number,
-          y: number,
-          w: number,
-          h: number
+          x: number;
+          y: number;
+          w: number;
+          h: number;
         }
       }
     }[]
@@ -56,17 +55,17 @@ lowdb.read();
 
 export class DB {
   static getSynced(doc: Y.Doc): Schema {
-    const data = mobxify(bindMap(doc.getMap('db')));
+    const data = mobxify(bindMap(doc.getMap('db'))) as unknown as Schema;
     doc.transact(() => {
       for (const key in lowdb.data) {
-        data[key] = lowdb.data[key as keyof typeof lowdb.data];
+        data[key as keyof Schema] = lowdb.data[key as keyof Schema] as any;
       }
     });
 
     doc.get('db').observeDeep(debounce(() => {
-      lowdb.data = doc.getMap('db').toJSON() as any;
+      lowdb.data = doc.getMap('db').toJSON() as unknown as Schema;
       lowdb.write();
     }, 200));
-    return data;
+    return data as unknown as Schema;
   }
 }
