@@ -24,6 +24,7 @@ export default defineConfig({
       // the browser entry never contains machine-specific node_modules paths.
       external: [
         'mobx',
+        'yjs',
         ...builtinModules,          // Excludes node:fs, node:path, etc.
         ...builtinModules.map(m => `node:${m}`),
       ],
