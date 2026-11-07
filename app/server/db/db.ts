@@ -64,7 +64,7 @@ export class DB {
     });
 
     doc.get('db').observeDeep(debounce(() => {
-      lowdb.data = doc.get('db').toJSON();
+      lowdb.data = doc.getMap('db').toJSON() as any;
       lowdb.write();
     }, 200));
     return data;
