@@ -36,35 +36,42 @@ export type IPage = ILayout['pages'][number];
 export type IWidget = IPage['widgets'][string];
 export type IWidgetCoords = IPage['widgetCoords'][string];
 
-const lowdb = new LowSync<Schema>(
-  new JSONFileSync(path.join(import.meta.dirname, 'db.json')),
-  {
-    pluginState: {},
-    layouts: [{
-      name: 'Micropad',
-      pages: [{
-        columns: 3,
-        rows: 3,
-        widgets: {},
-        widgetCoords: {}
-      }]
-    }]
-  }
-);
-lowdb.read();
 
 export class DB {
+  private static _lowdb: LowSync<Schema>;
+  private static get lowdb() {
+    if (this._lowdb)
+      return this._lowdb;
+    this._lowdb = new LowSync<Schema>(
+      new JSONFileSync(path.join(import.meta.dirname, 'db.json')),
+      {
+        pluginState: {},
+        layouts: [{
+          name: 'Micropad',
+          pages: [{
+            columns: 3,
+            rows: 3,
+            widgets: {},
+            widgetCoords: {}
+          }]
+        }]
+      }
+    );
+    this._lowdb.read();
+    return this._lowdb;
+  }
+
   static getSynced(doc: Y.Doc): Schema {
     const data = mobxify(bindMap(doc.getMap('db'))) as unknown as Schema;
     doc.transact(() => {
-      for (const key in lowdb.data) {
-        data[key as keyof Schema] = lowdb.data[key as keyof Schema] as any;
+      for (const key in this.lowdb.data) {
+        data[key as keyof Schema] = this.lowdb.data[key as keyof Schema] as any;
       }
     });
 
     doc.get('db').observeDeep(debounce(() => {
-      lowdb.data = doc.getMap('db').toJSON() as unknown as Schema;
-      lowdb.write();
+      this.lowdb.data = doc.getMap('db').toJSON() as unknown as Schema;
+      this.lowdb.write();
     }, 200));
     return data as unknown as Schema;
   }
