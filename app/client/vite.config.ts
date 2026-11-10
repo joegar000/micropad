@@ -1,12 +1,13 @@
 import path from "path";
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite';
-import { viteImportMaps } from 'vite-import-maps';
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import { viteImportMaps } from "vite-import-maps";
+import babel from "@rolldown/plugin-babel";
 
 export default defineConfig({
   build: {
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     react(),
@@ -19,13 +20,25 @@ export default defineConfig({
         "react",
         "react/jsx-runtime",
         "react-dom",
-        "react-dom/client"
-      ]
-    })
+        "react-dom/client",
+      ],
+    }),
+    babel({
+      presets: [
+        {
+          preset: () => ({
+            plugins: [
+              ["@babel/plugin-proposal-decorators", { version: "2023-11" }],
+            ],
+          }),
+          rolldown: { filter: { code: /^\s*@/m } },
+        },
+      ],
+    }),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, '..', '..', 'ui', 'src')
-    }
-  }
-})
+      "@": path.resolve(__dirname, "..", "..", "ui", "src"),
+    },
+  },
+});
