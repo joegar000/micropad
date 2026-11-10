@@ -1,6 +1,6 @@
 import { type Socket } from 'socket.io-client';
 import { useContext, createContext } from 'react';
-import { ClientBridge, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/client';
+import { sync, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/client';
 import { bindMap, mobxify } from 'micropad-sdk/shared';
 import LayoutModel from './layout.tsx';
 import { invariant } from 'es-toolkit/util';
@@ -74,6 +74,7 @@ export default class AppModel {
   static async create(socket: Socket) {
     const pluginIds: string[] = await (await fetch('/plugins')).json();
     const doc = new Y.Doc();
+    await sync(socket, doc);
     const db = mobxify(bindMap(doc.getMap('db')));
     const getSignal = clientSignalGenerator(socket);
     const plugins = await Promise.all(pluginIds.map(async id => {
@@ -90,12 +91,13 @@ export default class AppModel {
         signal: getSignal(id)
       });
     }));
+    console.log({ plugins, layouts: db.layouts })
     return new AppModel({
       socket: socket,
       plugins: plugins,
       // @ts-ignore
       layouts: db.layouts
-    })
+    });
   }
 }
 
