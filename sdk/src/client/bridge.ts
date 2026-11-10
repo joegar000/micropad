@@ -1,156 +1,45 @@
-import { invariant, isJSONArray, isJSONObject } from "es-toolkit";
-import { observable, reaction, runInAction, toJS } from "mobx";
-import type { Socket } from "socket.io-client";
-import * as jsonpatch from "fast-json-patch";
-import { type Snapshot, type Write, type WriteResult, singleflight } from "../shared";
+import type { Socket } from 'socket.io-client';
+import * as Y from 'yjs';
 
-const SOCKET_TIMEOUT = 30000;
+export function sync(socket: Socket, doc: Y.Doc) {
+  let lock = false;
 
-export class ClientBridge<T extends 'obj' | 'arr', D extends Record<string, any> | any[] = T extends 'obj' ? Record<string, any> : any[]> {
-  private static bridges = new Map<
-    Socket,
-    Map<string, ClientBridge<any, any>>
-  >();
-
-  static async get<Data extends Record<string, any> = Record<string, any>>(socket: Socket, namespace: string): Promise<ClientBridge<'obj', Data>> {
-    if (!this.bridges.get(socket)?.get(namespace)) {
-      this.bridges.set(socket, this.bridges.get(socket) ?? new Map());
-      this.bridges.get(socket)!.set(
-        namespace, new ClientBridge(socket, namespace, 'obj')
-      );
-    }
-
-    const inst = this.bridges.get(socket)!.get(namespace)!;
-    invariant(
-      inst.type === 'obj',
-      `Cannot create an object bridge in an array bridge namespace. Received type ${inst.type}`
-    );
-    await inst.ready;
-    return inst;
-  }
-
-  static async getArr<Data extends any[] = any[]>(socket: Socket, namespace: string): Promise<ClientBridge<'arr', Data>> {
-    if (!this.bridges.get(socket)?.get(namespace)) {
-      this.bridges.set(socket, this.bridges.get(socket) ?? new Map());
-      this.bridges.get(socket)!.set(
-        namespace, new ClientBridge(socket, namespace, 'arr')
-      );
-    }
-
-    const inst = this.bridges.get(socket)!.get(namespace)!;
-    invariant(
-      inst.type === 'arr',
-      `Cannot create an array bridge in an object bridge namespace. Received type ${inst.type}`
-    );
-    await inst.ready;
-    return inst;
-  }
-
-  private static async getSnapshot(socket: Socket, namespace: string) {
-    return await new Promise<Snapshot['body']>((resolve, reject) => {
-      socket.timeout(SOCKET_TIMEOUT).emit(`bridge:${namespace}:snapshot`, (err: unknown, snapshot: Snapshot) => {
-        if (err) {
-          console.error(err);
-          reject(`Failed to get snapshot for namespace ${namespace}`);
-        } else if (snapshot.status === 'ok') {
-          resolve(snapshot.body);
-        } else {
-          reject('Invalid snapshot status');
-        }
-      });
-    })
-  }
-
-  public readonly socket: Socket;
-  public readonly namespace: string;
-  public readonly data: D;
-  public readonly ready: Promise<void>;
-  private type: T;
-  private applyingPatches = 0;
-  private cleanup?: () => void
-
-  private constructor(socket: Socket, namespace: string, type: T) {
-    this.socket = socket;
-    this.namespace = namespace;
-    this.data = observable(type === 'obj' ? {} as Record<string, any> : [] as any);
-    this.type = type;
-    this.reset = singleflight(this.reset.bind(this));
-
-    this.ready = this.reset();
-
-    setInterval(() => {
-      this.reset();
-    }, 30000);
-
-    this.ready.then(() => {
-      const write = (payload: Write) => {
-        try {
-          this.applyPatches(payload.patches);
-        } catch (e) {
-          this.reset();
-        }
-      }
-
-      socket.on(`bridge:${namespace}:write`, write);
-
-      const disposer = reaction(
-        () => toJS(this.data),
-        (current, previous) => {
-          if (!this.applyingPatches) {
-            const patches = jsonpatch.compare(previous, current);
-            if (!patches.length) return;
-            socket.timeout(SOCKET_TIMEOUT).emit(
-              `bridge:${namespace}:write`,
-              { patches } as Write,
-              (err: boolean, ack: WriteResult) => {
-                if (err) {
-                  this.reset();
-                } else if (ack.status === 'invalid') {
-                  this.applyPatches(jsonpatch.compare(toJS(this.data), ack.body));
-                }
-              }
-            );
-          }
-        }
-      );
-
-      this.cleanup = () => {
-        disposer();
-        socket.off(`bridge:${namespace}:write`, write);
-      }
-    });
-  }
-
-  private applyPatches(patches: Write['patches']) {
-    this.applyingPatches++;
+  const applyUpdate = (update: Uint8Array | ArrayBuffer) => {
+    lock = true;
     try {
-      runInAction(() => {
-        jsonpatch.applyPatch(this.data, patches);
-      });
+      Y.applyUpdate(
+        doc,
+        update instanceof Uint8Array ? update : new Uint8Array(update)
+      );
     } finally {
-      this.applyingPatches--;
+      lock = false;
     }
-  }
+  };
 
-  public async reset() {
-    const snapshot = await ClientBridge.getSnapshot(this.socket, this.namespace);
-
-    invariant(
-      (isJSONObject(snapshot) && isJSONObject(toJS(this.data)))
-      || (isJSONArray(snapshot) && isJSONArray(toJS(this.data))),
-      `ClientBridge data mismatch with type ${this.type}`
-    );
-
-    this.applyPatches(jsonpatch.compare(toJS(this.data), snapshot));
-  }
-
-  public dispose() {
-    this.cleanup?.();
-  }
-
-  safeEdit(cb: (data: D) => void) {
-    runInAction(() => {
-      cb(this.data);
+  socket.on('connect', () => {
+    socket.emit('yjs:sync', Y.encodeStateVector(doc), (update: Uint8Array | ArrayBuffer) => {
+      applyUpdate(update);
     });
-  }
+  });
+
+  socket.on('yjs:update', (update: Uint8Array | ArrayBuffer) => {
+    applyUpdate(update);
+  });
+
+  doc.on('update', (update) => {
+    if (!lock) {
+      socket.emit('yjs:update', update);
+    }
+  });
+
+  return new Promise<void>((resolve, reject) => {
+    socket.emit('yjs:sync', Y.encodeStateVector(doc), (update: Uint8Array | ArrayBuffer) => {
+      try {
+        applyUpdate(update);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
 }
