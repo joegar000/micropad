@@ -2,7 +2,7 @@ import { type Socket } from "socket.io-client";
 import { type Schema } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 import { ClientPlugin } from "micropad-sdk/client";
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observableRef } from "mobx";
 import PageModel from "./page.tsx";
 
 export default class LayoutModel {
@@ -14,7 +14,7 @@ export default class LayoutModel {
     this.data = params.data;
 
     makeObservable(this, {
-      data: observable,
+      data: observableRef,
       layoutNames: computed,
       pages: computed,
       usedIds: computed,

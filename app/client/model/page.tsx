@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable, observableRef } from "mobx";
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 import type LayoutModel from "./layout.tsx";
@@ -14,7 +14,7 @@ export default class PageLayout {
     this.layout = layout;
 
     makeObservable(this, {
-      data: observable,
+      data: observableRef,
       index: observable,
       layout: observable,
       widgets: computed,

@@ -4,7 +4,7 @@ import { sync, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/cli
 import { bindMap, mobxify } from 'micropad-sdk/shared';
 import LayoutModel from './layout.tsx';
 import { invariant } from 'es-toolkit/util';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable, observableRef } from 'mobx';
 import type { Schema } from '../../server/db/db.ts';
 import * as Y from "yjs";
 
@@ -23,7 +23,7 @@ export default class AppModel {
     this.data = params.layouts;
 
     makeObservable(this, {
-      data: observable,
+      data: observableRef,
       plugins: observable,
       addLayout: action,
       deleteLayout: action,
