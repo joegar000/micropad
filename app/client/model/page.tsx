@@ -2,13 +2,15 @@ import { action, computed, makeObservable, observable, observableRef } from "mob
 import { type IWidget, type IPage } from "../../server/db/db.ts";
 import { createContext, useContext } from "react";
 import type LayoutModel from "./layout.tsx";
+import { transact, YModel } from "./y.tsx";
 
-export default class PageLayout {
+export default class PageLayout extends YModel {
   data: IPage;
   index: number;
   layout: LayoutModel;
 
   constructor(page: IPage, index: number, layout: LayoutModel) {
+    super();
     this.data = page;
     this.index = index;
     this.layout = layout;
@@ -35,6 +37,7 @@ export default class PageLayout {
     }, [] as { widget: IPage['widgets'][string], coords: IPage['widgetCoords'][string] }[]);
   }
 
+  @transact
   placeWidget(widget: IWidget, x: number, y: number, w?: number, h?: number): boolean {
     w = w ?? this.data.widgetCoords[widget.uniqId]?.w ?? 1;
     h = h ?? this.data.widgetCoords[widget.uniqId]?.h ?? 1;
@@ -54,6 +57,7 @@ export default class PageLayout {
     return true;
   }
 
+  @transact
   removeWidget(uniqId: string) {
     if (!(uniqId in this.data.widgets))
       return false;
@@ -103,4 +107,3 @@ export const usePage = () => {
     throw Error('`usePage()` called outside of `PageModelContext');
   return page;
 }
-

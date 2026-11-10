@@ -7,8 +7,9 @@ import { invariant } from 'es-toolkit/util';
 import { action, computed, makeObservable, observable, observableRef } from 'mobx';
 import type { Schema } from '../../server/db/db.ts';
 import * as Y from "yjs";
+import { transact, YModel } from './y.tsx';
 
-export default class AppModel {
+export default class AppModel extends YModel {
   socket: Socket;
   plugins: ClientPlugin[];
   data: Schema["layouts"];
@@ -18,6 +19,7 @@ export default class AppModel {
     plugins: ClientPlugin[],
     layouts: Schema["layouts"]
   }) {
+    super();
     this.socket = params.socket;
     this.plugins = params.plugins;
     this.data = params.layouts;
@@ -39,6 +41,7 @@ export default class AppModel {
     }));
   }
 
+  @transact
   addLayout(name: string, defaultColumns: number = 3, defaultRows: number = 3) {
     if (name in this.layoutNames)
       return false;
@@ -54,6 +57,7 @@ export default class AppModel {
     return true;
   }
 
+  @transact
   deleteLayout(name: string) {
     const index = this.data.findIndex(d => d.name === name);
     if (index !== -1) {

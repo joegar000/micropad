@@ -4,12 +4,14 @@ import { createContext, useContext } from "react";
 import { ClientPlugin } from "micropad-sdk/client";
 import { action, computed, makeObservable, observableRef } from "mobx";
 import PageModel from "./page.tsx";
+import { transact, YModel } from "./y.tsx";
 
-export default class LayoutModel {
+export default class LayoutModel extends YModel {
   socket: Socket;
   data: Schema["layouts"][number];
 
   constructor(params: { socket: Socket, data: Schema["layouts"][number] }) {
+    super();
     this.socket = params.socket;
     this.data = params.data;
 
@@ -83,6 +85,7 @@ export default class LayoutModel {
     }, {} as Record<string, W>);
   }
 
+  @transact
   addPage(index = Infinity, defaultColumns = 3, defaultRows = 3) {
     this.data.pages.splice(index, 0, {
       columns: defaultColumns,
@@ -92,6 +95,7 @@ export default class LayoutModel {
     });
   }
 
+  @transact
   removePage(index: number) {
     this.data.pages.splice(index, 1);
   }
@@ -105,4 +109,3 @@ export const useLayout = () => {
     throw Error('Cannot call `useLayout` outside of AppModelContext');
   return layout;
 }
-
