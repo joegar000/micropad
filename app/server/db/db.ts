@@ -2,7 +2,8 @@ import { debounce } from 'es-toolkit/compat';
 import { LowSync } from 'lowdb';
 import { JSONFileSync } from 'lowdb/node';
 import type { IPreservedState } from 'micropad-sdk/shared';
-import { bindMap, mobxify } from 'micropad-sdk/shared';
+import { bindMap } from 'y-json';
+import { mobxify } from 'y-json/mobx';
 import path from 'path';
 import * as Y from 'yjs';
 

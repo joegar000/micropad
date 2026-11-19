@@ -1,9 +1,9 @@
-import { $Y, type BoundArray, type BoundMap } from "micropad-sdk/shared";
+import { type BoundArray, type BoundMap, getY } from "y-json";
 import type * as Y from "yjs";
 
 export abstract class YModel {
   get doc(): Y.Doc | null {
-    return (this as unknown as { data: BoundMap | BoundArray }).data[$Y].doc;
+    return getY((this as unknown as { data: BoundMap | BoundArray }).data).doc;
   }
 }
 

@@ -1,7 +1,8 @@
 import type { Socket } from 'socket.io-client';
 import * as Y from 'yjs';
 
-export function sync(socket: Socket, doc: Y.Doc) {
+export function syncedDoc(socket: Socket) {
+  const doc = new Y.Doc();
   let lock = false;
 
   const applyUpdate = (update: Uint8Array | ArrayBuffer) => {
@@ -32,11 +33,11 @@ export function sync(socket: Socket, doc: Y.Doc) {
     }
   });
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<Y.Doc>((resolve, reject) => {
     socket.emit('yjs:sync', Y.encodeStateVector(doc), (update: Uint8Array | ArrayBuffer) => {
       try {
         applyUpdate(update);
-        resolve();
+        resolve(doc);
       } catch (error) {
         reject(error);
       }

@@ -31,9 +31,9 @@ const VolumeSlider = observer(({ context }: MediaProps) => {
       aria-orientation="vertical"
       aria-valuetext={`${volume}%`}
       className="h-[calc(100%-1rem)] min-h-0 w-7 cursor-pointer accent-primary [direction:rtl] [writing-mode:vertical-lr]"
-      onChange={(event) => {
-        runInAction(() => {
-          context.runtimeState.volume = clamp(event.currentTarget.valueAsNumber, 0, 100);
+      ref={(input) => {
+        if (input) input.onchange = () => runInAction(() => {
+          context.runtimeState.volume = clamp(input.valueAsNumber, 0, 100);
         });
       }}
     />

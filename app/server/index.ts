@@ -3,10 +3,10 @@ import path from 'node:path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { plugins } from './plugins/loader.ts';
-import { sync, serverSignalGenerator } from 'micropad-sdk/server';
-import * as Y from 'yjs';
+import { syncedDoc, serverSignalGenerator } from 'micropad-sdk/server';
 import { DB } from './db/db.ts';
-import { mobxify, bindMap } from 'micropad-sdk/shared';
+import { bindMap } from 'y-json';
+import { mobxify } from 'y-json/mobx';
 
 
 const app: Express = express();
@@ -16,7 +16,7 @@ app.use(express.static(path.join(import.meta.dirname, '..', 'client', 'dist')));
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
-const doc = sync(io, new Y.Doc());
+const doc = syncedDoc(io);
 
 const getSignal = serverSignalGenerator(io);
 

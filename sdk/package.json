@@ -38,9 +38,10 @@
   "dependencies": {
     "es-toolkit": "^1.52.0",
     "fast-json-patch": "^3.1.1",
-    "mobx": "^7.0.3",
+    "mobx": "^7.1.7",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "y-json": "file:../../y-json",
     "yjs": "^13.6.33",
     "zod": "^4.6.7"
   }

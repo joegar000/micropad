@@ -1,7 +1,8 @@
 import type { Socket, Server } from 'socket.io';
 import * as Y from 'yjs';
 
-export function sync(io: Server, doc: Y.Doc) {
+export function syncedDoc(io: Server) {
+  const doc = new Y.Doc();
   const sockets = new Set<Socket>();
   let lock = false;
   io.on('connection', socket => {

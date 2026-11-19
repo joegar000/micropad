@@ -1,12 +1,12 @@
 import { type Socket } from 'socket.io-client';
 import { useContext, createContext } from 'react';
-import { sync, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/client';
-import { bindMap, mobxify } from 'micropad-sdk/shared';
+import { syncedDoc, clientSignalGenerator, type ClientPlugin } from 'micropad-sdk/client';
+import { bindMap } from 'y-json';
+import { mobxify } from 'y-json/mobx';
 import LayoutModel from './layout.tsx';
 import { invariant } from 'es-toolkit/util';
 import { action, computed, makeObservable, observable, observableRef } from 'mobx';
 import type { Schema } from '../../server/db/db.ts';
-import * as Y from "yjs";
 import { transact, YModel } from './y.tsx';
 
 export default class AppModel extends YModel {
@@ -77,8 +77,7 @@ export default class AppModel extends YModel {
 
   static async create(socket: Socket) {
     const pluginIds: string[] = await (await fetch('/plugins')).json();
-    const doc = new Y.Doc();
-    await sync(socket, doc);
+    const doc = await syncedDoc(socket);
     const db = mobxify(bindMap(doc.getMap('db')));
     const getSignal = clientSignalGenerator(socket);
     const plugins = await Promise.all(pluginIds.map(async id => {
